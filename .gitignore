@@ -1,0 +1,5 @@
+.ipynb_checkpoints/
+*.ipynb
+*.o
+results/
+final_results/
