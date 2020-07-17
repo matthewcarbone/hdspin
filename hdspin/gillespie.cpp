@@ -13,6 +13,9 @@
 #include "utils/file_utils.h"
 
 
+const bool DEBUG = false;
+
+
 void append_energy_tracker_(const double current_energy,
     const double current_time, const double *time_grid,
     double *energy_recorder, int *energy_pointer, const int ngrid)
@@ -105,10 +108,10 @@ void gillespie(const int index, const std::string file_dump_loc,
     generator.seed(seed);
 
     // Initialize a distribution that can randomly pick a spin from 0 -> N - 1
-    std::uniform_int_distribution<> spin_distribution(0, N_spins - 1);
+    // std::uniform_int_distribution<> spin_distribution(0, N_spins - 1);
 
     // Initialize a distribution that can pick a random number in [0, 1)
-    std::uniform_real_distribution<> uniform_0_1_distribution(0.0, 1.0);
+    // std::uniform_real_distribution<> uniform_0_1_distribution(0.0, 1.0);
 
     // ========================================================================
     // Spin system & simulation ===============================================
@@ -189,13 +192,14 @@ void gillespie(const int index, const std::string file_dump_loc,
     // Aging functions ========================================================
     // ========================================================================
 
-    int S_basin_pointer_1 = 0;  // Points to the current location on grid 1
-    int S_basin_pointer_2 = 0;  // Points to the current location on grid 2
-    int S_basin_index = 1;      // Indexes the last basin the tracer was/is in
+    // int S_basin_pointer_1 = 0;  // Points to the current location on grid 1
+    // int S_basin_pointer_2 = 0;  // Points to the current location on grid 2
+    // int S_basin_index;
 
-    int E_basin_pointer_1 = 0;
-    int E_basin_pointer_2 = 0;
+    int pi_pointer_1 = 0;
+    int pi_pointer_2 = 0;
     int E_basin_index = 1;
+    if (current_energy <= thresh_E){E_basin_index = -2;}
 
     // Fill the time grids for pi
     double time_pi_grid_1[n_samp];
@@ -203,11 +207,15 @@ void gillespie(const int index, const std::string file_dump_loc,
     double time_pi_grid_2[n_samp];
     fill_pi_grid_2(time_pi_grid_2, time_pi_grid_1, DW, n_samp);
 
-    // Initialize the recorder grids for pi
+    // Initialize the recorder grids for pi basin
     int recorder_pi_basin_E_1[n_samp];
     int recorder_pi_basin_E_2[n_samp];
     int recorder_pi_basin_S_1[n_samp];
     int recorder_pi_basin_S_2[n_samp];
+
+    // Initialize the recorder grids for pi config
+    int recorder_pi_config_1[n_samp];
+    int recorder_pi_config_2[n_samp];
 
     // ========================================================================
     // Save the grids =========================================================
@@ -230,8 +238,12 @@ void gillespie(const int index, const std::string file_dump_loc,
     // Run the simulation =====================================================
     // ========================================================================
 
+    int current_config_index;
     while (energy_pointer < n_samp)
     {
+
+        //std::cout << "E = " << current_energy << " | " << E_basin_index << std::endl;
+
         // Step 1: get the neighboring energies by filling the relevant object
         get_neighboring_energies(config, energy_arr, neighboring_energies,
             N_spins);
@@ -254,6 +266,9 @@ void gillespie(const int index, const std::string file_dump_loc,
 
         // Step 4: update the current time of the simulation clock
         current_time += waiting_time;
+
+        // Initialize the current config index for later
+        current_config_index = binary_vector_to_int(config, N_spins);
 
         // Step 5: step to the next state and store the proposed (new) energy
         step_next_state_(config, exit_rates, total_exit_rate, N_spins,
@@ -288,12 +303,12 @@ void gillespie(const int index, const std::string file_dump_loc,
         // Now, we check if the proposed energy is greater than the threshold,
         // since in that case we would have to append the recorder and reset
         // the counter
-        if (proposed_energy >= thresh_S)
-        {
-            append_psi_recorder_(recorder_S_basin, total_time_in_S_basin,
-                len_psi_grid);
-            total_time_in_S_basin = 0.0;
-        }
+        // if (proposed_energy >= thresh_S)
+        // {
+        //     append_psi_recorder_(recorder_S_basin, total_time_in_S_basin,
+        //         len_psi_grid);
+        //     total_time_in_S_basin = 0.0;
+        // }
         if (proposed_energy >= thresh_E)
         {
             append_psi_recorder_(recorder_E_basin, total_time_in_E_basin,
@@ -306,28 +321,78 @@ void gillespie(const int index, const std::string file_dump_loc,
         // Append the aging function recorders --------------------------------
         // --------------------------------------------------------------------
 
-        // If we just entered a basin, update the basin index
-        if (current_energy > thresh_E and proposed_energy <= thresh_E)
+        if (DEBUG == true)
         {
-            E_basin_index += 1;
-        }
-        if (current_energy > thresh_S and proposed_energy <= thresh_S)
-        {
-            S_basin_index += 1;
+            printf("t = %.05e  |  E = %.02f  |  b = %i\n", current_time, current_energy, E_basin_index);
         }
 
-        E_basin_pointer_1 = append_Pi_grid_recorder_(current_time,
-            current_energy, thresh_E, E_basin_index, E_basin_pointer_1, n_samp,
-            time_pi_grid_1, recorder_pi_basin_E_1);
-        E_basin_pointer_2 = append_Pi_grid_recorder_(current_time,
-            current_energy, thresh_E, E_basin_index, E_basin_pointer_2, n_samp,
-            time_pi_grid_2, recorder_pi_basin_E_2);
-        S_basin_pointer_1 = append_Pi_grid_recorder_(current_time,
-            current_energy, thresh_E, S_basin_index, S_basin_pointer_1, n_samp,
-            time_pi_grid_1, recorder_pi_basin_S_1);
-        S_basin_pointer_2 = append_Pi_grid_recorder_(current_time,
-            current_energy, thresh_E, S_basin_index, S_basin_pointer_2, n_samp,
-            time_pi_grid_2, recorder_pi_basin_S_2);
+        //pi_pointer_1 = append_Pi_grid_recorder_(current_time,
+        //    current_energy, thresh_E, E_basin_index, pi_pointer_1, n_samp,
+        //    time_pi_grid_1, recorder_pi_basin_E_1);
+
+        if (pi_pointer_1 < n_samp)
+        {
+           while (current_time >= time_pi_grid_1[pi_pointer_1])
+            {
+                recorder_pi_basin_E_1[pi_pointer_1] = E_basin_index;
+                recorder_pi_config_1[pi_pointer_1] 
+                    = current_config_index;
+                if (DEBUG == true)
+                {
+                    printf("recorder update: pi_1: t = %.05e pointer: (%i) b = %i \n", time_pi_grid_1[pi_pointer_1], pi_pointer_1, recorder_pi_basin_E_1[pi_pointer_1]);
+                }
+                pi_pointer_1 += 1;
+                if (pi_pointer_1 > n_samp - 1){break;}
+            } 
+        }
+            
+        // pi_pointer_2 = append_Pi_grid_recorder_(current_time,
+        //     current_energy, thresh_E, E_basin_index, pi_pointer_2, n_samp,
+        //     time_pi_grid_2, recorder_pi_basin_E_2);
+
+        if (pi_pointer_2 < n_samp)
+        {
+            while (current_time >= time_pi_grid_2[pi_pointer_2])
+            {
+                recorder_pi_basin_E_2[pi_pointer_2] = E_basin_index;
+                recorder_pi_config_2[pi_pointer_2] 
+                    = current_config_index;
+                if (DEBUG == true)
+                {
+                    printf("recorder update: pi_2: t = %.05e pointer: (%i) b = %i \n", time_pi_grid_2[pi_pointer_2], pi_pointer_2, recorder_pi_basin_E_2[pi_pointer_2]);
+                }
+                pi_pointer_2 += 1;
+                if (pi_pointer_2 > n_samp - 1){break;}
+            }
+        }
+        
+
+        // S_basin_pointer_1 = append_Pi_grid_recorder_(current_time,
+        //     current_energy, thresh_E, S_basin_index, S_basin_pointer_1, n_samp,
+        //     time_pi_grid_1, recorder_pi_basin_S_1);
+        // S_basin_pointer_2 = append_Pi_grid_recorder_(current_time,
+        //     current_energy, thresh_E, S_basin_index, S_basin_pointer_2, n_samp,
+        //     time_pi_grid_2, recorder_pi_basin_S_2);
+
+        // If we just entered a basin, update the basin index. In this case,
+        // the basin_index would be positive, and should increment by one and
+        // become negative, indicating it has entered the next basin.
+        if (current_energy > thresh_E and proposed_energy <= thresh_E)
+        {
+            E_basin_index = -(E_basin_index + 1);
+        }
+
+        // In this case, we were in a basin and have left. The basin_index
+        // would be negative and should simply become positive. It will
+        // increment the next time it enters a basin.
+        else if (current_energy <= thresh_E and proposed_energy > thresh_E)
+        {
+            E_basin_index = -E_basin_index;
+        }
+        // if (current_energy > thresh_S and proposed_energy <= thresh_S)
+        // {
+        //     S_basin_index += 1;
+        // }
 
         current_energy = proposed_energy;
     }
@@ -347,6 +412,10 @@ void gillespie(const int index, const std::string file_dump_loc,
     dump_result_ints_to_disk(file_dump_loc, "pi_b_E_1", recorder_pi_basin_E_1,
         n_samp, index);
     dump_result_ints_to_disk(file_dump_loc, "pi_b_E_2", recorder_pi_basin_E_2,
+        n_samp, index);
+    dump_result_ints_to_disk(file_dump_loc, "pi_c_1", recorder_pi_config_1,
+        n_samp, index);
+    dump_result_ints_to_disk(file_dump_loc, "pi_c_2", recorder_pi_config_2,
         n_samp, index);
 
     delete[] energy_arr;

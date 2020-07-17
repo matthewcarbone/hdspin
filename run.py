@@ -25,10 +25,8 @@ DIRS_TO_MAKE = [
     'pi_b_S_2',
     'pi_b_E_1',
     'pi_b_E_2',
-    'pi_in_b_S_1',
-    'pi_in_b_S_2',
-    'pi_in_b_E_1',
-    'pi_in_b_E_2',
+    'pi_c_1',
+    'pi_c_2'
 ]
 
 
@@ -204,6 +202,7 @@ def concat_results(directory, check_binary=False):
     """Concats the energy results."""
 
     files_in_dir = os.listdir(directory)
+    files_in_dir.sort()
     res = []
     for f in files_in_dir:
         x = np.loadtxt(open(os.path.join(directory, f)))
@@ -290,6 +289,7 @@ def concat(list_of_parameters):
         res_dict['grids']['pi_2'] = np.loadtxt(
             open(os.path.join(d['file_dump_loc'], 'Pi_basin_grid_2.txt'))
         )
+
         res = process_pi_trackers(
             os.path.join(d['file_dump_loc'], 'pi_b_S_1'),
             os.path.join(d['file_dump_loc'], 'pi_b_S_2')
@@ -299,6 +299,13 @@ def concat(list_of_parameters):
             os.path.join(d['file_dump_loc'], 'pi_b_E_1'),
             os.path.join(d['file_dump_loc'], 'pi_b_E_2')
         )
+        res_dict['results']['Pi_basin_E'] = res
+
+        res = process_pi_trackers(
+            os.path.join(d['file_dump_loc'], 'pi_c_1'),
+            os.path.join(d['file_dump_loc'], 'pi_c_2')
+        )
+        res_dict['results']['Pi_config'] = res
 
         #res_dict['grids']['energy_div_2'] = np.loadtxt(
         #    open(os.path.join(d['file_dump_loc'], 'energy_grid_t_div_2.txt'))
@@ -307,7 +314,6 @@ def concat(list_of_parameters):
         #    os.path.join(d['file_dump_loc'], 'max_energy')
         #)
 
-        res_dict['results']['Pi_basin_E'] = res
         res_dict['parameters'] = d
 
         # Save results

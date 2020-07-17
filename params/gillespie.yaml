@@ -9,13 +9,13 @@ no_cycle:
   dynamics: 'gillespie'
 
   # log10(nMC) total number of timesteps, or max time
-  log10nMC: 9
+  log10nMC: -1
 
   # Energy landscape
-  landscape: 'erem'
+  landscape: 'rem'
 
   # Number of serial computations on a single CPU
-  n_serial_runs: 1000
+  n_serial_runs: 100
 
   # Number of cpu's to use such that the total number of simulations is
   # n_serial_runs * n_cpus
@@ -25,8 +25,8 @@ no_cycle:
 cycle:
 
   # The number of spins in the local spin system
-  n_spins: [20]
+  n_spins: [18, 20, 22]
 
   # Inverse temperature; note that beta_critical = 1.0 is hard-coded for now
-  beta: [2.0]  # [4.0, 2.0, 1.66, 1.33]
+  beta: [1.33]  # [4.0, 2.0, 1.66, 1.33]
   # ---------------------------------------------------------------------------
