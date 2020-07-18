@@ -216,6 +216,8 @@ void gillespie(const int index, const std::string file_dump_loc,
     // Initialize the recorder grids for pi config
     int recorder_pi_config_1[n_samp];
     int recorder_pi_config_2[n_samp];
+    int recorder_pi_config_swap_each_time_1[n_samp];
+    int recorder_pi_config_swap_each_time_2[n_samp];
 
     // ========================================================================
     // Save the grids =========================================================
@@ -239,6 +241,7 @@ void gillespie(const int index, const std::string file_dump_loc,
     // ========================================================================
 
     int current_config_index;
+    int current_config_index_swap_each_time = 0;
     while (energy_pointer < n_samp)
     {
 
@@ -337,6 +340,8 @@ void gillespie(const int index, const std::string file_dump_loc,
                 recorder_pi_basin_E_1[pi_pointer_1] = E_basin_index;
                 recorder_pi_config_1[pi_pointer_1] 
                     = current_config_index;
+                recorder_pi_config_swap_each_time_1[pi_pointer_1]
+                    = current_config_index_swap_each_time;
                 if (DEBUG == true)
                 {
                     printf("recorder update: pi_1: t = %.05e pointer: (%i) b = %i \n", time_pi_grid_1[pi_pointer_1], pi_pointer_1, recorder_pi_basin_E_1[pi_pointer_1]);
@@ -357,6 +362,8 @@ void gillespie(const int index, const std::string file_dump_loc,
                 recorder_pi_basin_E_2[pi_pointer_2] = E_basin_index;
                 recorder_pi_config_2[pi_pointer_2] 
                     = current_config_index;
+                recorder_pi_config_swap_each_time_2[pi_pointer_2]
+                    = current_config_index_swap_each_time;
                 if (DEBUG == true)
                 {
                     printf("recorder update: pi_2: t = %.05e pointer: (%i) b = %i \n", time_pi_grid_2[pi_pointer_2], pi_pointer_2, recorder_pi_basin_E_2[pi_pointer_2]);
@@ -395,6 +402,7 @@ void gillespie(const int index, const std::string file_dump_loc,
         // }
 
         current_energy = proposed_energy;
+        current_config_index_swap_each_time += 1;
     }
 
     dump_result_to_disk(file_dump_loc, "energy", recorder_energy_grid, n_samp,
@@ -417,6 +425,10 @@ void gillespie(const int index, const std::string file_dump_loc,
         n_samp, index);
     dump_result_ints_to_disk(file_dump_loc, "pi_c_2", recorder_pi_config_2,
         n_samp, index);
+    dump_result_ints_to_disk(file_dump_loc, "pi_c_1_swap",
+        recorder_pi_config_swap_each_time_1, n_samp, index);
+    dump_result_ints_to_disk(file_dump_loc, "pi_c_2_swap",
+        recorder_pi_config_swap_each_time_2, n_samp, index);
 
     delete[] energy_arr;
 }

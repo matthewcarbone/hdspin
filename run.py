@@ -26,7 +26,9 @@ DIRS_TO_MAKE = [
     'pi_b_E_1',
     'pi_b_E_2',
     'pi_c_1',
-    'pi_c_2'
+    'pi_c_2',
+    'pi_c_1_swap',
+    'pi_c_2_swap'
 ]
 
 
@@ -306,6 +308,12 @@ def concat(list_of_parameters):
             os.path.join(d['file_dump_loc'], 'pi_c_2')
         )
         res_dict['results']['Pi_config'] = res
+
+        res = process_pi_trackers(
+            os.path.join(d['file_dump_loc'], 'pi_c_1_swap'),
+            os.path.join(d['file_dump_loc'], 'pi_c_2_swap')
+        )
+        res_dict['results']['Pi_config_swap'] = res
 
         #res_dict['grids']['energy_div_2'] = np.loadtxt(
         #    open(os.path.join(d['file_dump_loc'], 'energy_grid_t_div_2.txt'))
