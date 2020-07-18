@@ -135,8 +135,9 @@ def process_parameter_list(list_of_parameters):
             dy = new_dict['dynamics']
             N = new_dict['n_spins']
             beta = new_dict['beta']
-            new_dict['file_dump_loc'] = f"{f}/{dy}_{N:02}_{beta:.02f}"
-            new_dict['final_name'] = f"{dy}_{N:02}_{beta:.02f}.pkl"
+            ls = new_dict['landscape']
+            new_dict['file_dump_loc'] = f"{f}/{dy}_{ls}_{N:02}_{beta:.02f}"
+            new_dict['final_name'] = f"{dy}_{ls}_{N:02}_{beta:.02f}.pkl"
             final_list.append(new_dict)
 
     return final_list
