@@ -5,7 +5,6 @@
 #include <unistd.h>
 #include <iomanip>
 #include <iostream>
-#include <sstream>
 
 // #include "gillespie.h"
 
@@ -56,20 +55,18 @@ int main(int argc, char *argv[])
     printf("start on this rank = %i\n", start);
     printf("end on this rank = %i\n", end);
 
-    std::string fname, ii_str, path;
+    std::string ii_str, path;
 
     #pragma omp parallel
     { 
         np = omp_get_num_threads();
-        #pragma omp for private(fname, ii_str, path)
+        #pragma omp for private(ii_str, path)
         for(int ii = start; ii < end; ii++)
         {
             iam = omp_get_thread_num();
             auto start = std::chrono::high_resolution_clock::now();
 
-            std::ostringstream str;
-            str << std::setw(3) << std::setfill('0') << ii;
-            ii_str = str.str();
+            ii_str = std::to_string(ii);
             path = target_directory + "/" + ii_str + ".txt";
 
             int n = path.length();
