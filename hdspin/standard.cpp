@@ -10,12 +10,11 @@
 #include <assert.h>
 #include <chrono>
 
-#include "utils/grid_utils.h"
 #include "utils/init_utils.h"
 #include "utils/general_utils.h"
 
 
-const int print_partitions = 50;
+// const int print_partitions = 50;
 
 
 
@@ -96,9 +95,9 @@ void standard(const std::string file_dump_loc, const long int N_timesteps,
 
     std::ofstream outFile(file_dump_loc);
 
-    auto start = std::chrono::high_resolution_clock::now();
-    const double print_every = ((double) N_timesteps) / print_partitions;
-    double current_print_time = print_every;
+    // auto start = std::chrono::high_resolution_clock::now();
+    // const double print_every = ((double) N_timesteps) / print_partitions;
+    // double current_print_time = print_every;
 
     int spin_to_flip, sampled;
     double dE, metropolis_prob, new_energy;
@@ -116,6 +115,7 @@ void standard(const std::string file_dump_loc, const long int N_timesteps,
             save_next_state = false;
         }
 
+        /*
         if (timestep > current_print_time)
         {
             auto stop = std::chrono::high_resolution_clock::now();
@@ -127,6 +127,7 @@ void standard(const std::string file_dump_loc, const long int N_timesteps,
                 << duration_double_seconds << std::endl;
             current_print_time += print_every;
         }
+        */
         
         config_int = binary_vector_to_int(config, N_spins);
 
@@ -189,27 +190,4 @@ void standard(const std::string file_dump_loc, const long int N_timesteps,
 
     delete[] energy_arr;
     delete[] inherent_structure_mapping;
-}
-
-
-int main(int argc, char const *argv[])
-{
-    const std::string fname = argv[1];
-    const int N_timesteps = atoi(argv[2]);
-    const int N_spins = atoi(argv[3]);
-    const double beta = atof(argv[4]);
-    const double beta_critical = atof(argv[5]);
-    const int landscape = atoi(argv[6]);
-
-    printf("Program name is %s\n", argv[0]);
-    printf("Saving data to %s\n", argv[1]);
-    printf("N_timesteps = %i\n", N_timesteps);
-    printf("N_spins = %i\n", N_spins);
-    printf("beta = %.02f\n", beta);
-    printf("beta_critical = %.02f\n", beta_critical);
-    printf("landscape = %i\n", landscape);
-
-    standard(fname, N_timesteps, N_spins, beta, beta_critical, landscape);
-
-    return 0;
 }

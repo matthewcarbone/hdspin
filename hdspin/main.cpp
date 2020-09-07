@@ -8,6 +8,7 @@
 #include <cstring>
 
 #include "gillespie.h"
+#include "standard.h"
 
 int main(int argc, char *argv[])
 {
@@ -74,6 +75,11 @@ int main(int argc, char *argv[])
             if (dynamics == 1)
             {
                 gillespie(path, N_timesteps, N_spins, beta, beta_critical,
+                    landscape);
+            }
+            else if (dynamics == 0)
+            {
+                standard(path, N_timesteps, N_spins, beta, beta_critical,
                     landscape);
             }
             else
