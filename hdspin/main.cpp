@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <iomanip>
 #include <iostream>
+#include <cstring>
 
 // #include "gillespie.h"
 
