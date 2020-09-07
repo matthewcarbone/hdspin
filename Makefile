@@ -1,13 +1,12 @@
-executables := $(shell find . -maxdepth 1 -name "*.o")
+executables := $(shell find . -maxdepth 1 -name "*.out")
 
-#export PATH=/opt/pb/gcc-10.1.0/bin:$PATH
-#export LD_LIBRARY_PATH=/opt/pb/gcc-10.1.0/lib:/opt/pb/gcc-10.1.0 lib64:$LD_LIBRARY_PATH
+rr:
+	module load compilers/gcc-10.1.0
+	mpic++ -fopenmp hdspin/main.cpp -std=c++11 -o main.out
 
-all:
-	g++ -std=c++17 -Wall main.cpp -o main.o hdspin/gillespie.cpp \
-	hdspin/utils/grid_utils.cpp hdspin/utils/init_utils.cpp \
-	hdspin/utils/general_utils.cpp hdspin/utils/file_utils.cpp
+# Run with, e.g., mpirun -np 1 ./main.out test/file.txt 100 8 0.75 1.0 0 1 100
+local:
+	/usr/local/bin/mpic++ -Xpreprocessor -fopenmp -lomp hdspin/main.cpp -std=c++11 -o main.out
 
 clean:
 	-rm $(executables)
-

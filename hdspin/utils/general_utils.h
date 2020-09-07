@@ -21,5 +21,7 @@ void step_next_state_(int *config, const double *exit_rates,
 void print_config_and_energy(const double *config, const int N,
     const double energy);
 
+int compute_inherent_structure(const int *config, const double *energy_arr,
+    const int N);
 
 #endif

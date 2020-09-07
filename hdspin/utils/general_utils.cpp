@@ -96,4 +96,58 @@ void print_config_and_energy(const double *config, const int N,
 }
 
 
+int min_element(const double *arr, const int N)
+{
+    int min_el = 0;
+    for (int ii=1; ii<N; ii++)
+    {
+        if (arr[ii] < arr[min_el]){min_el = ii;}
+    }
+    return min_el;
+}
+
+
+/* Finds the lowest energy configuration via greedy search from a config
+ * through its neighbors. Returns the config index of this inherent
+ structure. */
+int compute_inherent_structure(const int *config, const double *energy_arr,
+    const int N)
+{
+
+    int min_el;
+
+    // Make a copy of the config
+    int config_copy[N];
+    memcpy(config_copy, config, N*sizeof(int));
+
+    double neighboring_energies[N];
+    double current_energy;
+
+    int config_int;
+
+    // While we are not at the inherent structure, keep going
+    while (true)
+    {
+        config_int = binary_vector_to_int(config_copy, N); 
+
+        // Get the initial energies
+        get_neighboring_energies(config_copy, energy_arr, neighboring_energies,
+            N);
+
+        // Get the current energy
+        current_energy = energy_arr[config_int];
+
+        // If we have not reached the lowest local energy which can be reached
+        // by flipping a spin
+        min_el = min_element(neighboring_energies, N);
+        if (neighboring_energies[min_el] < current_energy)
+        {
+            flip_spin_(config_copy, min_el);
+        }
+        else
+        {
+            return binary_vector_to_int(config_copy, N);
+        }
+    }
+}
 

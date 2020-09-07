@@ -6,93 +6,21 @@
 
 #include <math.h>
 #include <string>
+#include <fstream>      // std::ofstream
+#include <assert.h>
+// #include <chrono>
 
 #include "utils/grid_utils.h"
 #include "utils/init_utils.h"
 #include "utils/general_utils.h"
-#include "utils/file_utils.h"
 
 
-const bool DEBUG = false;
+// const int print_partitions = 50;
 
 
-void append_energy_tracker_(const double current_energy,
-    const double current_time, const double *time_grid,
-    double *energy_recorder, int *energy_pointer, const int ngrid)
-{
-    if (*energy_pointer >= ngrid){return;}
-    if (current_time < time_grid[*energy_pointer]){return;}
-
-    while (current_time >= time_grid[*energy_pointer])
-    {
-        energy_recorder[*energy_pointer] = current_energy;
-        *energy_pointer += 1;
-
-        if (*energy_pointer >= ngrid){return;}
-    }
-}
-
-
-void append_psi_recorder_(int *counter, const double time,
-    const int len_psi_grid)
-{
-
-    int idx;
-    if (time < 1e-10){idx = 0;}
-    else
-    {
-        idx = floor(log2(time));
-        if(idx < 0){idx = 0;}
-    }
-
-    // In the case that we encounter a situation where the tracer exceeded the
-    // limit, we simply do not record it, as these are fringe cases.
-    if (idx >= len_psi_grid){return;}
-
-    counter[idx] += 1;
-}
-
-
-int append_Pi_grid_recorder_(const double current_time,
-    const double current_energy, const double threshold_energy,
-    const int tracker_index, int tracking_pointer, const int total_gridpoints,
-    const double *time_pi_grid, int *recorder_pi_grid)
-{
-
-    // Early break conditions; we don't want to accidentally crash by accessing
-    // elements of the array that don't exist.
-    if (tracking_pointer > total_gridpoints - 1)
-    {
-        return tracking_pointer;
-    }
-
-    while (current_time >= time_pi_grid[tracking_pointer])
-    {
-        recorder_pi_grid[tracking_pointer] = tracker_index;
-        if (current_energy < threshold_energy)
-        {
-            // Get's a negative sign if in a basin
-            recorder_pi_grid[tracking_pointer] = 
-                -recorder_pi_grid[tracking_pointer];
-        }
-
-        tracking_pointer += 1;
-
-        if (tracking_pointer > total_gridpoints - 1)
-        {
-            return tracking_pointer;
-        }
-    }
-
-    return tracking_pointer;
-}
-
-
-void gillespie(const int index, const std::string file_dump_loc,
-    const long int N_timesteps, const int N_spins, const int n_samp,
-    const double beta, const double beta_critical, const int landscape,
-    const double thresh_S, const double thresh_E, const int print_every,
-    const double DW)
+void gillespie(const std::string file_dump_loc, const long int N_timesteps,
+    const int N_spins, const double beta, const double beta_critical,
+    const int landscape)
 {
 
     /* We first initialize counters, trackers and grids for the various
@@ -107,12 +35,6 @@ void gillespie(const int index, const std::string file_dump_loc,
     unsigned int seed = std::random_device{}();
     generator.seed(seed);
 
-    // Initialize a distribution that can randomly pick a spin from 0 -> N - 1
-    // std::uniform_int_distribution<> spin_distribution(0, N_spins - 1);
-
-    // Initialize a distribution that can pick a random number in [0, 1)
-    // std::uniform_real_distribution<> uniform_0_1_distribution(0.0, 1.0);
-
     // ========================================================================
     // Spin system & simulation ===============================================
     // ========================================================================
@@ -122,26 +44,6 @@ void gillespie(const int index, const std::string file_dump_loc,
     int config[N_spins];
     initialize_spin_system(config, N_spins);
     double current_time = 0.0;
-
-    // ========================================================================
-    // Energy and related =====================================================
-    // ========================================================================
-
-    // Indexes the next-to-be-recorded position on the time_energy_grid. In
-    // other words, time_energy_grid[energy_pointer] will be some float
-    // representing the time at which to record the energy next on the grid.
-    // This also means that time_energy_grid[energy_pointer - 1] will have
-    // already been recorded.
-    int energy_pointer = 0;
-
-    // Initialize the grid which holds the time-values at which to record the
-    // energies. This grid is logarithmically spaced in time.
-    double time_energy_grid[n_samp];
-    const double base = 10.0;
-    fill_pyLogspace(time_energy_grid, 0, log10(N_timesteps), n_samp, base);
-
-    // Initialize the recorder for the energy
-    double recorder_energy_grid[n_samp];
 
     // Initialize the energy dictionary or array for faster lookups. Note that
     // the energy array is huge and need to be explicitly allocated on the
@@ -162,7 +64,6 @@ void gillespie(const int index, const std::string file_dump_loc,
     // The current energy is the energy of the current configuraiton BEFORE
     // stepping to the next one at the end of each algorithm step.
     double current_energy = energy_arr[binary_vector_to_int(config, N_spins)];
-    double proposed_energy;
 
     // Vector of the neighboring energies which is rewritten at every step of
     // the while loop. Also a vector of the dE values, exit rates...
@@ -171,81 +72,61 @@ void gillespie(const int index, const std::string file_dump_loc,
     double delta_E[N_spins];
     double total_exit_rate;
     double waiting_time;
+    int config_int;
 
-    // ========================================================================
-    // Psi ====================================================================
-    // ========================================================================
+    // Terms for the inherent structure
+    int config_IS_int;
+    double energy_IS;
 
-    // The psi counters log how long the tracers spend in a single basin, or
-    // in a single configuration.
-    const int len_psi_grid = int(log2(N_timesteps)) + 1;;
-    int recorder_psi_config[len_psi_grid];
-    for (int ii=0; ii<len_psi_grid; ii++){recorder_psi_config[ii] = 0;}
-    int recorder_S_basin[len_psi_grid];
-    for (int ii=0; ii<len_psi_grid; ii++){recorder_S_basin[ii] = 0;}
-    int recorder_E_basin[len_psi_grid];
-    for (int ii=0; ii<len_psi_grid; ii++){recorder_E_basin[ii] = 0;}
-    double total_time_in_E_basin = 0.0;
-    double total_time_in_S_basin = 0.0;
+    // Initialize an array for tracking the inherent structures. This is
+    // basically a mapping between the index of the array (configuration) and
+    // the inherent structure configuration, the value.
+    int *inherent_structure_mapping = new int[n_configs];
 
-    // ========================================================================
-    // Aging functions ========================================================
-    // ========================================================================
+    // Store every entry as -1 (to indicate that none exists yet)
+    for (int ii=0; ii<n_configs; ii++){inherent_structure_mapping[ii] = -1;}
 
-    // int S_basin_pointer_1 = 0;  // Points to the current location on grid 1
-    // int S_basin_pointer_2 = 0;  // Points to the current location on grid 2
-    // int S_basin_index;
-
-    int pi_pointer_1 = 0;
-    int pi_pointer_2 = 0;
-    int E_basin_index = 1;
-    if (current_energy <= thresh_E){E_basin_index = -2;}
-
-    // Fill the time grids for pi
-    double time_pi_grid_1[n_samp];
-    fill_pi_grid_1(time_pi_grid_1, N_timesteps, DW, n_samp);
-    double time_pi_grid_2[n_samp];
-    fill_pi_grid_2(time_pi_grid_2, time_pi_grid_1, DW, n_samp);
-
-    // Initialize the recorder grids for pi basin
-    int recorder_pi_basin_E_1[n_samp];
-    int recorder_pi_basin_E_2[n_samp];
-    int recorder_pi_basin_S_1[n_samp];
-    int recorder_pi_basin_S_2[n_samp];
-
-    // Initialize the recorder grids for pi config
-    int recorder_pi_config_1[n_samp];
-    int recorder_pi_config_2[n_samp];
-    int recorder_pi_config_swap_each_time_1[n_samp];
-    int recorder_pi_config_swap_each_time_2[n_samp];
-
-    // ========================================================================
-    // Save the grids =========================================================
-    // ========================================================================
-
-    // Special case for index == 0. This only occurs once. Here, we save the
-    // grids themselves to disk.
-    if (index == 0)
-    {
-        dump_grid_to_disk(file_dump_loc, "energy_grid", time_energy_grid,
-            n_samp);
-        dump_grid_to_disk(file_dump_loc, "Pi_basin_grid_1", time_pi_grid_1,
-            n_samp);
-        dump_grid_to_disk(file_dump_loc, "Pi_basin_grid_2", time_pi_grid_2,
-            n_samp);
-    }
-
+    config_int = binary_vector_to_int(config, N_spins);
+    config_IS_int = compute_inherent_structure(config, energy_arr, N_spins);
+    inherent_structure_mapping[config_int] = config_IS_int;
+    energy_IS = energy_arr[config_IS_int];
 
     // ========================================================================
     // Run the simulation =====================================================
     // ========================================================================
 
-    int current_config_index;
-    int current_config_index_swap_each_time = 0;
-    while (energy_pointer < n_samp)
+    std::ofstream outFile(file_dump_loc);
+
+    
+    // auto start = std::chrono::high_resolution_clock::now();
+    // const double print_every = ((double) N_timesteps) / print_partitions;
+    // double current_print_time = print_every;
+    while (true)
     {
 
-        //std::cout << "E = " << current_energy << " | " << E_basin_index << std::endl;
+        // Step 0: save the current results
+        outFile << current_time << " " << config_int << " " << current_energy
+            << " " << config_IS_int << " " << energy_IS << "\n";
+
+        if (current_time >= N_timesteps){break;}
+
+        /*
+        if (current_time > current_print_time)
+        {
+            auto stop = std::chrono::high_resolution_clock::now();
+            auto duration_seconds = 
+                std::chrono::duration_cast<std::chrono::seconds>(stop - start);
+            double duration_double_seconds = 
+                std::chrono::duration<double>(duration_seconds).count();
+            std::cout << "t=" << current_time << " " << "elapsed="
+                << duration_double_seconds << std::endl;
+            current_print_time += print_every;
+        }
+        */
+
+        // Important assert to use during debugging
+        // assert (energy_IS <= current_energy);
+
 
         // Step 1: get the neighboring energies by filling the relevant object
         get_neighboring_energies(config, energy_arr, neighboring_energies,
@@ -270,165 +151,30 @@ void gillespie(const int index, const std::string file_dump_loc,
         // Step 4: update the current time of the simulation clock
         current_time += waiting_time;
 
-        // Initialize the current config index for later
-        current_config_index = binary_vector_to_int(config, N_spins);
-
         // Step 5: step to the next state and store the proposed (new) energy
         step_next_state_(config, exit_rates, total_exit_rate, N_spins,
             generator);
-        proposed_energy = energy_arr[binary_vector_to_int(config, N_spins)];
 
+        config_int = binary_vector_to_int(config, N_spins);
+        current_energy = energy_arr[config_int];
 
-        // --------------------------------------------------------------------
-        // Append the energy recorder -----------------------------------------
-        // --------------------------------------------------------------------
-
-        append_energy_tracker_(current_energy, current_time, time_energy_grid,
-            recorder_energy_grid, &energy_pointer, n_samp);
-
-
-        // --------------------------------------------------------------------
-        // Append the psi recorders -------------------------------------------
-        // --------------------------------------------------------------------
-
-        // By definition, the psi_config recorder should be appended at every
-        // step in the Gillespie algorithm since the tracer changes
-        // configurations every time, and has spent waiting_time time in the
-        // configuration
-        append_psi_recorder_(recorder_psi_config, waiting_time, len_psi_grid);
-
-        // If we're currently in a basin (current energy is less than a
-        // threshold), then the tracer has been in that basin for waiting_time
-        // time during this step.
-        if (current_energy < thresh_S){total_time_in_S_basin += waiting_time;}
-        if (current_energy < thresh_E){total_time_in_E_basin += waiting_time;}
-
-        // Now, we check if the proposed energy is greater than the threshold,
-        // since in that case we would have to append the recorder and reset
-        // the counter
-        // if (proposed_energy >= thresh_S)
-        // {
-        //     append_psi_recorder_(recorder_S_basin, total_time_in_S_basin,
-        //         len_psi_grid);
-        //     total_time_in_S_basin = 0.0;
-        // }
-        if (proposed_energy >= thresh_E)
+        // Step 6: compute the inherent structure
+        if (inherent_structure_mapping[config_int] != -1)
         {
-            append_psi_recorder_(recorder_E_basin, total_time_in_E_basin,
-                len_psi_grid);
-            total_time_in_E_basin = 0.0;
+            // We've computed the inherent structure before, no need to do it
+            // again
+            config_IS_int = inherent_structure_mapping[config_int];
+        }
+        else
+        {
+            config_IS_int = compute_inherent_structure(config, energy_arr,
+                N_spins);
+            inherent_structure_mapping[config_int] = config_IS_int;
         }
 
-
-        // --------------------------------------------------------------------
-        // Append the aging function recorders --------------------------------
-        // --------------------------------------------------------------------
-
-        if (DEBUG == true)
-        {
-            printf("t = %.05e  |  E = %.02f  |  b = %i\n", current_time, current_energy, E_basin_index);
-        }
-
-        //pi_pointer_1 = append_Pi_grid_recorder_(current_time,
-        //    current_energy, thresh_E, E_basin_index, pi_pointer_1, n_samp,
-        //    time_pi_grid_1, recorder_pi_basin_E_1);
-
-        if (pi_pointer_1 < n_samp)
-        {
-           while (current_time >= time_pi_grid_1[pi_pointer_1])
-            {
-                recorder_pi_basin_E_1[pi_pointer_1] = E_basin_index;
-                recorder_pi_config_1[pi_pointer_1] 
-                    = current_config_index;
-                recorder_pi_config_swap_each_time_1[pi_pointer_1]
-                    = current_config_index_swap_each_time;
-                if (DEBUG == true)
-                {
-                    printf("recorder update: pi_1: t = %.05e pointer: (%i) b = %i \n", time_pi_grid_1[pi_pointer_1], pi_pointer_1, recorder_pi_basin_E_1[pi_pointer_1]);
-                }
-                pi_pointer_1 += 1;
-                if (pi_pointer_1 > n_samp - 1){break;}
-            } 
-        }
-            
-        // pi_pointer_2 = append_Pi_grid_recorder_(current_time,
-        //     current_energy, thresh_E, E_basin_index, pi_pointer_2, n_samp,
-        //     time_pi_grid_2, recorder_pi_basin_E_2);
-
-        if (pi_pointer_2 < n_samp)
-        {
-            while (current_time >= time_pi_grid_2[pi_pointer_2])
-            {
-                recorder_pi_basin_E_2[pi_pointer_2] = E_basin_index;
-                recorder_pi_config_2[pi_pointer_2] 
-                    = current_config_index;
-                recorder_pi_config_swap_each_time_2[pi_pointer_2]
-                    = current_config_index_swap_each_time;
-                if (DEBUG == true)
-                {
-                    printf("recorder update: pi_2: t = %.05e pointer: (%i) b = %i \n", time_pi_grid_2[pi_pointer_2], pi_pointer_2, recorder_pi_basin_E_2[pi_pointer_2]);
-                }
-                pi_pointer_2 += 1;
-                if (pi_pointer_2 > n_samp - 1){break;}
-            }
-        }
-        
-
-        // S_basin_pointer_1 = append_Pi_grid_recorder_(current_time,
-        //     current_energy, thresh_E, S_basin_index, S_basin_pointer_1, n_samp,
-        //     time_pi_grid_1, recorder_pi_basin_S_1);
-        // S_basin_pointer_2 = append_Pi_grid_recorder_(current_time,
-        //     current_energy, thresh_E, S_basin_index, S_basin_pointer_2, n_samp,
-        //     time_pi_grid_2, recorder_pi_basin_S_2);
-
-        // If we just entered a basin, update the basin index. In this case,
-        // the basin_index would be positive, and should increment by one and
-        // become negative, indicating it has entered the next basin.
-        if (current_energy > thresh_E and proposed_energy <= thresh_E)
-        {
-            E_basin_index = -(E_basin_index + 1);
-        }
-
-        // In this case, we were in a basin and have left. The basin_index
-        // would be negative and should simply become positive. It will
-        // increment the next time it enters a basin.
-        else if (current_energy <= thresh_E and proposed_energy > thresh_E)
-        {
-            E_basin_index = -E_basin_index;
-        }
-        // if (current_energy > thresh_S and proposed_energy <= thresh_S)
-        // {
-        //     S_basin_index += 1;
-        // }
-
-        current_energy = proposed_energy;
-        current_config_index_swap_each_time += 1;
+        energy_IS = energy_arr[config_IS_int];
     }
 
-    dump_result_to_disk(file_dump_loc, "energy", recorder_energy_grid, n_samp,
-        index);
-    dump_result_ints_to_disk(file_dump_loc, "psi_c", recorder_psi_config,
-        len_psi_grid, index);
-    dump_result_ints_to_disk(file_dump_loc, "psi_b_S", recorder_S_basin,
-        len_psi_grid, index);
-    dump_result_ints_to_disk(file_dump_loc, "psi_b_E", recorder_E_basin,
-        len_psi_grid, index);
-    dump_result_ints_to_disk(file_dump_loc, "pi_b_S_1", recorder_pi_basin_S_1,
-        n_samp, index);
-    dump_result_ints_to_disk(file_dump_loc, "pi_b_S_2", recorder_pi_basin_S_2,
-        n_samp, index);
-    dump_result_ints_to_disk(file_dump_loc, "pi_b_E_1", recorder_pi_basin_E_1,
-        n_samp, index);
-    dump_result_ints_to_disk(file_dump_loc, "pi_b_E_2", recorder_pi_basin_E_2,
-        n_samp, index);
-    dump_result_ints_to_disk(file_dump_loc, "pi_c_1", recorder_pi_config_1,
-        n_samp, index);
-    dump_result_ints_to_disk(file_dump_loc, "pi_c_2", recorder_pi_config_2,
-        n_samp, index);
-    dump_result_ints_to_disk(file_dump_loc, "pi_c_1_swap",
-        recorder_pi_config_swap_each_time_1, n_samp, index);
-    dump_result_ints_to_disk(file_dump_loc, "pi_c_2_swap",
-        recorder_pi_config_swap_each_time_2, n_samp, index);
-
     delete[] energy_arr;
+    delete[] inherent_structure_mapping;
 }
