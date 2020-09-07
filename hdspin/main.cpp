@@ -21,6 +21,7 @@ int main(int argc, char *argv[])
     const int landscape = atoi(argv[6]);  // 0 for EREM, 1 for REM
     const int dynamics = atoi(argv[7]);  // 0 for standard, 1 for gillespie
     const int njobs = atoi(argv[8]);
+    const int resume_at = atoi(argv[9]);
 
     printf("program name is %s\n", argv[0]);
 
@@ -36,6 +37,9 @@ int main(int argc, char *argv[])
     // The number of jobs total
     printf("total simulations = %i\n", njobs);
 
+    // We can resume the simulation at a non-zero value
+    printf("resuming at index = %i", resume_at);
+
     int numprocs, rank, namelen;
     char processor_name[MPI_MAX_PROCESSOR_NAME];
     int iam = 0, np = 1, file_ID;
@@ -48,8 +52,8 @@ int main(int argc, char *argv[])
     // Assign the jobs to the appropriate processes
     const int jobs_per_rank = njobs / numprocs;
     const int remainder = njobs % numprocs;
-    const int start = rank * jobs_per_rank;
-    int end = (rank + 1) * jobs_per_rank;
+    const int start = rank * jobs_per_rank + resume_at;
+    int end = (rank + 1) * jobs_per_rank + resume_at;
     if (rank == numprocs - 1){end += remainder;}
 
     printf("remainder on this rank = %i\n", remainder);

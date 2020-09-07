@@ -1,0 +1,6 @@
+partition: New
+time: null
+account: null
+n_tasks: 4
+n_cpus_per_task: 2
+module: compilers/gcc-10.1.0

@@ -4,3 +4,4 @@
 *.out
 results/
 final_results/
+*.pyc
