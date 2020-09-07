@@ -5,11 +5,10 @@
 #include <unistd.h>
 #include <iomanip>
 #include <iostream>
-#include <cstring>
 
 // #include "gillespie.h"
 
-#include "utils/general_utils.h"
+// #include "utils/general_utils.h"
 
 int main(int argc, char *argv[])
 {
@@ -69,7 +68,8 @@ int main(int argc, char *argv[])
             iam = omp_get_thread_num();
             auto start = std::chrono::high_resolution_clock::now();
 
-            ii_str = ZeroPadNumber(ii);
+            ii_str = std::to_string(ii);
+            ii_str.insert(ii_str.begin(), 8 - ii_str.length(), '0');
             path = target_directory + "/" + ii_str + ".txt";
 
             int n = path.length();

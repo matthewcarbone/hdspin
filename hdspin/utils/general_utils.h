@@ -24,6 +24,4 @@ void print_config_and_energy(const double *config, const int N,
 int compute_inherent_structure(const int *config, const double *energy_arr,
     const int N);
 
-std::string ZeroPadNumber(int num);
-
 #endif

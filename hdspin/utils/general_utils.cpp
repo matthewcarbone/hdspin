@@ -7,8 +7,6 @@
 #include <math.h>
 #include <random>
 #include <iostream>     // std::cout
-#include <sstream>
-#include <cstring>
 
 #include "general_utils.h"
 
@@ -153,19 +151,3 @@ int compute_inherent_structure(const int *config, const double *energy_arr,
     }
 }
 
-
-std::string ZeroPadNumber(int num)
-{
-    std::stringstream ss;
-    
-    // the number is converted to string with the help of stringstream
-    ss << num; 
-    std::string ret;
-    ss >> ret;
-    
-    // Append zero chars
-    int str_length = ret.length();
-    for (int i = 0; i < 7 - str_length; i++)
-        ret = "0" + ret;
-    return ret;
-}
