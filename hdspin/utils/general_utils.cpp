@@ -8,6 +8,7 @@
 #include <random>
 #include <iostream>     // std::cout
 #include <sstream>
+#include <cstring>
 
 #include "general_utils.h"
 
