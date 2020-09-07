@@ -7,9 +7,7 @@
 #include <iostream>
 #include <cstring>
 
-// #include "gillespie.h"
-
-// #include "utils/general_utils.h"
+#include "gillespie.h"
 
 int main(int argc, char *argv[])
 {
@@ -23,10 +21,10 @@ int main(int argc, char *argv[])
     const int dynamics = atoi(argv[7]);  // 0 for standard, 1 for gillespie
     const int njobs = atoi(argv[8]);
 
-    printf("Program name is %s\n", argv[0]);
+    printf("program name is %s\n", argv[0]);
 
     // Arguments pertaining to the job itself
-    printf("Saving data to %s\n", argv[1]);
+    printf("saving data to %s\n", argv[1]);
     printf("N_timesteps = %i\n", N_timesteps);
     printf("N_spins = %i\n", N_spins);
     printf("beta = %.02f\n", beta);
@@ -73,23 +71,27 @@ int main(int argc, char *argv[])
             ii_str.insert(ii_str.begin(), 8 - ii_str.length(), '0');
             path = target_directory + "/" + ii_str + ".txt";
 
-            int n = path.length();
-            char char_path[n + 1];
-            strcpy(char_path, path.c_str()); 
+            if (dynamics == 1)
+            {
+                gillespie(path, N_timesteps, N_spins, beta, beta_critical,
+                    landscape);
+            }
+            else
+            {
+                throw std::runtime_error("Unsupported dynamics flag");
+            }
 
-            sleep(1);
             auto stop = std::chrono::high_resolution_clock::now();
             auto duration_seconds = 
                 std::chrono::duration_cast<std::chrono::seconds>(stop - start);
             double duration_double_seconds = 
                 std::chrono::duration<double>(duration_seconds).count();
-            printf("On thread %d/%d proc %d/%d on %s iter file %s done in %.02f\n",
-                iam, np, rank, numprocs, processor_name, char_path,
+
+            printf("Thrd %d/%d proc %d/%d on %s iter file %s done in %.02f\n",
+                iam, np, rank, numprocs, processor_name, path.c_str(),
                 duration_double_seconds);
         }
     }
-
-    // gillespie(target_directory, N_timesteps, N_spins, beta, beta_critical, landscape);
 
     MPI_Finalize();
 }

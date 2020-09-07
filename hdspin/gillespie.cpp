@@ -8,9 +8,7 @@
 #include <string>
 #include <fstream>      // std::ofstream
 #include <assert.h>
-// #include <chrono>
 
-#include "utils/grid_utils.h"
 #include "utils/init_utils.h"
 #include "utils/general_utils.h"
 
