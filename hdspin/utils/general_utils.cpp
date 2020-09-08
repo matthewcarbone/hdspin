@@ -7,6 +7,7 @@
 #include <math.h>
 #include <random>
 #include <iostream>     // std::cout
+#include <cstring>
 
 #include "general_utils.h"
 
