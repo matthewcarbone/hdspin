@@ -160,6 +160,7 @@ void standard(const std::string file_dump_loc, const long int N_timesteps,
         {
             flip_spin_(config, spin_to_flip);  // flip the spin back
             new_energy = current_energy;
+            save_next_state = false;
         }
         else  // accept, don't flip the spin back
         {
