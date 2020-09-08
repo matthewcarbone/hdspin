@@ -129,8 +129,21 @@ def _call_subprocess(script):
 def submit(args):
     """Submits all jobs in the cache to the job controller."""
 
-    # Move the script to the working directory
-    script = os.path.join(args.cache, "scripts/submit.sh")
-    _call_subprocess(f'mv {script} .')
-    _call_subprocess("sbatch submit.sh")
-    _call_subprocess(f'mv submit.sh {args.cache}/scripts')
+    jobs = os.listdir(args.cache)
+    print("Preparing to submit jobs:")
+    for j in jobs:
+        print(j)
+
+    if not args.force:
+        user_input = input("Continue? [yes]/no\n")
+        if user_input != 'yes':
+            print("Exiting")
+            return
+
+    print("Submitting jobs!")
+
+    for j in jobs:
+        script = os.path.join(args.cache, j, "scripts/submit.sh")
+        _call_subprocess(f'mv {script} .')
+        _call_subprocess("sbatch submit.sh")
+        _call_subprocess(f'mv submit.sh {args.cache}/{j}/scripts')
