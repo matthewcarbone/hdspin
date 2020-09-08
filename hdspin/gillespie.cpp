@@ -96,6 +96,10 @@ void gillespie(const std::string file_dump_loc, const long int N_timesteps,
     std::ofstream outFile(file_dump_loc);
 
     
+    int current_rounded_time = 0;
+    int previous_rounded_time = 0;
+    bool save_next_state = true;
+
     // auto start = std::chrono::high_resolution_clock::now();
     // const double print_every = ((double) N_timesteps) / print_partitions;
     // double current_print_time = print_every;
@@ -103,8 +107,21 @@ void gillespie(const std::string file_dump_loc, const long int N_timesteps,
     {
 
         // Step 0: save the current results
-        outFile << current_time << " " << config_int << " " << current_energy
-            << " " << config_IS_int << " " << energy_IS << "\n";
+        // To save space, let's cast the current_time to an integer, and only
+        // save it if the difference between the new time and the old time is
+        // > 1. This allows the resolution of the Gillespie simulation to be
+        // the same as that of the standard simulation.
+        if (save_next_state == true)
+        {
+            outFile << current_rounded_time << " " << config_int << " "
+                << current_energy << " " << config_IS_int << " " << energy_IS
+                << "\n";
+            save_next_state = false;
+
+            // The previous rounded time is hte last rounded time saved to
+            // disk
+            previous_rounded_time = current_rounded_time;
+        }
 
         if (current_time >= N_timesteps){break;}
 
@@ -148,6 +165,7 @@ void gillespie(const std::string file_dump_loc, const long int N_timesteps,
 
         // Step 4: update the current time of the simulation clock
         current_time += waiting_time;
+        current_rounded_time = round(current_time);
 
         // Step 5: step to the next state and store the proposed (new) energy
         step_next_state_(config, exit_rates, total_exit_rate, N_spins,
@@ -156,21 +174,34 @@ void gillespie(const std::string file_dump_loc, const long int N_timesteps,
         config_int = binary_vector_to_int(config, N_spins);
         current_energy = energy_arr[config_int];
 
-        // Step 6: compute the inherent structure
-        if (inherent_structure_mapping[config_int] != -1)
+        // In this case, we wish to save the next state, and thus should
+        // update the inherent structure
+        if (current_rounded_time >= previous_rounded_time + 1)
         {
-            // We've computed the inherent structure before, no need to do it
-            // again
-            config_IS_int = inherent_structure_mapping[config_int];
-        }
-        else
-        {
-            config_IS_int = compute_inherent_structure(config, energy_arr,
-                N_spins);
-            inherent_structure_mapping[config_int] = config_IS_int;
+            // Step 6: compute the inherent structure
+            if (inherent_structure_mapping[config_int] != -1)
+            {
+                // We've computed the inherent structure before, no need to do
+                // it again
+                config_IS_int = inherent_structure_mapping[config_int];
+            }
+            else
+            {
+                config_IS_int = compute_inherent_structure(config, energy_arr,
+                    N_spins);
+                inherent_structure_mapping[config_int] = config_IS_int;
+            }
+
+            energy_IS = energy_arr[config_IS_int];
+            save_next_state = true;
         }
 
-        energy_IS = energy_arr[config_IS_int];
+        // Else, we are not saving the next state, so we don't need to worry
+        // about computing the inherent structure
+        else
+        {
+            save_next_state = false;
+        }   
     }
 
     delete[] energy_arr;
