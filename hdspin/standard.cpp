@@ -9,6 +9,7 @@
 #include <fstream>      // std::ofstream
 #include <assert.h>
 #include <chrono>
+#include <stdio.h>
 
 #include "utils/init_utils.h"
 #include "utils/general_utils.h"
@@ -18,9 +19,10 @@
 
 
 
-void standard(const std::string file_dump_loc, const long int N_timesteps,
-    const int N_spins, const double beta, const double beta_critical,
-    const int landscape)
+void standard(const std::string file_dump_loc,
+    const std::string is_path_dump_loc,
+    const long int N_timesteps, const int N_spins, const double beta,
+    const double beta_critical, const int landscape)
 {
 
     /* We first initialize counters, trackers and grids for the various
@@ -68,7 +70,7 @@ void standard(const std::string file_dump_loc, const long int N_timesteps,
 
     // The current energy is the energy of the current configuraiton BEFORE
     // stepping to the next one at the end of each algorithm step.
-    double current_energy = energy_arr[binary_vector_to_int(config, N_spins)];
+    double current_energy;
     double proposed_energy;
 
     // Terms for the inherent structure
@@ -84,6 +86,7 @@ void standard(const std::string file_dump_loc, const long int N_timesteps,
     for (int ii=0; ii<n_configs; ii++){inherent_structure_mapping[ii] = -1;}
 
     config_int = binary_vector_to_int(config, N_spins);
+    current_energy = energy_arr[config_int];
     config_IS_int = compute_inherent_structure(config, energy_arr, N_spins);
     inherent_structure_mapping[config_int] = config_IS_int;
     energy_IS = energy_arr[config_IS_int];
@@ -93,14 +96,17 @@ void standard(const std::string file_dump_loc, const long int N_timesteps,
     // Run the simulation =====================================================
     // ========================================================================
 
-    std::ofstream outFile(file_dump_loc);
+    // std::ofstream outFile(file_dump_loc);
+
+    FILE * outFile;
+    outFile = fopen(file_dump_loc.c_str(), "w");
 
     // auto start = std::chrono::high_resolution_clock::now();
     // const double print_every = ((double) N_timesteps) / print_partitions;
     // double current_print_time = print_every;
 
-    int spin_to_flip, sampled;
-    double dE, metropolis_prob, new_energy;
+    int spin_to_flip, proposed_config_int;
+    double dE, metropolis_prob, new_energy, sampled;
     bool save_next_state = true;
     for (int timestep=0; timestep<N_timesteps; timestep++)
     {
@@ -110,25 +116,11 @@ void standard(const std::string file_dump_loc, const long int N_timesteps,
         // changes.
         if (save_next_state == true)
         {
-            outFile << timestep << " " << config_int << " " << current_energy
-                << " " << config_IS_int << " " << energy_IS << "\n";
+            fprintf(outFile, "%i %i %.05f %i %.05f\n", timestep, config_int,
+                current_energy, config_IS_int, energy_IS);
             save_next_state = false;
         }
 
-        /*
-        if (timestep > current_print_time)
-        {
-            auto stop = std::chrono::high_resolution_clock::now();
-            auto duration_seconds = 
-                std::chrono::duration_cast<std::chrono::seconds>(stop - start);
-            double duration_double_seconds = 
-                std::chrono::duration<double>(duration_seconds).count();
-            std::cout << "t=" << timestep << " " << "elapsed="
-                << duration_double_seconds << std::endl;
-            current_print_time += print_every;
-        }
-        */
-        
         config_int = binary_vector_to_int(config, N_spins);
 
         // Step 2, select a random spin to flip
@@ -138,7 +130,8 @@ void standard(const std::string file_dump_loc, const long int N_timesteps,
         flip_spin_(config, spin_to_flip);
 
         // Step 4, get the proposed energy (energy of the new configuration)
-        proposed_energy = energy_arr[binary_vector_to_int(config, N_spins)];
+        proposed_config_int = binary_vector_to_int(config, N_spins);
+        proposed_energy = energy_arr[proposed_config_int];
 
         // Step 5, compute the difference between the energies, and find the
         // metropolis criterion
@@ -166,6 +159,7 @@ void standard(const std::string file_dump_loc, const long int N_timesteps,
         {
             // set the energy to the new value
             new_energy = proposed_energy;
+            config_int = proposed_config_int;
 
             // Then calculate the inherent structure
             if (inherent_structure_mapping[config_int] != -1)
@@ -188,6 +182,22 @@ void standard(const std::string file_dump_loc, const long int N_timesteps,
 
         current_energy = new_energy;
     }
+
+    fclose(outFile);
+
+    FILE * is_outFile;
+    is_outFile = fopen(is_path_dump_loc.c_str(), "w");
+
+    // Save the inherent structure dictionary.
+    for (int ii=0; ii<n_configs; ii++)
+    {
+        if (inherent_structure_mapping[ii] == -1){continue;}
+
+        // Save the mapping between the config and the inherent structure
+        fprintf(is_outFile, "%i %i\n", ii, inherent_structure_mapping[ii]);
+    }
+
+    fclose(is_outFile);
 
     delete[] energy_arr;
     delete[] inherent_structure_mapping;

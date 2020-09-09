@@ -23,23 +23,6 @@ int main(int argc, char *argv[])
     const int njobs = atoi(argv[8]);
     const int resume_at = atoi(argv[9]);
 
-    printf("program name is %s\n", argv[0]);
-
-    // Arguments pertaining to the job itself
-    printf("saving data to %s\n", argv[1]);
-    printf("N_timesteps = %i\n", N_timesteps);
-    printf("N_spins = %i\n", N_spins);
-    printf("beta = %.02f\n", beta);
-    printf("beta_critical = %.02f\n", beta_critical);
-    printf("landscape = %i (0=EREM, 1=REM)\n", landscape);
-    printf("dynamics = %i (0=standard, 1=gillespie)\n", dynamics);
-
-    // The number of jobs total
-    printf("total simulations = %i\n", njobs);
-
-    // We can resume the simulation at a non-zero value
-    printf("resuming at index = %i", resume_at);
-
     int numprocs, rank, namelen;
     char processor_name[MPI_MAX_PROCESSOR_NAME];
     int iam = 0, np = 1, file_ID;
@@ -56,17 +39,35 @@ int main(int argc, char *argv[])
     int end = (rank + 1) * jobs_per_rank + resume_at;
     if (rank == numprocs - 1){end += remainder;}
 
-    printf("remainder on this rank = %i\n", remainder);
-    printf("simulations on this rank = %i\n", end - start);
-    printf("start on this rank = %i\n", start);
-    printf("end on this rank = %i\n", end);
+    printf("RANK %i -- program name is %s\n", rank, argv[0]);
 
-    std::string ii_str, path;
+    // Arguments pertaining to the job itself
+    printf("RANK %i -- saving data to %s\n", rank, argv[1]);
+    printf("RANK %i -- N_timesteps = %i\n", rank, N_timesteps);
+    printf("RANK %i -- N_spins = %i\n", rank, N_spins);
+    printf("RANK %i -- beta = %.02f\n", rank, beta);
+    printf("RANK %i -- beta_critical = %.02f\n", rank, beta_critical);
+    printf("RANK %i -- landscape = %i (0=EREM, 1=REM)\n", rank, landscape);
+    printf("RANK %i -- dynamics = %i (0=standard, 1=gillespie)\n", rank,
+        dynamics);
+
+    // The number of jobs total
+    printf("RANK %i -- total simulations = %i\n", rank, njobs);
+
+    // We can resume the simulation at a non-zero value
+    printf("RANK %i -- resuming at index = %i", rank, resume_at);
+
+    printf("RANK %i -- remainder on this rank = %i\n", rank, remainder);
+    printf("RANK %i -- simulations on this rank = %i\n", rank, end - start);
+    printf("RANK %i -- start on this rank = %i\n", rank, start);
+    printf("RANK %i -- end on this rank = %i\n", rank, end);
+
+    std::string ii_str, path, is_path;
 
     #pragma omp parallel
     { 
         np = omp_get_num_threads();
-        #pragma omp for private(ii_str, path)
+        #pragma omp for private(ii_str, path, is_path)
         for(int ii = start; ii < end; ii++)
         {
             iam = omp_get_thread_num();
@@ -75,16 +76,17 @@ int main(int argc, char *argv[])
             ii_str = std::to_string(ii);
             ii_str.insert(ii_str.begin(), 8 - ii_str.length(), '0');
             path = target_directory + "/" + ii_str + ".txt";
+            is_path = target_directory + "/" + ii_str + "_IS.txt";
 
             if (dynamics == 1)
             {
-                gillespie(path, N_timesteps, N_spins, beta, beta_critical,
-                    landscape);
+                gillespie(path, is_path, N_timesteps, N_spins, beta,
+                    beta_critical, landscape);
             }
             else if (dynamics == 0)
             {
-                standard(path, N_timesteps, N_spins, beta, beta_critical,
-                    landscape);
+                standard(path, is_path, N_timesteps, N_spins, beta,
+                    beta_critical, landscape);
             }
             else
             {

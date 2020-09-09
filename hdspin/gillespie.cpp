@@ -8,6 +8,7 @@
 #include <string>
 #include <fstream>      // std::ofstream
 #include <assert.h>
+#include <stdio.h>
 
 #include "utils/init_utils.h"
 #include "utils/general_utils.h"
@@ -16,7 +17,8 @@
 // const int print_partitions = 50;
 
 
-void gillespie(const std::string file_dump_loc, const long int N_timesteps,
+void gillespie(const std::string file_dump_loc,
+    const std::string is_path_dump_loc, const long int N_timesteps,
     const int N_spins, const double beta, const double beta_critical,
     const int landscape)
 {
@@ -61,7 +63,7 @@ void gillespie(const std::string file_dump_loc, const long int N_timesteps,
 
     // The current energy is the energy of the current configuraiton BEFORE
     // stepping to the next one at the end of each algorithm step.
-    double current_energy = energy_arr[binary_vector_to_int(config, N_spins)];
+    double current_energy;
 
     // Vector of the neighboring energies which is rewritten at every step of
     // the while loop. Also a vector of the dE values, exit rates...
@@ -85,6 +87,7 @@ void gillespie(const std::string file_dump_loc, const long int N_timesteps,
     for (int ii=0; ii<n_configs; ii++){inherent_structure_mapping[ii] = -1;}
 
     config_int = binary_vector_to_int(config, N_spins);
+    current_energy = energy_arr[config_int];
     config_IS_int = compute_inherent_structure(config, energy_arr, N_spins);
     inherent_structure_mapping[config_int] = config_IS_int;
     energy_IS = energy_arr[config_IS_int];
@@ -93,12 +96,16 @@ void gillespie(const std::string file_dump_loc, const long int N_timesteps,
     // Run the simulation =====================================================
     // ========================================================================
 
-    std::ofstream outFile(file_dump_loc);
+    // std::ofstream outFile(file_dump_loc);
 
     
     int current_rounded_time = 0;
     int previous_rounded_time = 0;
+    int last_saved_config;
     bool save_next_state = true;
+
+    FILE * outFile;
+    outFile = fopen(file_dump_loc.c_str(), "w");
 
     // auto start = std::chrono::high_resolution_clock::now();
     // const double print_every = ((double) N_timesteps) / print_partitions;
@@ -113,14 +120,16 @@ void gillespie(const std::string file_dump_loc, const long int N_timesteps,
         // the same as that of the standard simulation.
         if (save_next_state == true)
         {
-            outFile << current_rounded_time << " " << config_int << " "
-                << current_energy << " " << config_IS_int << " " << energy_IS
-                << "\n";
+            fprintf(outFile, "%i %i %.05f %i %.05f\n", current_rounded_time,
+                config_int, current_energy, config_IS_int, energy_IS);
             save_next_state = false;
 
             // The previous rounded time is hte last rounded time saved to
             // disk
             previous_rounded_time = current_rounded_time;
+
+            // Index the last-saved configuration
+            last_saved_config = config_int;
         }
 
         if (current_time >= N_timesteps){break;}
@@ -176,7 +185,8 @@ void gillespie(const std::string file_dump_loc, const long int N_timesteps,
 
         // In this case, we wish to save the next state, and thus should
         // update the inherent structure
-        if (current_rounded_time >= previous_rounded_time + 1)
+        if (current_rounded_time >= previous_rounded_time + 1 and
+            config_int != last_saved_config)
         {
             // Step 6: compute the inherent structure
             if (inherent_structure_mapping[config_int] != -1)
@@ -203,6 +213,22 @@ void gillespie(const std::string file_dump_loc, const long int N_timesteps,
             save_next_state = false;
         }   
     }
+
+    fclose(outFile);
+
+    FILE * is_outFile;
+    is_outFile = fopen(is_path_dump_loc.c_str(), "w");
+
+    // Save the inherent structure dictionary.
+    for (int ii=0; ii<n_configs; ii++)
+    {
+        if (inherent_structure_mapping[ii] == -1){continue;}
+
+        // Save the mapping between the config and the inherent structure
+        fprintf(is_outFile, "%i %i\n", ii, inherent_structure_mapping[ii]);
+    }
+
+    fclose(is_outFile);
 
     delete[] energy_arr;
     delete[] inherent_structure_mapping;
