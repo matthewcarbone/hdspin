@@ -57,7 +57,7 @@ def approximate_mem_per_cpu(args, cpu_per_task):
     Will return a minimum value of 2MB."""
 
     n_configs = int(2**args.nspin)
-    approximate_memory = 16 * n_configs / 1e6  # MB
+    approximate_memory = 32 * n_configs / 1e6  # MB
 
     # Add 5% overhead
     with_overhead = int(1.05 * approximate_memory)
