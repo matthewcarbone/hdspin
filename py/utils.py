@@ -33,21 +33,21 @@ def make_directory(args):
     )
     base_dir = os.path.join(cache, basename)
 
-    max_index = 0
+    resume_at = 0
     if os.path.exists(base_dir):
         dirs_in_results = os.listdir(os.path.join(base_dir, "results"))
         if len(dirs_in_results) > 0:
             dirs_in_results = sorted(dirs_in_results)[-1]
-            max_index = int(dirs_in_results.split(".txt")[0]) + 1
+            resume_at = int(dirs_in_results.split(".txt")[0]) + 1
             raise RuntimeWarning(
-                f"Base directory {base_dir} exists; will resume at {max_index}"
+                f"Base directory {base_dir} exists; will resume at {resume_at}"
             )
 
     os.makedirs(base_dir, exist_ok=True)
     os.makedirs(os.path.join(base_dir, "scripts"), exist_ok=True)
     os.makedirs(os.path.join(base_dir, "results"), exist_ok=True)
     os.makedirs(os.path.join(base_dir, "final"), exist_ok=True)
-    return base_dir, max_index
+    return base_dir, resume_at
 
 
 def approximate_mem_per_cpu(args, cpu_per_task):
@@ -59,54 +59,64 @@ def approximate_mem_per_cpu(args, cpu_per_task):
     n_configs = int(2**args.nspin)
     approximate_memory = 32 * n_configs / 1e6  # MB
 
-    # Add 5% overhead
-    with_overhead = int(1.05 * approximate_memory)
+    # Add 10% overhead
+    with_overhead = int(1.1 * approximate_memory / cpu_per_task)
 
-    # Divide by the number of cpus per MPI task
-    mem = with_overhead // cpu_per_task
-    return max(500, mem)
+    return max(10, with_overhead)
 
 
-def write_SLURM_script(args, base_dir, max_index):
+def write_SLURM_script(args, base_dir, resume_at):
     """Writes the SLURM submission script to the cache directory pertaining
     to this run."""
 
     submit_fname = os.path.join(base_dir, "scripts/submit.sh")
-    configs = yaml.safe_load(
-        open(f"slurm_configs/{args.slurm_cluster_preset}.yaml")
-    )
+    configs = yaml.safe_load(open(f"slurm_configs/config.yaml"))
 
     partition = configs['partition']
     runtime = configs['time']
     account = configs['account']
-    n_tasks = configs['n_tasks']
-    n_cpus_per_task = configs['n_cpus_per_task']
+    constraint = configs['constraint']
+    n_cpu_per_job = configs['n_cpu_per_job']
+    total_cpu = configs['total_cpu']
     module = configs['module']
+    nsim = args.nsim
 
-    approximate_memory = approximate_mem_per_cpu(args, n_cpus_per_task)
+    # simplify things: let's use an even divisor
+    assert total_cpu % n_cpu_per_job == 0
+    assert nsim % total_cpu == 0
+    arr_len = total_cpu // n_cpu_per_job
+    sims_per_job = nsim // total_cpu // n_cpu_per_job
+
+    approximate_memory = approximate_mem_per_cpu(args, n_cpu_per_job)
 
     results_dir = os.path.join(base_dir, "results")
     timesteps = 10**args.timesteps
     args_str = f"{results_dir} {timesteps} {args.nspin} {args.beta} " \
-        f"{args.beta_critical} {args.landscape} {args.dynamics} {args.nsim} " \
-        f"{max_index}"
+        f"{args.beta_critical} {args.landscape} {args.dynamics} {resume_at} " \
+        f"$SLURM_ARRAY_TASK_ID {sims_per_job}"
 
     with open(submit_fname, 'w') as f:
         f.write("#!/bin/bash\n")
         f.write("\n")
         f.write(f"#SBATCH --job-name=hdspin \n")
         f.write(f"#SBATCH -p {partition}\n")
+
         if runtime is not None:
             f.write(f"#SBATCH -t {runtime}\n")
         if account is not None:
             f.write(f"#SBATCH --account={account}\n")
+        if constraint is not None:
+            f.write(f"#SBATCH -C {constraint}\n")
 
-        f.write(f"#SBATCH --ntasks={n_tasks}\n")
-        f.write(f"#SBATCH --cpus-per-task={n_cpus_per_task}\n")
-        f.write(f"#SBATCH --mem-per-cpu={approximate_memory}M\n")
+        f.write("#SBATCH -n 1\n")
+        f.write(f"#SBATCH -c {n_cpu_per_job}\n")
+        f.write(f"#SBATCH --mem-per-cpu={approximate_memory}MB\n")
 
-        f.write(f"#SBATCH --output=job_data/hdspin_%A.out\n")
-        f.write(f"#SBATCH --error=job_data/hdspin_%A.err\n")
+        f.write(f"#SBATCH --output=job_data/hdspin_%A_%a.out\n")
+        f.write(f"#SBATCH --error=job_data/hdspin_%A_%a.err\n")
+        f.write('\n')
+
+        f.write(f"#SBATCH --array=0-{arr_len - 1}\n")
         f.write('\n')
 
         if module is not None:

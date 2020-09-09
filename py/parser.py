@@ -105,17 +105,6 @@ def global_parser(sys_argv):
         'Note that the latter is ~sqrt(2 log 2).'
     )
 
-    slurm_prime = prime_sp.add_argument_group(
-        'SLURM job submission parameters'
-    )
-
-    slurm_prime.add_argument(
-        '--cluster', dest='slurm_cluster_preset', type=str, default="rr",
-        choices=["rr"],
-        help='Specify the cluster presets to be read from a yaml config file '
-        'in location slurm_configs/`cluster`.yaml.'
-    )
-
     # (2) ---------------------------------------------------------------------
     execute_sp = subparsers.add_parser(
         "execute", formatter_class=SortingHelpFormatter,
