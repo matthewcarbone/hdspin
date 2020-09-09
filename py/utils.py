@@ -64,7 +64,7 @@ def approximate_mem_per_cpu(args, cpu_per_task):
 
     # Divide by the number of cpus per MPI task
     mem = with_overhead // cpu_per_task
-    return max(2, mem)
+    return max(500, mem)
 
 
 def write_SLURM_script(args, base_dir, max_index):
