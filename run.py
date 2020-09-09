@@ -33,7 +33,7 @@ if __name__ == '__main__':
             print("Exiting")
 
     elif args.protocol == 'prime':
-        base_dir, max_iter = u.make_directory(args)
+        base_dir, max_iter = u.make_directory_and_configs(args)
         u.write_SLURM_script(args, base_dir, max_iter)
 
     elif args.protocol == 'execute':

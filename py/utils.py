@@ -5,6 +5,7 @@ __maintainer__ = "Matthew Carbone"
 __email__ = "x94carbone@gmail.com"
 __status__ = "Prototype"
 
+import numpy as np
 
 import os
 import subprocess
@@ -20,7 +21,7 @@ def make_basename(nspin, beta, bc, dynamics, landscape, timesteps):
     return f"{nspin}_{beta:.03f}_{bc:.03f}_{dynamics}_{landscape}_{timesteps}"
 
 
-def make_directory(args):
+def make_directory_and_configs(args):
     """Makes the appropriate directories for a single job. Also returns the
     directory name. Also returns the max index + 1 corresponding to the
     previously processed trials, so that we can actually continue to add
@@ -45,8 +46,13 @@ def make_directory(args):
 
     os.makedirs(base_dir, exist_ok=True)
     os.makedirs(os.path.join(base_dir, "scripts"), exist_ok=True)
+    grid_path = os.path.join(base_dir, "grids")
+    os.makedirs(grid_path, exist_ok=True)
     os.makedirs(os.path.join(base_dir, "results"), exist_ok=True)
     os.makedirs(os.path.join(base_dir, "final"), exist_ok=True)
+
+    make_grids(args, grid_path)
+
     return base_dir, resume_at
 
 
@@ -70,7 +76,7 @@ def write_SLURM_script(args, base_dir, resume_at):
     to this run."""
 
     submit_fname = os.path.join(base_dir, "scripts/submit.sh")
-    configs = yaml.safe_load(open(f"slurm_configs/config.yaml"))
+    configs = yaml.safe_load(open("configs/slurm_configs/config.yaml"))
 
     partition = configs['partition']
     runtime = configs['time']
@@ -79,6 +85,7 @@ def write_SLURM_script(args, base_dir, resume_at):
     n_cpu_per_job = configs['n_cpu_per_job']
     total_cpu = configs['total_cpu']
     module = configs['module']
+    max_concurrent = configs['max_concurrent']
     nsim = args.nsim
 
     # simplify things: let's use an even divisor
@@ -116,17 +123,20 @@ def write_SLURM_script(args, base_dir, resume_at):
         f.write(f"#SBATCH --error=job_data/hdspin_%A_%a.err\n")
         f.write('\n')
 
-        f.write(f"#SBATCH --array=0-{arr_len - 1}\n")
+        if max_concurrent is None:
+            f.write(f"#SBATCH --array=0-{arr_len - 1}\n")
+        else:
+            f.write(f"#SBATCH --array=0-{arr_len - 1}%{max_concurrent}\n")
         f.write('\n')
 
         if module is not None:
             f.write(f"module load {module}\n")
             f.write('\n')
 
-        f.write("export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK\n")
+        f.write(f"export OMP_NUM_THREADS={n_cpu_per_job}\n")
         f.write('\n')
 
-        f.write(f'mpirun ./main.out {args_str}\n')
+        f.write(f'./main.out {args_str}\n')
 
 
 def _call_subprocess(script):

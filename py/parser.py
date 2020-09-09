@@ -105,6 +105,11 @@ def global_parser(sys_argv):
         'Note that the latter is ~sqrt(2 log 2).'
     )
 
+    prime_sp.add_argument(
+        '--dw', dest='dw', type=float, default=0.5,
+        help='Sets the parameter in the aging functions.'
+    )
+
     # (2) ---------------------------------------------------------------------
     execute_sp = subparsers.add_parser(
         "execute", formatter_class=SortingHelpFormatter,

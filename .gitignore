@@ -7,3 +7,4 @@ final_results/
 *.pyc
 test/
 job_data/
+old/
