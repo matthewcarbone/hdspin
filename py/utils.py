@@ -85,7 +85,7 @@ def write_SLURM_script(args, base_dir, resume_at):
     assert total_cpu % n_cpu_per_job == 0
     assert nsim % total_cpu == 0
     arr_len = total_cpu // n_cpu_per_job
-    sims_per_job = nsim // total_cpu // n_cpu_per_job
+    sims_per_job = nsim // arr_len
 
     approximate_memory = approximate_mem_per_cpu(args, n_cpu_per_job)
 
