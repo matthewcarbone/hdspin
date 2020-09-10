@@ -72,7 +72,7 @@ void gillespie(EnergyGrid &energy_grid, const long long N_timesteps,
     // Initialize an array for tracking the inherent structures. This is
     // basically a mapping between the index of the array (configuration) and
     // the inherent structure configuration, the value.
-    long long *inherent_structure_mapping = new long long [n_configs];
+    long long *inherent_structure_mapping = new long long[n_configs];
 
     // Store every entry as -1 (to indicate that none exists yet)
     for (long long ii=0; ii<n_configs; ii++){
@@ -113,12 +113,14 @@ void gillespie(EnergyGrid &energy_grid, const long long N_timesteps,
         // Step 5: step to the next state and store the proposed (new) energy
         step_next_state_(config, exit_rates, total_exit_rate, N_spins,
             generator);
-        current_energy = energy_arr[binary_vector_to_int(config, N_spins)];
 
         energy_grid.step(current_time, current_energy, config, N_spins,
             energy_arr, inherent_structure_mapping);
 
         if (current_time >= N_timesteps){break;}
+
+
+        current_energy = energy_arr[binary_vector_to_int(config, N_spins)];
 
     }
 

@@ -59,8 +59,13 @@ class Evaluator:
             assert len(np.unique(res[:, :, 0])) == res.shape[1]
 
             # Load in the energy and inherent structure energy
-            energies = res[:, :, 2].squeeze()
-            energies_inherent = res[:, :, 4].squeeze()
+            energies = res[:, :, 2]
+            energies_inherent = res[:, :, 4]
+
+            print("\n\n")
+            print(energies.min())
+            print(energies_inherent.min())
+            print("\n\n")
 
             print(f"Loaded energies of shape {energies.shape}")
 
@@ -70,9 +75,12 @@ class Evaluator:
             )
 
             to_save = np.array([
-                res[0, :, 0].squeeze(), energies.mean(axis=0),
-                energies.std(axis=0), energies_inherent.mean(axis=0),
-                energies_inherent.std(axis=0)
+                res[0, :, 0].squeeze(),
+                energies.mean(axis=0).squeeze(),
+                energies.std(axis=0).squeeze(),
+                energies_inherent.mean(axis=0).squeeze(),
+                energies_inherent.std(axis=0).squeeze()
             ])
+            print(to_save.shape)
             np.savetxt(final_path, to_save.T)
             print("Done\n")

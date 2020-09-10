@@ -52,7 +52,7 @@ void standard(EnergyGrid &energy_grid, const long long N_timesteps,
     // Initialize the energy dictionary or array for faster lookups. Note that
     // the energy array is huge and need to be explicitly allocated on the
     // heap else we will get a stackoverflow error for N ~ 20 or so.
-    const int n_configs = int(pow(2, N_spins));
+    const unsigned long long n_configs = (unsigned long long) powl(2, N_spins);
     double *energy_arr = new double[n_configs];
     if (landscape == 0)
     {

@@ -14,7 +14,7 @@
 long long binary_vector_to_int(const int *config, const int N)
 {
     long long res = 0;
-    for (int ii=0; ii<N; ii++){res = res << 1 | config[ii];}    
+    for (int ii=0; ii<N; ii++){res = res << 1ULL | config[ii];}    
     return res;
 }
 
@@ -65,7 +65,7 @@ void get_exit_rates(const double current_energy, const double beta,
         exit_rates[ii] = exp(-beta * delta_E[ii]);
         if (exit_rates[ii] > 1.0){exit_rates[ii] = 1.0;}
     }
-    for (int ii=0; ii<N; ii++){exit_rates[ii] = exit_rates[ii] / N;}
+    for (int ii=0; ii<N; ii++){exit_rates[ii] = exit_rates[ii] / ((double) N);}
 }
 
 

@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
         double duration_double_seconds = 
             std::chrono::duration<double>(duration_seconds).count();
 
-        printf("%s ~ %s done in %.02f s\n", dt_string.c_str(), e_path.c_str(),
+        printf("%s ~ %s done in %.02f s\n", dt_string.c_str(), ii_str.c_str(),
             duration_double_seconds);
     }
 }
