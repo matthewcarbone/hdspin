@@ -3,7 +3,8 @@
 import argparse
 from argparse import HelpFormatter, ArgumentDefaultsHelpFormatter
 from operator import attrgetter
-import os
+
+from py.utils import get_cache
 
 
 # https://stackoverflow.com/questions/
@@ -12,22 +13,6 @@ class SortingHelpFormatter(ArgumentDefaultsHelpFormatter, HelpFormatter):
     def add_arguments(self, actions):
         actions = sorted(actions, key=attrgetter('option_strings'))
         super(SortingHelpFormatter, self).add_arguments(actions)
-
-
-def get_cache(args):
-    """First, checks to see if args.cache is specified. If not, it will then
-    look for the HDSPIN_CACHE_DIR environment variable. If that also does not
-    exist, then it will raise a RuntimeError. Returns the directory location.
-    """
-
-    if args.cache is not None:
-        return args.cache
-
-    env_var = os.environ.get("HDSPIN_CACHE_DIR", None)
-    if env_var is not None:
-        return env_var
-
-    raise RuntimeError("Unknown cache location.")
 
 
 def global_parser(sys_argv):
@@ -110,6 +95,12 @@ def global_parser(sys_argv):
         help='Sets the parameter in the aging functions.'
     )
 
+    prime_sp.add_argument(
+        '--local', dest='local', default=False, action='store_true',
+        help='Saves a bash script to the working directory instead of a SLURM '
+        'script to the cache.'
+    )
+
     # (2) ---------------------------------------------------------------------
     execute_sp = subparsers.add_parser(
         "execute", formatter_class=SortingHelpFormatter,
@@ -119,6 +110,12 @@ def global_parser(sys_argv):
         '--local', dest='local', default=False,
         action='store_true',
         help='Runs only a single primed job locally, used for debugging.'
+    )
+
+    # (3) ---------------------------------------------------------------------
+    subparsers.add_parser(
+        "eval", formatter_class=SortingHelpFormatter,
+        description='Evaluates all results in the cache, saving them to final.'
     )
 
     # Quick post processing on the value for beta_critical

@@ -11,9 +11,9 @@
 
 #include "general_utils.h"
 
-int binary_vector_to_int(const int *config, const int N)
+long long binary_vector_to_int(const int *config, const int N)
 {
-    int res = 0;
+    long long res = 0;
     for (int ii=0; ii<N; ii++){res = res << 1 | config[ii];}    
     return res;
 }

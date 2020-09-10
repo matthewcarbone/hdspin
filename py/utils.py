@@ -10,6 +10,27 @@ import numpy as np
 import os
 import subprocess
 import yaml
+import warnings
+
+
+def listdir_fp(d):
+    return [os.path.join(d, f) for f in os.listdir(d)]
+
+
+def get_cache(args):
+    """First, checks to see if args.cache is specified. If not, it will then
+    look for the HDSPIN_CACHE_DIR environment variable. If that also does not
+    exist, then it will raise a RuntimeError. Returns the directory location.
+    """
+
+    if args.cache is not None:
+        return args.cache
+
+    env_var = os.environ.get("HDSPIN_CACHE_DIR", None)
+    if env_var is not None:
+        return env_var
+
+    raise RuntimeError("Unknown cache location.")
 
 
 def make_basename(nspin, beta, bc, dynamics, landscape, timesteps):
@@ -19,6 +40,34 @@ def make_basename(nspin, beta, bc, dynamics, landscape, timesteps):
     consistency."""
 
     return f"{nspin}_{beta:.03f}_{bc:.03f}_{dynamics}_{landscape}_{timesteps}"
+
+
+def make_grids(args, grid_path):
+    """Writes the grids to disk in the standard spot."""
+
+    config = yaml.safe_load(open("configs/grid_configs/config.yaml"))
+
+    nMC = int(10**args.timesteps)
+
+    energy_grid = np.unique(np.logspace(
+        0, np.log10(nMC), config['energy_gridpoints'],
+        dtype=int, endpoint=True
+    ))
+
+    tw_max = nMC // (args.dw + 1.0)
+
+    # Define the first grid.
+    pi_g1 = np.unique(np.logspace(
+        0, np.log10(tw_max), config['pi_gridpoints'], dtype=int, endpoint=True
+    ))
+
+    # The second grid is directly related to the first via
+    # tw -> tw + tw * dw
+    pi_g2 = (pi_g1 * (args.dw + 1.0)).astype(int)
+
+    np.savetxt(f"{grid_path}/energy.txt", energy_grid, fmt="%i")
+    np.savetxt(f"{grid_path}/pi1.txt", pi_g1, fmt="%i")
+    np.savetxt(f"{grid_path}/pi2.txt", pi_g2, fmt="%i")
 
 
 def make_directory_and_configs(args):
@@ -34,14 +83,16 @@ def make_directory_and_configs(args):
     )
     base_dir = os.path.join(cache, basename)
 
-    resume_at = 0
+    max_index = 0
     if os.path.exists(base_dir):
         dirs_in_results = os.listdir(os.path.join(base_dir, "results"))
         if len(dirs_in_results) > 0:
             dirs_in_results = sorted(dirs_in_results)[-1]
-            resume_at = int(dirs_in_results.split(".txt")[0]) + 1
-            raise RuntimeWarning(
-                f"Base directory {base_dir} exists; will resume at {resume_at}"
+            max_index = int(dirs_in_results.split("_energy.txt")[0]) + 1
+            warnings.warn(
+                f"Base directory {base_dir} exists; will resume "
+                f"at {max_index} based on saved results like *_energy.txt",
+                RuntimeWarning
             )
 
     os.makedirs(base_dir, exist_ok=True)
@@ -53,7 +104,7 @@ def make_directory_and_configs(args):
 
     make_grids(args, grid_path)
 
-    return base_dir, resume_at
+    return base_dir, max_index
 
 
 def approximate_mem_per_cpu(args, cpu_per_task):
@@ -68,46 +119,75 @@ def approximate_mem_per_cpu(args, cpu_per_task):
     # Add 10% overhead
     with_overhead = int(1.1 * approximate_memory / cpu_per_task)
 
-    return max(10, with_overhead)
+    return max(50, with_overhead)
 
 
-def write_SLURM_script(args, base_dir, resume_at):
+def write_bash_script(args, base_dir, max_index):
+    """Writes a single bash script to the working directory, which stacks
+    various primed protocols sequentially. This is intended for local debugging
+    and should probably not be used for production runs."""
+
+    script_name = "local_submit.sh"
+    results_dir = os.path.join(base_dir, "results")
+    grids_dir = os.path.join(base_dir, "grids")
+    timesteps = int(10**args.timesteps)
+    args_str = f"{results_dir} {grids_dir} {timesteps} {args.nspin} " \
+        f"{args.beta} {args.beta_critical} {args.landscape} " \
+        f"{args.dynamics} {max_index} 0 {args.nsim}"
+
+    # Then we append
+    if os.path.exists(script_name):
+        with open(script_name, 'a') as f:
+            f.write(f"./main.out {args_str}\n")
+        print(f"Script {script_name} appended with new trial")
+
+    # Else we write a new file
+    else:
+        with open(script_name, 'w') as f:
+            f.write("#!/bin/bash\n")
+            f.write("\n")
+            f.write(f"./main.out {args_str}\n")
+        print(f"Script {script_name} written to disk")
+
+
+def write_SLURM_script(args, base_dir, max_index):
     """Writes the SLURM submission script to the cache directory pertaining
     to this run."""
 
     submit_fname = os.path.join(base_dir, "scripts/submit.sh")
-    configs = yaml.safe_load(open("configs/slurm_configs/config.yaml"))
+    configs = yaml.safe_load(
+        open(f"configs/slurm_configs/config.yaml")
+    )
 
     partition = configs['partition']
     runtime = configs['time']
     account = configs['account']
     constraint = configs['constraint']
-    n_cpu_per_job = configs['n_cpu_per_job']
-    total_cpu = configs['total_cpu']
+    n_cpus_per_job = configs['n_cpus_per_job']
+    total_cpus = configs['total_cpus']
     module = configs['module']
     max_concurrent = configs['max_concurrent']
-    nsim = args.nsim
 
     # simplify things: let's use an even divisor
-    assert total_cpu % n_cpu_per_job == 0
-    assert nsim % total_cpu == 0
-    arr_len = total_cpu // n_cpu_per_job
-    sims_per_job = nsim // arr_len
+    assert total_cpus % n_cpus_per_job == 0
+    assert args.nsim % total_cpus == 0
+    arr_len = total_cpus // n_cpus_per_job
+    sims_per_job = args.nsim // arr_len
 
-    approximate_memory = approximate_mem_per_cpu(args, n_cpu_per_job)
+    approximate_memory = approximate_mem_per_cpu(args, n_cpus_per_job)
 
     results_dir = os.path.join(base_dir, "results")
-    timesteps = 10**args.timesteps
-    args_str = f"{results_dir} {timesteps} {args.nspin} {args.beta} " \
-        f"{args.beta_critical} {args.landscape} {args.dynamics} {resume_at} " \
-        f"$SLURM_ARRAY_TASK_ID {sims_per_job}"
+    grids_dir = os.path.join(base_dir, "grids")
+    timesteps = int(10**args.timesteps)
+    args_str = f"{results_dir} {grids_dir} {timesteps} {args.nspin} " \
+        f"{args.beta} {args.beta_critical} {args.landscape} {args.dynamics}" \
+        f"{max_index} $SLURM_ARRAY_TASK_ID {sims_per_job}"
 
     with open(submit_fname, 'w') as f:
         f.write("#!/bin/bash\n")
         f.write("\n")
         f.write(f"#SBATCH --job-name=hdspin \n")
         f.write(f"#SBATCH -p {partition}\n")
-
         if runtime is not None:
             f.write(f"#SBATCH -t {runtime}\n")
         if account is not None:
@@ -116,12 +196,11 @@ def write_SLURM_script(args, base_dir, resume_at):
             f.write(f"#SBATCH -C {constraint}\n")
 
         f.write("#SBATCH -n 1\n")
-        f.write(f"#SBATCH -c {n_cpu_per_job}\n")
-        f.write(f"#SBATCH --mem-per-cpu={approximate_memory}MB\n")
+        f.write(f"#SBATCH --cpus-per-task={n_cpus_per_job}\n")
+        f.write(f"#SBATCH --mem-per-cpu={approximate_memory}M\n")
 
-        f.write(f"#SBATCH --output=job_data/hdspin_%A_%a.out\n")
-        f.write(f"#SBATCH --error=job_data/hdspin_%A_%a.err\n")
-        f.write('\n')
+        f.write(f"#SBATCH --output=job_data/hdspin_%A.out\n")
+        f.write(f"#SBATCH --error=job_data/hdspin_%A.err\n")
 
         if max_concurrent is None:
             f.write(f"#SBATCH --array=0-{arr_len - 1}\n")
@@ -133,7 +212,7 @@ def write_SLURM_script(args, base_dir, resume_at):
             f.write(f"module load {module}\n")
             f.write('\n')
 
-        f.write(f"export OMP_NUM_THREADS={n_cpu_per_job}\n")
+        f.write(f"export OMP_NUM_THREADS={n_cpus_per_job}\n")
         f.write('\n')
 
         f.write(f'./main.out {args_str}\n')

@@ -13,16 +13,13 @@
 
 #include "utils/init_utils.h"
 #include "utils/general_utils.h"
-
-
-// const int print_partitions = 50;
+#include "utils/grid_utils.h"
 
 
 
-void standard(const std::string file_dump_loc,
-    const std::string is_path_dump_loc,
-    const long int N_timesteps, const int N_spins, const double beta,
-    const double beta_critical, const int landscape)
+void standard(EnergyGrid &energy_grid, const long long N_timesteps,
+    const int N_spins, const double beta, const double beta_critical,
+    const int landscape)
 {
 
     /* We first initialize counters, trackers and grids for the various
@@ -74,53 +71,28 @@ void standard(const std::string file_dump_loc,
     double proposed_energy;
 
     // Terms for the inherent structure
-    int config_IS_int, config_int;
-    double energy_IS;
+    int config_int;
 
     // Initialize an array for tracking the inherent structures. This is
     // basically a mapping between the index of the array (configuration) and
     // the inherent structure configuration, the value.
-    int *inherent_structure_mapping = new int[n_configs];
+    long long *inherent_structure_mapping = new long long[n_configs];
 
     // Store every entry as -1 (to indicate that none exists yet)
-    for (int ii=0; ii<n_configs; ii++){inherent_structure_mapping[ii] = -1;}
-
-    config_int = binary_vector_to_int(config, N_spins);
-    current_energy = energy_arr[config_int];
-    config_IS_int = compute_inherent_structure(config, energy_arr, N_spins);
-    inherent_structure_mapping[config_int] = config_IS_int;
-    energy_IS = energy_arr[config_IS_int];
+    for (long long ii=0; ii<n_configs; ii++)
+    {
+        inherent_structure_mapping[ii] = -1;
+    }
 
 
     // ========================================================================
     // Run the simulation =====================================================
     // ========================================================================
 
-    // std::ofstream outFile(file_dump_loc);
-
-    FILE * outFile;
-    outFile = fopen(file_dump_loc.c_str(), "w");
-
-    // auto start = std::chrono::high_resolution_clock::now();
-    // const double print_every = ((double) N_timesteps) / print_partitions;
-    // double current_print_time = print_every;
-
     int spin_to_flip, proposed_config_int;
     double dE, metropolis_prob, new_energy, sampled;
-    bool save_next_state = true;
-    for (int timestep=0; timestep<N_timesteps; timestep++)
+    for (long long timestep=0; timestep<N_timesteps; timestep++)
     {
-
-        // Step 0: save the current results. This is more difficult for the
-        // standard simulation. We only want to save when the configuration
-        // changes.
-        if (save_next_state == true)
-        {
-            fprintf(outFile, "%i %i %.05f %i %.05f\n", timestep, config_int,
-                current_energy, config_IS_int, energy_IS);
-            save_next_state = false;
-        }
-
         config_int = binary_vector_to_int(config, N_spins);
 
         // Step 2, select a random spin to flip
@@ -153,51 +125,20 @@ void standard(const std::string file_dump_loc,
         {
             flip_spin_(config, spin_to_flip);  // flip the spin back
             new_energy = current_energy;
-            save_next_state = false;
         }
         else  // accept, don't flip the spin back
         {
             // set the energy to the new value
-            new_energy = proposed_energy;
             config_int = proposed_config_int;
-
-            // Then calculate the inherent structure
-            if (inherent_structure_mapping[config_int] != -1)
-            {
-                // We've computed the inherent structure before, no need to do
-                // it again
-                config_IS_int = inherent_structure_mapping[config_int];
-            }
-            else
-            {
-                config_IS_int = compute_inherent_structure(config, energy_arr,
-                    N_spins);
-                inherent_structure_mapping[config_int] = config_IS_int;
-            }
-            energy_IS = energy_arr[config_IS_int];
-
-            // Note that if we reject then we do not save the "next" config
-            save_next_state = true;
+            new_energy = proposed_energy;
         }
 
         current_energy = new_energy;
+
+        energy_grid.step(timestep, current_energy, config, N_spins,
+            energy_arr, inherent_structure_mapping);
+
     }
-
-    fclose(outFile);
-
-    FILE * is_outFile;
-    is_outFile = fopen(is_path_dump_loc.c_str(), "w");
-
-    // Save the inherent structure dictionary.
-    for (int ii=0; ii<n_configs; ii++)
-    {
-        if (inherent_structure_mapping[ii] == -1){continue;}
-
-        // Save the mapping between the config and the inherent structure
-        fprintf(is_outFile, "%i %i\n", ii, inherent_structure_mapping[ii]);
-    }
-
-    fclose(is_outFile);
 
     delete[] energy_arr;
     delete[] inherent_structure_mapping;
