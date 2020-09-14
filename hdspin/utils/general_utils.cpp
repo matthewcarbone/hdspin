@@ -3,6 +3,7 @@
  * Matthew Carbone, Columbia University 2020
  */
 
+#include <assert.h>
 #include <vector>
 #include <math.h>
 #include <random>
@@ -11,10 +12,29 @@
 
 #include "general_utils.h"
 
+
+long long ipow(long long base, long long exp)
+{
+    assert(base > 0);
+    assert(exp > 0);
+    long long result = 1;
+    for (;;)
+    {
+        if (exp & 1)
+            result *= base;
+        exp >>= 1;
+        if (!exp)
+            break;
+        base *= base;
+    }
+    return result;
+}
+
+
 long long binary_vector_to_int(const int *config, const int N)
 {
     long long res = 0;
-    for (int ii=0; ii<N; ii++){res = res << 1ULL | config[ii];}    
+    for (int ii=0; ii<N; ii++){res = res << 1LL | config[ii];} 
     return res;
 }
 

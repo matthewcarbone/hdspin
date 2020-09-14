@@ -17,7 +17,7 @@
 
 
 
-void standard(EnergyGrid &energy_grid, const long long N_timesteps,
+void standard(EnergyGrid &energy_grid, const int log_N_timesteps,
     const int N_spins, const double beta, const double beta_critical,
     const int landscape)
 {
@@ -52,26 +52,26 @@ void standard(EnergyGrid &energy_grid, const long long N_timesteps,
     // Initialize the energy dictionary or array for faster lookups. Note that
     // the energy array is huge and need to be explicitly allocated on the
     // heap else we will get a stackoverflow error for N ~ 20 or so.
-    const unsigned long long n_configs = (unsigned long long) powl(2, N_spins);
+    const long long n_configs = ipow(2, N_spins);
+    const long long N_timesteps = ipow(10, log_N_timesteps) + 2;
+    std::cout << std::flush;
     double *energy_arr = new double[n_configs];
     if (landscape == 0)
     {
-        initialize_energy_mapping_exponential_arr(energy_arr, N_spins,
+        initialize_energy_mapping_exponential_arr(energy_arr, n_configs,
             beta_critical);
     }
     else
     {
-        initialize_energy_mapping_gaussian_arr(energy_arr, N_spins,
+        initialize_energy_mapping_gaussian_arr(energy_arr, n_configs, N_spins,
             beta_critical);
     }
 
     // The current energy is the energy of the current configuraiton BEFORE
     // stepping to the next one at the end of each algorithm step.
-    double current_energy;
-    double proposed_energy;
+    double current_energy, proposed_energy;
 
-    // Terms for the inherent structure
-    int config_int;
+    long long config_int, proposed_config_int;
 
     // Initialize an array for tracking the inherent structures. This is
     // basically a mapping between the index of the array (configuration) and
@@ -89,8 +89,9 @@ void standard(EnergyGrid &energy_grid, const long long N_timesteps,
     // Run the simulation =====================================================
     // ========================================================================
 
-    int spin_to_flip, proposed_config_int;
+    int spin_to_flip;
     double dE, metropolis_prob, new_energy, sampled;
+
     for (long long timestep=0; timestep<N_timesteps; timestep++)
     {
         config_int = binary_vector_to_int(config, N_spins);

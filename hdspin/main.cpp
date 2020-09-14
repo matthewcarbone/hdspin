@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
 {
     const std::string target_directory = argv[1];
     const std::string grids_directory = argv[2];
-    const long long N_timesteps = atoll(argv[3]);
+    const int log_N_timesteps = atoi(argv[3]);
     const int N_spins = atoi(argv[4]);
     const double beta = atof(argv[5]);
     const double beta_critical = atof(argv[6]);
@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
 
     // Arguments pertaining to the job itself
     printf("saving data to %s\n", argv[1]);
-    printf("N_timesteps = %lli\n", N_timesteps);
+    printf("log_N_timesteps = %i\n", log_N_timesteps);
     printf("N_spins = %i\n", N_spins);
     printf("beta = %.02f\n", beta);
     printf("beta_critical = %.02f\n", beta_critical);
@@ -60,14 +60,14 @@ int main(int argc, char *argv[])
         if (dynamics == 1)
         {
             // printf("Running Gillespie dynamics\n");
-            gillespie(energy_grid, N_timesteps, N_spins, beta,
+            gillespie(energy_grid, log_N_timesteps, N_spins, beta,
                 beta_critical, landscape);
         }
 
         else if (dynamics == 0)
         {
             // printf("Running standard dynamics\n");
-            standard(energy_grid, N_timesteps + 2, N_spins, beta,
+            standard(energy_grid, log_N_timesteps, N_spins, beta,
                 beta_critical, landscape);
         }
 

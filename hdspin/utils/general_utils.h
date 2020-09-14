@@ -3,6 +3,8 @@
 #ifndef GENERAL_UTILS_H
 #define GENERAL_UTILS_H
 
+long long ipow(long long base, long long exp);
+
 long long binary_vector_to_int(const int *config, const int N);
 
 void flip_spin_(int *config, const int idx);

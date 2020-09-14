@@ -13,6 +13,9 @@ import yaml
 import warnings
 
 
+MAX_LONG = 9223372036854775807
+
+
 def listdir_fp(d):
     return [os.path.join(d, f) for f in os.listdir(d)]
 
@@ -48,6 +51,9 @@ def make_grids(args, grid_path):
     config = yaml.safe_load(open("configs/grid_configs/config.yaml"))
 
     nMC = int(10**args.timesteps)
+
+    # Quick check to ensure that the number of nMC steps fits into a long long
+    assert nMC < MAX_LONG
 
     energy_grid = np.unique(np.logspace(
         0, np.log10(nMC), config['energy_gridpoints'],
@@ -127,10 +133,13 @@ def write_bash_script(args, base_dir, max_index):
     various primed protocols sequentially. This is intended for local debugging
     and should probably not be used for production runs."""
 
+    # Ensure the total number of configs fits into a long long
+    assert int(2**args.nspin) < MAX_LONG
+
     script_name = "local_submit.sh"
     results_dir = os.path.join(base_dir, "results")
     grids_dir = os.path.join(base_dir, "grids")
-    timesteps = int(10**args.timesteps)
+    timesteps = args.timesteps
     args_str = f"{results_dir} {grids_dir} {timesteps} {args.nspin} " \
         f"{args.beta} {args.beta_critical} {args.landscape} " \
         f"{args.dynamics} {max_index} 0 {args.nsim}"
@@ -178,7 +187,7 @@ def write_SLURM_script(args, base_dir, max_index):
 
     results_dir = os.path.join(base_dir, "results")
     grids_dir = os.path.join(base_dir, "grids")
-    timesteps = int(10**args.timesteps)
+    timesteps = args.timesteps
     args_str = f"{results_dir} {grids_dir} {timesteps} {args.nspin} " \
         f"{args.beta} {args.beta_critical} {args.landscape} {args.dynamics}" \
         f"{max_index} $SLURM_ARRAY_TASK_ID {sims_per_job}"

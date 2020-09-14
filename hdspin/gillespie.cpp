@@ -15,7 +15,7 @@
 #include "utils/grid_utils.h"
 
 
-void gillespie(EnergyGrid &energy_grid, const long long N_timesteps,
+void gillespie(EnergyGrid &energy_grid, const int log_N_timesteps,
     const int N_spins, const double beta, const double beta_critical,
     const int landscape)
 {
@@ -44,22 +44,23 @@ void gillespie(EnergyGrid &energy_grid, const long long N_timesteps,
     // Initialize the energy dictionary or array for faster lookups. Note that
     // the energy array is huge and need to be explicitly allocated on the
     // heap else we will get a stackoverflow error for N ~ 20 or so.
-    const long long n_configs = (long long) powl(2, N_spins);
+    const long long n_configs = ipow(2, N_spins);
+    const long long N_timesteps = ipow(10, log_N_timesteps);
     double *energy_arr = new double[n_configs];
     if (landscape == 0)
     {
-        initialize_energy_mapping_exponential_arr(energy_arr, N_spins,
+        initialize_energy_mapping_exponential_arr(energy_arr, n_configs,
             beta_critical);
     }
     else
     {
-        initialize_energy_mapping_gaussian_arr(energy_arr, N_spins,
+        initialize_energy_mapping_gaussian_arr(energy_arr, n_configs, N_spins,
             beta_critical);
     }
 
     // The current energy is the energy of the current configuraiton BEFORE
     // stepping to the next one at the end of each algorithm step.
-    double current_energy = energy_arr[binary_vector_to_int(config, N_spins)];
+    double current_energy;
 
     // Vector of the neighboring energies which is rewritten at every step of
     // the while loop. Also a vector of the dE values, exit rates...
@@ -87,6 +88,8 @@ void gillespie(EnergyGrid &energy_grid, const long long N_timesteps,
     while (true)
     {
 
+        current_energy = energy_arr[binary_vector_to_int(config, N_spins)];
+
         // Step 1: get the neighboring energies by filling the relevant object
         get_neighboring_energies(config, energy_arr, neighboring_energies,
             N_spins);
@@ -110,17 +113,14 @@ void gillespie(EnergyGrid &energy_grid, const long long N_timesteps,
         // Step 4: update the current time of the simulation clock
         current_time += waiting_time;
 
+        energy_grid.step(current_time, current_energy, config, N_spins,
+            energy_arr, inherent_structure_mapping);
+
         // Step 5: step to the next state and store the proposed (new) energy
         step_next_state_(config, exit_rates, total_exit_rate, N_spins,
             generator);
 
-        energy_grid.step(current_time, current_energy, config, N_spins,
-            energy_arr, inherent_structure_mapping);
-
         if (current_time >= N_timesteps){break;}
-
-
-        current_energy = energy_arr[binary_vector_to_int(config, N_spins)];
 
     }
 
