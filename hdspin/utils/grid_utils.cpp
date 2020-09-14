@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <fstream>
+#include <math.h>
 
 #include "general_utils.h"
 #include "grid_utils.h"
@@ -29,8 +30,6 @@ EnergyGrid::EnergyGrid(const std::string grid_location)
     //     grid[0], max_time, length);
 }
 
-std::vector<long long> EnergyGrid::get_grid(){return grid;}
-
 void EnergyGrid::open_outfile(const std::string d)
 {
     outfile = fopen(d.c_str(), "w");
@@ -38,9 +37,8 @@ void EnergyGrid::open_outfile(const std::string d)
 
 void EnergyGrid::close_outfile(){fclose(outfile);}
 
-void EnergyGrid::step(const double current_time, const double current_energy,
-    const int *config, const int N_spins, const double *energy_array,
-    long long *inherent_structure_mapping)
+void EnergyGrid::step(const double current_time, const long long config_int,
+    const long long config_IS_int, const double energy, const double energy_IS)
 {
 
     // No updates necessary
@@ -48,31 +46,62 @@ void EnergyGrid::step(const double current_time, const double current_energy,
 
     if (pointer > length - 1){return;}
 
-    // Get the current configuration integer representations and energies
-    const long long config_int = binary_vector_to_int(config, N_spins);
-    
-    // Update the inherent structure dictionary
-    long long config_IS_int;
-    if (inherent_structure_mapping[config_int] != -1)
-    {
-        // We've computed the inherent structure before, no need to do
-        // it again
-        config_IS_int = inherent_structure_mapping[config_int];
-    }
-    else
-    {
-        config_IS_int = compute_inherent_structure(config, energy_array,
-            N_spins);
-        inherent_structure_mapping[config_int] = config_IS_int;
-    }
-    const double energy_IS = energy_array[config_IS_int];
-
     // Write to the outfile
     while (grid[pointer] < current_time)
     {   
         fprintf(outfile, "%lli %lli %.05f %lli %.05f\n", grid[pointer],
-            config_int, current_energy, config_IS_int, energy_IS);
+            config_int, energy, config_IS_int, energy_IS);
         pointer += 1;
         if (pointer > length - 1){return;}
     }
+}
+
+
+
+// ============================================================================
+// Psi ========================================================================
+// ============================================================================
+
+
+PsiConfigCounter::PsiConfigCounter(const int log_N_timesteps,
+    const std::string outfile_loc)
+{
+    max_counter = (long long) log2l(ipow(10, log_N_timesteps));
+
+    // Give the max counter a lot of space
+    max_counter += 10;
+
+    for (int ii=0; ii<max_counter; ii++){counter.push_back(0);}
+    outfile_location = outfile_loc;
+}
+
+void PsiConfigCounter::write_to_disk()
+{
+    FILE *outfile;
+    outfile = fopen(outfile_location.c_str(), "w");
+    for (int ii=0; ii<max_counter; ii++)
+    {
+        fprintf(outfile, "%i %lli\n", ii, counter[ii]);
+    }
+    fclose(outfile);
+}
+
+void PsiConfigCounter::step(const long double t)
+{
+
+    long long key;
+
+    // If the waiting time is < 1, round it to 1.
+    if (t < 1.0){key = 0;}
+
+    else
+    {
+        const long double log_t = log2l(t);
+        key = (long long) roundl(log_t);
+
+        // We ignore any crazy waiting times produced near the end of the
+        // Gillespie dynamics since they can be chalked up to edge effects.
+        if (key > max_counter - 1){return;}
+    }
+    counter[key] += 1;
 }

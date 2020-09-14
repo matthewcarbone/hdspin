@@ -17,9 +17,6 @@ public:
     // Constructor: reads in the grid
     EnergyGrid(const std::string);
 
-    // Get's the grid
-    std::vector<long long> get_grid();
-
     // Want to open the filestream to the save directory
     void open_outfile(const std::string);
 
@@ -29,8 +26,8 @@ public:
     // Step the grid by performing the following steps:
     // 1) Stepping the pointer
     // 2) Saving the configuration/energy information to disk
-    void step(const double, const double, const int *, const int,
-        const double *, long long *);
+    void step(const double, const long long, const long long, const double,
+        const double);
     
 private:
 
@@ -50,5 +47,44 @@ private:
     int length;
 };
 
-#endif
 
+
+
+// ============================================================================
+// Psi ========================================================================
+// ============================================================================
+
+
+class PsiConfigCounter
+{
+public:
+
+    // Constructor: reads in the grid
+    PsiConfigCounter(const int, const std::string outfile_loc);
+
+    // Close the output stream when done; this also writes the counter to
+    // disk, since this file will be relatively small compared to the others
+    // that are written dynamically.
+    void write_to_disk();
+
+    // Step the grid by performing the following steps:
+    // 1) Stepping the pointer
+    // 2) Saving the configuration/energy information to disk
+    void step(const long double);
+    
+private:
+
+    // The log2-binned trapping times
+    std::vector<long long> counter;
+
+    // The maximum key value
+    long long max_counter;
+
+    // The location to save the file
+    std::string outfile_location;
+};
+
+
+
+
+#endif

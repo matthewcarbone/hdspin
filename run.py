@@ -58,6 +58,7 @@ if __name__ == '__main__':
     elif args.protocol == 'eval':
         ev = Evaluator(args)
         ev.eval_traj()
+        ev.eval_psi_config()
 
     else:
         raise RuntimeError("Unknown error")

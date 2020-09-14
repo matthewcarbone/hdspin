@@ -131,8 +131,8 @@ int min_element(const double *arr, const int N)
 /* Finds the lowest energy configuration via greedy search from a config
  * through its neighbors. Returns the config index of this inherent
  structure. */
-int compute_inherent_structure(const int *config, const double *energy_arr,
-    const int N)
+long long compute_inherent_structure(const int *config,
+    const double *energy_arr, const int N)
 {
 
     int min_el;
@@ -172,3 +172,27 @@ int compute_inherent_structure(const int *config, const double *energy_arr,
     }
 }
 
+/* Updates the inherent_structure_mapping if needed and returns the config
+of the inherent structure */
+long long query_inherent_structure(const int N_spins, const int *config,
+    const double *energy_array, long long *inherent_structure_mapping)
+{
+    // Get the current configuration integer representations and energies
+    const long long config_int = binary_vector_to_int(config, N_spins);
+    
+    // Update the inherent structure dictionary
+    long long config_IS_int;
+    if (inherent_structure_mapping[config_int] != -1)
+    {
+        // We've computed the inherent structure before, no need to do
+        // it again
+        config_IS_int = inherent_structure_mapping[config_int];
+    }
+    else
+    {
+        config_IS_int = compute_inherent_structure(config, energy_array,
+            N_spins);
+        inherent_structure_mapping[config_int] = config_IS_int;
+    }
+    return config_IS_int;
+}

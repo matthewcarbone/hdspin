@@ -36,13 +36,57 @@ class Evaluator:
         self.cache = u.get_cache(args)
         _all_dirs = u.listdir_fp(self.cache)
         self.all_dirs = [d for d in _all_dirs if os.path.isdir(d)]
-        # print(self.all_dirs)
+
+    def eval_psi_config(self):
+        """Evaluates all saved psi config results."""
+
+        print(f"PsiC: evaluating {len(self.all_dirs)} total directories\n")
+
+        for full_dir_path in self.all_dirs:
+            print(f"Evaluating trajectories/energies for {full_dir_path}")
+
+            results_path = os.path.join(full_dir_path, 'results')
+            all_trials = os.listdir(results_path)
+            res = [
+                np.loadtxt(os.path.join(results_path, f), delimiter=" ")
+                for f in all_trials if "psi_config" in f
+            ]
+
+            # Construct dictionaries out of each result while also keeping
+            # track of the max key value. There's probably a way to do this
+            # using list comprehension, but this is easier for now, and the
+            # total number of results will never more more than ~10k, so it
+            # should be ok.
+            dict_res = []
+            max_key = 0
+            for res_arr in res:
+                d = {
+                    int(key): int(value) for key, value
+                    in zip(res_arr[:, 0], res_arr[:, 1])
+                }
+                for key, value in d.items():
+                    if key > max_key and value > 0:
+                        max_key = key
+                dict_res.append(d)
+
+            stats = np.zeros(shape=(len(dict_res), max_key + 1))
+            for ii, d in enumerate(dict_res):
+                for key, value in d.items():
+                    if value > 0:
+                        stats[ii, key] = value
+
+            final_path = os.path.join(full_dir_path, 'final/psi_config.txt')
+            print(
+                f"Saving psi_config of shape {stats.shape} to {final_path}"
+            )
+
+            np.savetxt(final_path, stats)
 
     def eval_traj(self):
         """Performs the evaluate of the energy, trajectories and inherent
         structure for every directory as listed in all_dirs."""
 
-        print(f"Evaluating {len(self.all_dirs)} total directories\n")
+        print(f"Energy: evaluating {len(self.all_dirs)} total directories\n")
 
         for full_dir_path in self.all_dirs:
             print(f"Evaluating trajectories/energies for {full_dir_path}")

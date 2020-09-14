@@ -17,9 +17,9 @@
 
 
 
-void standard(EnergyGrid &energy_grid, const int log_N_timesteps,
-    const int N_spins, const double beta, const double beta_critical,
-    const int landscape)
+void standard(EnergyGrid &energy_grid, PsiConfigCounter &psi_config_counter,
+    const int log_N_timesteps, const int N_spins, const double beta,
+    const double beta_critical, const int landscape)
 {
 
     /* We first initialize counters, trackers and grids for the various
@@ -69,9 +69,8 @@ void standard(EnergyGrid &energy_grid, const int log_N_timesteps,
 
     // The current energy is the energy of the current configuraiton BEFORE
     // stepping to the next one at the end of each algorithm step.
-    double current_energy, proposed_energy;
-
-    long long config_int, proposed_config_int;
+    double current_energy, proposed_energy, energy_IS;
+    long long config_int, proposed_config_int, config_int_IS;
 
     // Initialize an array for tracking the inherent structures. This is
     // basically a mapping between the index of the array (configuration) and
@@ -91,6 +90,10 @@ void standard(EnergyGrid &energy_grid, const int log_N_timesteps,
 
     int spin_to_flip;
     double dE, metropolis_prob, new_energy, sampled;
+    bool changed_config;
+
+    // Use an artificial waiting time for the standard dynamics.
+    long double waiting_time = 1.0;
 
     for (long long timestep=0; timestep<N_timesteps; timestep++)
     {
@@ -126,18 +129,28 @@ void standard(EnergyGrid &energy_grid, const int log_N_timesteps,
         {
             flip_spin_(config, spin_to_flip);  // flip the spin back
             new_energy = current_energy;
+            changed_config = false;
+            waiting_time += 1.0;
         }
         else  // accept, don't flip the spin back
         {
             // set the energy to the new value
             config_int = proposed_config_int;
             new_energy = proposed_energy;
+            changed_config = true;
+            psi_config_counter.step(waiting_time);
+            waiting_time = 1.0;
         }
 
         current_energy = new_energy;
 
-        energy_grid.step(timestep, current_energy, config, N_spins,
+        // Step 8, append all of the observable trackers.
+        config_int_IS = query_inherent_structure(N_spins, config,
             energy_arr, inherent_structure_mapping);
+        energy_IS = energy_arr[config_int_IS];
+
+        energy_grid.step(timestep, config_int, config_int_IS, current_energy,
+            energy_IS);
 
     }
 

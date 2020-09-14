@@ -15,9 +15,9 @@
 #include "utils/grid_utils.h"
 
 
-void gillespie(EnergyGrid &energy_grid, const int log_N_timesteps,
-    const int N_spins, const double beta, const double beta_critical,
-    const int landscape)
+void gillespie(EnergyGrid &energy_grid, PsiConfigCounter &psi_config_counter,
+    const int log_N_timesteps, const int N_spins, const double beta,
+    const double beta_critical, const int landscape)
 {
 
     /* We first initialize counters, trackers and grids for the various
@@ -60,7 +60,8 @@ void gillespie(EnergyGrid &energy_grid, const int log_N_timesteps,
 
     // The current energy is the energy of the current configuraiton BEFORE
     // stepping to the next one at the end of each algorithm step.
-    double current_energy;
+    double current_energy, energy_IS;
+    long long config_int, config_int_IS;
 
     // Vector of the neighboring energies which is rewritten at every step of
     // the while loop. Also a vector of the dE values, exit rates...
@@ -68,7 +69,6 @@ void gillespie(EnergyGrid &energy_grid, const int log_N_timesteps,
     double exit_rates[N_spins];
     double delta_E[N_spins];
     double total_exit_rate;
-    double waiting_time;
 
     // Initialize an array for tracking the inherent structures. This is
     // basically a mapping between the index of the array (configuration) and
@@ -84,11 +84,13 @@ void gillespie(EnergyGrid &energy_grid, const int log_N_timesteps,
     // Run the simulation =====================================================
     // ========================================================================
 
-    double current_time = 0.0;
+    long double current_time = 0.0;
+    long double waiting_time;
     while (true)
     {
 
-        current_energy = energy_arr[binary_vector_to_int(config, N_spins)];
+        config_int = binary_vector_to_int(config, N_spins);
+        current_energy = energy_arr[config_int];
 
         // Step 1: get the neighboring energies by filling the relevant object
         get_neighboring_energies(config, energy_arr, neighboring_energies,
@@ -102,7 +104,8 @@ void gillespie(EnergyGrid &energy_grid, const int log_N_timesteps,
 
         // Step 3: initialize an exponential distribution to sample the
         // waiting time from
-        std::exponential_distribution<double> tmp_exp_dist(total_exit_rate);
+        std::exponential_distribution<long double>
+            tmp_exp_dist(total_exit_rate);
         waiting_time = tmp_exp_dist(generator);
 
         // At this point: we understand that the tracer is in the configuration
@@ -113,10 +116,16 @@ void gillespie(EnergyGrid &energy_grid, const int log_N_timesteps,
         // Step 4: update the current time of the simulation clock
         current_time += waiting_time;
 
-        energy_grid.step(current_time, current_energy, config, N_spins,
+        // Step 5, append all of the observable trackers.
+        config_int_IS = query_inherent_structure(N_spins, config,
             energy_arr, inherent_structure_mapping);
+        energy_IS = energy_arr[config_int_IS];
 
-        // Step 5: step to the next state and store the proposed (new) energy
+        energy_grid.step(current_time, config_int, config_int_IS,
+            current_energy, energy_IS);
+        psi_config_counter.step(waiting_time);
+
+        // Step 6: step to the next state and store the proposed (new) energy
         step_next_state_(config, exit_rates, total_exit_rate, N_spins,
             generator);
 

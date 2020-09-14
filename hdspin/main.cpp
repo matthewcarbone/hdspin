@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
     printf("landscape = %i (0=EREM, 1=REM)\n", landscape);
     printf("dynamics = %i (0=standard, 1=gillespie)\n", dynamics);
 
-    std::string ii_str, e_path;
+    std::string ii_str, e_path, psi_config_path;
 
     const int start = resume_at + slurm_arr_id * njobs;
     const int end = resume_at + (slurm_arr_id + 1) * njobs;
@@ -52,31 +52,36 @@ int main(int argc, char *argv[])
 
         ii_str = std::to_string(ii);
         ii_str.insert(ii_str.begin(), 8 - ii_str.length(), '0');
-        e_path = target_directory + "/" + ii_str + "_energy.txt";
 
+        // Define all the observable trackers ---------------------------------
+        // Energy
+        e_path = target_directory + "/" + ii_str + "_energy.txt";
         EnergyGrid energy_grid(grids_directory + "/energy.txt");
         energy_grid.open_outfile(e_path);
+        // Psi config
+        psi_config_path = target_directory + "/" + ii_str + "_psi_config.txt";
+        PsiConfigCounter psi_config_counter(log_N_timesteps, psi_config_path);
+
+        // --------------------------------------------------------------------
 
         if (dynamics == 1)
         {
             // printf("Running Gillespie dynamics\n");
-            gillespie(energy_grid, log_N_timesteps, N_spins, beta,
-                beta_critical, landscape);
+            gillespie(energy_grid, psi_config_counter, log_N_timesteps,
+                N_spins, beta, beta_critical, landscape);
         }
 
         else if (dynamics == 0)
         {
             // printf("Running standard dynamics\n");
-            standard(energy_grid, log_N_timesteps, N_spins, beta,
-                beta_critical, landscape);
+            standard(energy_grid, psi_config_counter, log_N_timesteps, N_spins,
+                beta, beta_critical, landscape);
         }
 
         else
         {
             throw std::runtime_error("Unsupported dynamics flag");
         }
-
-        energy_grid.close_outfile();
 
         auto t = std::time(nullptr);
         auto tm = *std::localtime(&t);
@@ -89,6 +94,10 @@ int main(int argc, char *argv[])
             std::chrono::duration_cast<std::chrono::seconds>(stop - start);
         double duration_double_seconds = 
             std::chrono::duration<double>(duration_seconds).count();
+
+        // Close the outfiles and write to disk when not doing so dynamically
+        energy_grid.close_outfile();
+        psi_config_counter.write_to_disk();
 
         printf("%s ~ %s done in %.02f s\n", dt_string.c_str(), ii_str.c_str(),
             duration_double_seconds);

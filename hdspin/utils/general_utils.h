@@ -23,7 +23,10 @@ void step_next_state_(int *config, const double *exit_rates,
 void print_config_and_energy(const double *config, const int N,
     const double energy);
 
-int compute_inherent_structure(const int *config, const double *energy_arr,
-    const int N);
+long long compute_inherent_structure(const int *, const double *,
+    const int);
+
+long long query_inherent_structure(const int, const int *,
+    const double *, long long *);
 
 #endif
