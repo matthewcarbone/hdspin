@@ -10,6 +10,7 @@
 #include "gillespie.h"
 #include "standard.h"
 #include "utils/grid_utils.h"
+#include "utils/structure_utils.h"
 
 
 int main(int argc, char *argv[])
@@ -59,28 +60,19 @@ int main(int argc, char *argv[])
     {
         auto start_t = std::chrono::high_resolution_clock::now();
 
-        std::string ii_str, e_path, psi_config_path, aging_config_path_1,
-            aging_config_path_2;
-
-        ii_str = std::to_string(ii);
-        ii_str.insert(ii_str.begin(), 8 - ii_str.length(), '0');
+        const FileNames fnames = get_filenames(ii, target_directory,
+            grids_directory);
 
         // Define all the observable trackers ---------------------------------
         // Energy
-        e_path = target_directory + "/" + ii_str + "_energy.txt";
         EnergyGrid energy_grid(grids_directory);
-        energy_grid.open_outfile(e_path);
+        energy_grid.open_outfile(fnames.energy);
         // Psi config
-        psi_config_path = target_directory + "/" + ii_str + "_psi_config.txt";
         PsiConfigCounter psi_config_counter(log_N_timesteps);
         // Pi/Aging config
-        aging_config_path_1 =
-            target_directory + "/" + ii_str + "_pi1_config.txt";
-        aging_config_path_2 =
-            target_directory + "/" + ii_str + "_pi2_config.txt";
         AgingConfigGrid aging_config_grid(grids_directory);
-        aging_config_grid.open_outfile(aging_config_path_1,
-            aging_config_path_2);
+        aging_config_grid.open_outfile(fnames.aging_config_1,
+            fnames.aging_config_2);
 
         // --------------------------------------------------------------------
 
@@ -117,7 +109,7 @@ int main(int argc, char *argv[])
 
         // Close the outfiles and write to disk when not doing so dynamically
         energy_grid.close_outfile();
-        psi_config_counter.write_to_disk(psi_config_path);
+        psi_config_counter.write_to_disk(fnames.psi_config);
         aging_config_grid.close_outfile();
 
         #pragma omp atomic
@@ -135,8 +127,9 @@ int main(int argc, char *argv[])
                     std::chrono::duration<double>(duration_seconds_g).count();
                 printf(
                     "%s ~ %s done in %.02f s (%i/%i) total elapsed %.02f s\n",
-                    dt_string.c_str(), ii_str.c_str(), duration_double_seconds,
-                    loop_count, total_steps, duration_double_seconds_g
+                    dt_string.c_str(), fnames.ii_str.c_str(),
+                    duration_double_seconds, loop_count, total_steps, 
+                    duration_double_seconds_g
                 );
             }
         }

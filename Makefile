@@ -8,10 +8,10 @@ executables := $(shell find . -maxdepth 1 -name "*.out")
 # 	/usr/local/bin/mpic++ -Xpreprocessor -fopenmp -lomp hdspin/main.cpp -std=c++11 -o main.out hdspin/gillespie.cpp hdspin/standard.cpp hdspin/utils/general_utils.cpp hdspin/utils/init_utils.cpp
 
 rr: 
-	g++ -Wall hdspin/main.cpp -fopenmp -std=c++11 -o main.out hdspin/gillespie.cpp hdspin/standard.cpp hdspin/utils/general_utils.cpp hdspin/utils/init_utils.cpp hdspin/utils/grid_utils.cpp
+	g++ -Wall hdspin/main.cpp -fopenmp -std=c++11 -o main.out hdspin/gillespie.cpp hdspin/standard.cpp hdspin/utils/general_utils.cpp hdspin/utils/init_utils.cpp hdspin/utils/grid_utils.cpp hdspin/utils/structure_utils.cpp
 
 local:
-	g++ -Wall hdspin/main.cpp -Xpreprocessor -fopenmp -lomp -std=c++11 -o main.out hdspin/gillespie.cpp hdspin/standard.cpp hdspin/utils/general_utils.cpp hdspin/utils/init_utils.cpp hdspin/utils/grid_utils.cpp
+	g++ -Wall hdspin/main.cpp -Xpreprocessor -fopenmp -lomp -std=c++11 -o main.out hdspin/gillespie.cpp hdspin/standard.cpp hdspin/utils/general_utils.cpp hdspin/utils/init_utils.cpp hdspin/utils/grid_utils.cpp hdspin/utils/structure_utils.cpp
 
 clean:
 	-rm $(executables)
