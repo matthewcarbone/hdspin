@@ -5,6 +5,7 @@
 #include <iostream>
 #include <cstring>
 #include <sstream>
+#include <omp.h>
 
 #include "gillespie.h"
 #include "standard.h"
@@ -40,15 +41,18 @@ int main(int argc, char *argv[])
     printf("landscape = %i (0=EREM, 1=REM)\n", landscape);
     printf("dynamics = %i (0=standard, 1=gillespie)\n", dynamics);
 
-    std::string ii_str, e_path, psi_config_path;
-
     const int start = resume_at + slurm_arr_id * njobs;
     const int end = resume_at + (slurm_arr_id + 1) * njobs;
 
     printf("job ID's %i -> %i\n", start, end);
+
+    #pragma omp parallel for
     for(int ii = start; ii < end; ii++)
     {
         auto start = std::chrono::high_resolution_clock::now();
+
+        std::string ii_str, e_path, psi_config_path, aging_config_path_1,
+            aging_config_path_2;
 
         ii_str = std::to_string(ii);
         ii_str.insert(ii_str.begin(), 8 - ii_str.length(), '0');
@@ -56,26 +60,34 @@ int main(int argc, char *argv[])
         // Define all the observable trackers ---------------------------------
         // Energy
         e_path = target_directory + "/" + ii_str + "_energy.txt";
-        EnergyGrid energy_grid(grids_directory + "/energy.txt");
+        EnergyGrid energy_grid(grids_directory);
         energy_grid.open_outfile(e_path);
         // Psi config
         psi_config_path = target_directory + "/" + ii_str + "_psi_config.txt";
-        PsiConfigCounter psi_config_counter(log_N_timesteps, psi_config_path);
+        PsiConfigCounter psi_config_counter(log_N_timesteps);
+        // Pi/Aging config
+        aging_config_path_1 =
+            target_directory + "/" + ii_str + "_pi1_config.txt";
+        aging_config_path_2 =
+            target_directory + "/" + ii_str + "_pi2_config.txt";
+        AgingConfigGrid aging_config_grid(grids_directory);
+        aging_config_grid.open_outfile(aging_config_path_1,
+            aging_config_path_2);
 
         // --------------------------------------------------------------------
 
         if (dynamics == 1)
         {
             // printf("Running Gillespie dynamics\n");
-            gillespie(energy_grid, psi_config_counter, log_N_timesteps,
-                N_spins, beta, beta_critical, landscape);
+            gillespie(energy_grid, psi_config_counter, aging_config_grid,
+                log_N_timesteps, N_spins, beta, beta_critical, landscape);
         }
 
         else if (dynamics == 0)
         {
             // printf("Running standard dynamics\n");
-            standard(energy_grid, psi_config_counter, log_N_timesteps, N_spins,
-                beta, beta_critical, landscape);
+            standard(energy_grid, psi_config_counter, aging_config_grid,
+                log_N_timesteps, N_spins, beta, beta_critical, landscape);
         }
 
         else
@@ -97,7 +109,8 @@ int main(int argc, char *argv[])
 
         // Close the outfiles and write to disk when not doing so dynamically
         energy_grid.close_outfile();
-        psi_config_counter.write_to_disk();
+        psi_config_counter.write_to_disk(psi_config_path);
+        aging_config_grid.close_outfile();
 
         printf("%s ~ %s done in %.02f s\n", dt_string.c_str(), ii_str.c_str(),
             duration_double_seconds);

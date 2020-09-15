@@ -59,6 +59,7 @@ if __name__ == '__main__':
         ev = Evaluator(args)
         ev.eval_traj()
         ev.eval_psi_config()
+        ev.eval_aging_config()
 
     else:
         raise RuntimeError("Unknown error")

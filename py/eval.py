@@ -8,6 +8,7 @@ __status__ = "Prototype"
 import os
 
 import numpy as np
+import pickle
 
 from py import utils as u
 
@@ -37,13 +38,51 @@ class Evaluator:
         _all_dirs = u.listdir_fp(self.cache)
         self.all_dirs = [d for d in _all_dirs if os.path.isdir(d)]
 
+    def eval_aging_config(self):
+        """Evalutes all saved pi/aging config results."""
+
+        print(
+            f"Pi/Aging Config: evaluating {len(self.all_dirs)} total "
+            "directories"
+        )
+
+        for full_dir_path in self.all_dirs:
+            print(f"Evaluating {full_dir_path}")
+
+            results_path = os.path.join(full_dir_path, 'results')
+            all_trials = os.listdir(results_path)
+            all_trials.sort()
+            pi1 = np.array([
+                np.loadtxt(os.path.join(results_path, f), delimiter=" ")
+                for f in all_trials if "pi1_config" in f
+            ])
+            pi2 = np.array([
+                np.loadtxt(os.path.join(results_path, f), delimiter=" ")
+                for f in all_trials if "pi2_config" in f
+            ])
+
+            # Find where the config index, the standard config integer rep, and
+            # the inherent structure rep are equal
+            eq = pi1 == pi2
+            print(eq.shape)
+
+            final_path = os.path.join(
+                full_dir_path, 'final/aging_config_sd.pkl'
+            )
+            # np.savetxt(final_path, eq)
+            pickle.dump(eq, open(final_path, 'wb'), protocol=4)
+
+        print("Done\n")
+
     def eval_psi_config(self):
         """Evaluates all saved psi config results."""
 
-        print(f"PsiC: evaluating {len(self.all_dirs)} total directories\n")
+        print(
+            f"Psi Config: evaluating {len(self.all_dirs)} total directories"
+        )
 
         for full_dir_path in self.all_dirs:
-            print(f"Evaluating trajectories/energies for {full_dir_path}")
+            print(f"Evaluating {full_dir_path}")
 
             results_path = os.path.join(full_dir_path, 'results')
             all_trials = os.listdir(results_path)
@@ -81,15 +120,16 @@ class Evaluator:
             )
 
             np.savetxt(final_path, stats)
+        print("Done\n")
 
     def eval_traj(self):
         """Performs the evaluate of the energy, trajectories and inherent
         structure for every directory as listed in all_dirs."""
 
-        print(f"Energy: evaluating {len(self.all_dirs)} total directories\n")
+        print(f"Energy: evaluating {len(self.all_dirs)} total directories")
 
         for full_dir_path in self.all_dirs:
-            print(f"Evaluating trajectories/energies for {full_dir_path}")
+            print(f"Evaluating {full_dir_path}")
 
             results_path = os.path.join(full_dir_path, 'results')
             all_trials = os.listdir(results_path)
@@ -97,7 +137,7 @@ class Evaluator:
                 np.loadtxt(os.path.join(results_path, f), delimiter=" ")
                 for f in all_trials if "energy" in f
             ])
-            print(f"Read trials of shape {res.shape} from {results_path}")
+            # print(f"Read trials of shape {res.shape} from {results_path}")
 
             # Assert that the time-grids are identical for all trials
             assert len(np.unique(res[:, :, 0])) == res.shape[1]
@@ -106,10 +146,10 @@ class Evaluator:
             energies = res[:, :, 2]
             energies_inherent = res[:, :, 4]
 
-            print("\n\n")
-            print(energies.min())
-            print(energies_inherent.min())
-            print("\n\n")
+            # print("\n\n")
+            # print(energies.min())
+            # print(energies_inherent.min())
+            # print("\n\n")
 
             print(f"Loaded energies of shape {energies.shape}")
 
@@ -125,6 +165,6 @@ class Evaluator:
                 energies_inherent.mean(axis=0).squeeze(),
                 energies_inherent.std(axis=0).squeeze()
             ])
-            print(to_save.shape)
+            # print(to_save.shape)
             np.savetxt(final_path, to_save.T)
-            print("Done\n")
+        print("Done\n")

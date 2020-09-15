@@ -11,9 +11,10 @@
 // Energy =====================================================================
 // ============================================================================
 
-EnergyGrid::EnergyGrid(const std::string grid_location)
+EnergyGrid::EnergyGrid(const std::string grid_directory)
 {
     // printf("Initializing grid from %s\n", grid_location.c_str());
+    const std::string grid_location = grid_directory + "/energy.txt";
     std::ifstream myfile (grid_location);
     std::string line;
     if (myfile.is_open())
@@ -59,12 +60,11 @@ void EnergyGrid::step(const double current_time, const long long config_int,
 
 
 // ============================================================================
-// Psi ========================================================================
+// Psi config =================================================================
 // ============================================================================
 
 
-PsiConfigCounter::PsiConfigCounter(const int log_N_timesteps,
-    const std::string outfile_loc)
+PsiConfigCounter::PsiConfigCounter(const int log_N_timesteps)
 {
     max_counter = (long long) log2l(ipow(10, log_N_timesteps));
 
@@ -72,10 +72,9 @@ PsiConfigCounter::PsiConfigCounter(const int log_N_timesteps,
     max_counter += 10;
 
     for (int ii=0; ii<max_counter; ii++){counter.push_back(0);}
-    outfile_location = outfile_loc;
 }
 
-void PsiConfigCounter::write_to_disk()
+void PsiConfigCounter::write_to_disk(const std::string outfile_location)
 {
     FILE *outfile;
     outfile = fopen(outfile_location.c_str(), "w");
@@ -104,4 +103,91 @@ void PsiConfigCounter::step(const long double t)
         if (key > max_counter - 1){return;}
     }
     counter[key] += 1;
+}
+
+
+// ============================================================================
+// Pi/Aging config ============================================================
+// ============================================================================
+
+
+AgingConfigGrid::AgingConfigGrid(const std::string grid_directory)
+{
+    const std::string pi_1_grid_location = grid_directory + "/pi1.txt";
+    const std::string pi_2_grid_location = grid_directory + "/pi2.txt";
+
+    std::string line1;
+
+    std::ifstream myfile_1 (pi_1_grid_location);
+    if (myfile_1.is_open())
+    {
+        while (getline(myfile_1, line1))
+        {
+            grid_pi1.push_back(stoll(line1));
+        }
+        myfile_1.close();
+    }
+    length_pi1 = grid_pi1.size();
+    max_time_pi1 = grid_pi1[length_pi1 - 1];
+
+    std::string line2;
+
+    std::ifstream myfile_2 (pi_2_grid_location);
+    if (myfile_2.is_open())
+    {
+        while (getline(myfile_2, line2))
+        {
+            grid_pi2.push_back(stoll(line2));
+        }
+        myfile_2.close();
+    }
+    length_pi2 = grid_pi2.size();
+    max_time_pi2 = grid_pi2[length_pi2 - 1];
+}
+
+void AgingConfigGrid::open_outfile(const std::string pi1_path,
+    const std::string pi2_path)
+{
+    outfile_pi1 = fopen(pi1_path.c_str(), "w");
+    outfile_pi2 = fopen(pi2_path.c_str(), "w");
+}
+
+void AgingConfigGrid::close_outfile()
+{
+    fclose(outfile_pi1);
+    fclose(outfile_pi2);
+}
+
+
+void AgingConfigGrid::step(const double current_time,
+    const long long config_index, const long long config_int,
+    const long long config_IS_int)
+{
+    if (current_time <= grid_pi1[pointer1]){;}
+    else if (pointer1 > length_pi1 - 1){;}
+    else
+    {
+        // Write to the outfile
+        while (grid_pi1[pointer1] < current_time)
+        {   
+            fprintf(outfile_pi1, "%lli %lli %lli %lli\n",
+                grid_pi1[pointer1], config_index, config_int, config_IS_int);
+            pointer1 += 1;
+            if (pointer1 > length_pi1 - 1){break;}
+        }  
+    }
+
+    if (current_time <= grid_pi2[pointer2]){;}
+    else if (pointer2 > length_pi2 - 1){;}
+    else
+    {
+        // Write to the outfile
+        while (grid_pi2[pointer2] < current_time)
+        {   
+            fprintf(outfile_pi2, "%lli %lli %lli %lli\n",
+                grid_pi2[pointer2], config_index, config_int, config_IS_int);
+            pointer2 += 1;
+            if (pointer2 > length_pi2 - 1){break;}
+        }  
+    }
 }

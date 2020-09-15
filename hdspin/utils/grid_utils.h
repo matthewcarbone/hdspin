@@ -59,13 +59,13 @@ class PsiConfigCounter
 {
 public:
 
-    // Constructor: reads in the grid
-    PsiConfigCounter(const int, const std::string outfile_loc);
+    // Constructor
+    PsiConfigCounter(const int);
 
     // Close the output stream when done; this also writes the counter to
     // disk, since this file will be relatively small compared to the others
     // that are written dynamically.
-    void write_to_disk();
+    void write_to_disk(const std::string);
 
     // Step the grid by performing the following steps:
     // 1) Stepping the pointer
@@ -85,6 +85,46 @@ private:
 };
 
 
+
+// ============================================================================
+// Pi/Aging config ============================================================
+// ============================================================================
+
+class AgingConfigGrid
+{
+public:
+
+    // Constructor: reads in both the pi1 and pi2 grids from disk.
+    AgingConfigGrid(const std::string);
+
+    // Want to open the filestream to the save directory
+    void open_outfile(const std::string, const std::string);
+
+    // Close the output stream when done
+    void close_outfile();
+
+    void step(const double, const long long, const long long,
+        const long long);
+
+private:
+
+    // The location to save the file
+    std::string outfile_location;
+
+    // The pi 1 and 2 grids
+    std::vector<long long> grid_pi1;
+    std::vector<long long> grid_pi2;
+    int length_pi1, length_pi2;
+    long long max_time_pi1, max_time_pi2;
+
+    // The outstream for this tracker
+    FILE *outfile_pi1;
+    FILE *outfile_pi2;
+
+    // Define the pointers
+    int pointer1 = 0;
+    int pointer2 = 0;
+};
 
 
 #endif

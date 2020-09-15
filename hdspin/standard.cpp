@@ -18,8 +18,9 @@
 
 
 void standard(EnergyGrid &energy_grid, PsiConfigCounter &psi_config_counter,
-    const int log_N_timesteps, const int N_spins, const double beta,
-    const double beta_critical, const int landscape)
+    AgingConfigGrid &aging_config_grid, const int log_N_timesteps,
+    const int N_spins, const double beta, const double beta_critical,
+    const int landscape)
 {
 
     /* We first initialize counters, trackers and grids for the various
@@ -90,10 +91,14 @@ void standard(EnergyGrid &energy_grid, PsiConfigCounter &psi_config_counter,
 
     int spin_to_flip;
     double dE, metropolis_prob, new_energy, sampled;
-    bool changed_config;
 
     // Use an artificial waiting time for the standard dynamics.
     long double waiting_time = 1.0;
+
+    // The config index will iterate very time we change configurations, and
+    // thus it does not represent the configuration itself, but pretends that
+    // every configuration, even if it is revisited, is different.
+    long long config_index = 0;
 
     for (long long timestep=0; timestep<N_timesteps; timestep++)
     {
@@ -129,7 +134,6 @@ void standard(EnergyGrid &energy_grid, PsiConfigCounter &psi_config_counter,
         {
             flip_spin_(config, spin_to_flip);  // flip the spin back
             new_energy = current_energy;
-            changed_config = false;
             waiting_time += 1.0;
         }
         else  // accept, don't flip the spin back
@@ -137,9 +141,12 @@ void standard(EnergyGrid &energy_grid, PsiConfigCounter &psi_config_counter,
             // set the energy to the new value
             config_int = proposed_config_int;
             new_energy = proposed_energy;
-            changed_config = true;
             psi_config_counter.step(waiting_time);
             waiting_time = 1.0;
+            config_index += 1;
+
+            // Check for possible (although unlikely) overflow
+            assert(config_index > 0);
         }
 
         current_energy = new_energy;
@@ -151,7 +158,8 @@ void standard(EnergyGrid &energy_grid, PsiConfigCounter &psi_config_counter,
 
         energy_grid.step(timestep, config_int, config_int_IS, current_energy,
             energy_IS);
-
+        aging_config_grid.step(timestep, config_index, config_int,
+            config_int_IS);
     }
 
     delete[] energy_arr;

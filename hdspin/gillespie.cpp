@@ -16,8 +16,9 @@
 
 
 void gillespie(EnergyGrid &energy_grid, PsiConfigCounter &psi_config_counter,
-    const int log_N_timesteps, const int N_spins, const double beta,
-    const double beta_critical, const int landscape)
+    AgingConfigGrid &aging_config_grid, const int log_N_timesteps,
+    const int N_spins, const double beta, const double beta_critical,
+    const int landscape)
 {
 
     /* We first initialize counters, trackers and grids for the various
@@ -86,6 +87,12 @@ void gillespie(EnergyGrid &energy_grid, PsiConfigCounter &psi_config_counter,
 
     long double current_time = 0.0;
     long double waiting_time;
+
+    // The config index will iterate very time we change configurations, and
+    // thus it does not represent the configuration itself, but pretends that
+    // every configuration, even if it is revisited, is different.
+    long long config_index = 0;
+
     while (true)
     {
 
@@ -115,8 +122,10 @@ void gillespie(EnergyGrid &energy_grid, PsiConfigCounter &psi_config_counter,
 
         // Step 4: update the current time of the simulation clock
         current_time += waiting_time;
+        assert(current_time > 0.0);
 
-        // Step 5, append all of the observable trackers.
+        // Step 5, append all of the observable trackers; also compute the
+        // inherent structure.
         config_int_IS = query_inherent_structure(N_spins, config,
             energy_arr, inherent_structure_mapping);
         energy_IS = energy_arr[config_int_IS];
@@ -124,10 +133,16 @@ void gillespie(EnergyGrid &energy_grid, PsiConfigCounter &psi_config_counter,
         energy_grid.step(current_time, config_int, config_int_IS,
             current_energy, energy_IS);
         psi_config_counter.step(waiting_time);
+        aging_config_grid.step(current_time, config_index, config_int,
+            config_int_IS);
 
         // Step 6: step to the next state and store the proposed (new) energy
         step_next_state_(config, exit_rates, total_exit_rate, N_spins,
             generator);
+        config_index += 1;
+
+        // Check for possible (although unlikely) overflow
+        assert(config_index > 0);
 
         if (current_time >= N_timesteps){break;}
 
