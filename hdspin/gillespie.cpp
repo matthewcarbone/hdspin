@@ -16,9 +16,7 @@
 #include "utils/structure_utils.h"
 
 
-void gillespie(const FileNames fnames, const int log_N_timesteps,
-    const int N_spins, const double beta, const double beta_critical,
-    const int landscape)
+void gillespie(const FileNames fnames, const RuntimeParameters params)
 {
 
     // ========================================================================
@@ -36,24 +34,24 @@ void gillespie(const FileNames fnames, const int log_N_timesteps,
 
     // The config is an N_spins-length integer binary array indexing whether a
     // spin is up or down.
-    int config[N_spins];
-    initialize_spin_system(config, N_spins);
+    int config[params.N_spins];
+    initialize_spin_system(config, params.N_spins);
 
     // Initialize the energy dictionary or array for faster lookups. Note that
     // the energy array is huge and need to be explicitly allocated on the
     // heap else we will get a stackoverflow error for N ~ 20 or so.
-    const long long n_configs = ipow(2, N_spins);
-    const long long N_timesteps = ipow(10, log_N_timesteps);
+    const long long n_configs = ipow(2, params.N_spins);
+    const long long N_timesteps = ipow(10, params.log_N_timesteps);
     double *energy_arr = new double[n_configs];
-    if (landscape == 0)
+    if (params.landscape == 0)
     {
         initialize_energy_mapping_exponential_arr(energy_arr, n_configs,
-            beta_critical);
+            params.beta_critical);
     }
     else
     {
-        initialize_energy_mapping_gaussian_arr(energy_arr, n_configs, N_spins,
-            beta_critical);
+        initialize_energy_mapping_gaussian_arr(energy_arr, n_configs,
+            params.N_spins, params.beta_critical);
     }
 
     // The current energy is the energy of the current configuraiton BEFORE
@@ -63,9 +61,9 @@ void gillespie(const FileNames fnames, const int log_N_timesteps,
 
     // Vector of the neighboring energies which is rewritten at every step of
     // the while loop. Also a vector of the dE values, exit rates...
-    double neighboring_energies[N_spins];
-    double exit_rates[N_spins];
-    double delta_E[N_spins];
+    double neighboring_energies[params.N_spins];
+    double exit_rates[params.N_spins];
+    double delta_E[params.N_spins];
     double total_exit_rate;
 
     // Initialize an array for tracking the inherent structures. This is
@@ -95,7 +93,7 @@ void gillespie(const FileNames fnames, const int log_N_timesteps,
     EnergyGrid energy_grid(fnames.grids_directory);
     energy_grid.open_outfile(fnames.energy);
     // Psi config
-    PsiConfigCounter psi_config_counter(log_N_timesteps);
+    PsiConfigCounter psi_config_counter(params.log_N_timesteps);
     // Pi/Aging config
     AgingConfigGrid aging_config_grid(fnames.grids_directory);
     aging_config_grid.open_outfile(fnames.aging_config_1,
@@ -104,18 +102,21 @@ void gillespie(const FileNames fnames, const int log_N_timesteps,
     while (true)
     {
 
-        config_int = binary_vector_to_int(config, N_spins);
+        config_int = binary_vector_to_int(config, params.N_spins);
         current_energy = energy_arr[config_int];
 
         // Step 1: get the neighboring energies by filling the relevant object
         get_neighboring_energies(config, energy_arr, neighboring_energies,
-            N_spins);
+            params.N_spins);
 
         // Step 2: get the exit rates and dE values
-        get_exit_rates(current_energy, beta, neighboring_energies, exit_rates, 
-            delta_E, N_spins);
+        get_exit_rates(current_energy, params.beta, neighboring_energies,
+            exit_rates,  delta_E, params.N_spins);
         total_exit_rate = 0.0;
-        for (int ii=0; ii<N_spins; ii++){total_exit_rate += exit_rates[ii];}
+        for (int ii=0; ii<params.N_spins; ii++)
+        {
+            total_exit_rate += exit_rates[ii];
+        }
 
         // Step 3: initialize an exponential distribution to sample the
         // waiting time from
@@ -134,7 +135,7 @@ void gillespie(const FileNames fnames, const int log_N_timesteps,
 
         // Step 5, append all of the observable trackers; also compute the
         // inherent structure.
-        config_int_IS = query_inherent_structure(N_spins, config,
+        config_int_IS = query_inherent_structure(params.N_spins, config,
             energy_arr, inherent_structure_mapping);
         energy_IS = energy_arr[config_int_IS];
 
@@ -145,7 +146,7 @@ void gillespie(const FileNames fnames, const int log_N_timesteps,
             config_int_IS);
 
         // Step 6: step to the next state and store the proposed (new) energy
-        step_next_state_(config, exit_rates, total_exit_rate, N_spins,
+        step_next_state_(config, exit_rates, total_exit_rate, params.N_spins,
             generator);
         config_index += 1;
 

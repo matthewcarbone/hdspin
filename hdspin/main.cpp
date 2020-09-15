@@ -23,6 +23,8 @@ int main(int argc, char *argv[])
     const double beta_critical = atof(argv[6]);
     const int landscape = atoi(argv[7]);  // 0 for EREM, 1 for REM
     const int dynamics = atoi(argv[8]);  // 0 for standard, 1 for gillespie
+    const RuntimeParameters params = get_runtime_params(log_N_timesteps,
+        N_spins, beta, beta_critical, landscape);
 
     // This will be the minimum job index to resume at
     const int resume_at = atoi(argv[9]);
@@ -63,26 +65,11 @@ int main(int argc, char *argv[])
         const FileNames fnames = get_filenames(ii, target_directory,
             grids_directory);
 
-        // --------------------------------------------------------------------
-
-        if (dynamics == 1)
-        {
-            // printf("Running Gillespie dynamics\n");
-            gillespie(fnames,
-                log_N_timesteps, N_spins, beta, beta_critical, landscape);
-        }
-
-        else if (dynamics == 0)
-        {
-            // printf("Running standard dynamics\n");
-            standard(fnames,
-                log_N_timesteps, N_spins, beta, beta_critical, landscape);
-        }
-
-        else
-        {
-            throw std::runtime_error("Unsupported dynamics flag");
-        }
+        // Run dynamics START -------------------------------------------------
+        if (dynamics == 1){gillespie(fnames, params);}
+        else if (dynamics == 0){standard(fnames, params);}
+        else{throw std::runtime_error("Unsupported dynamics flag");}
+        // Run dynamics END ---------------------------------------------------
 
         auto t = std::time(nullptr);
         auto tm = *std::localtime(&t);
@@ -93,8 +80,8 @@ int main(int argc, char *argv[])
         auto stop = std::chrono::high_resolution_clock::now();
         auto duration_seconds = 
             std::chrono::duration_cast<std::chrono::seconds>(stop - start_t);
-        double duration_double_seconds = 
-            std::chrono::duration<double>(duration_seconds).count();
+        int duration_double_seconds = 
+            std::chrono::duration<int>(duration_seconds).count();
 
         #pragma omp atomic
         loop_count++;
@@ -107,10 +94,10 @@ int main(int argc, char *argv[])
                 auto duration_seconds_g = 
                     std::chrono::duration_cast<std::chrono::seconds>(
                         stop_g - start_t_global_clock);
-                double duration_double_seconds_g = 
-                    std::chrono::duration<double>(duration_seconds_g).count();
+                int duration_double_seconds_g = 
+                    std::chrono::duration<int>(duration_seconds_g).count();
                 printf(
-                    "%s ~ %s done in %.02f s (%i/%i) total elapsed %.02f s\n",
+                    "%s ~ %s done in %i s (%i/%i) total elapsed %i s\n",
                     dt_string.c_str(), fnames.ii_str.c_str(),
                     duration_double_seconds, loop_count, total_steps, 
                     duration_double_seconds_g

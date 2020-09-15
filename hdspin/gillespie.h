@@ -5,8 +5,7 @@
 
 #include "utils/structure_utils.h"
 
-void gillespie(const FileNames, const int,
-    const int, const double, const double, const int);
+void gillespie(const FileNames, const RuntimeParameters);
 
 #endif
 
