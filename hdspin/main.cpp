@@ -46,10 +46,18 @@ int main(int argc, char *argv[])
 
     printf("job ID's %i -> %i\n", start, end);
 
+    // Define some helpers to be used to track progress.
+    const int total_steps = end - start;
+    const int step_size = total_steps / 10; // Print at 10 percent steps
+    int loop_count = 0;
+
+
+    auto start_t_global_clock = std::chrono::high_resolution_clock::now();
+
     #pragma omp parallel for
     for(int ii = start; ii < end; ii++)
     {
-        auto start = std::chrono::high_resolution_clock::now();
+        auto start_t = std::chrono::high_resolution_clock::now();
 
         std::string ii_str, e_path, psi_config_path, aging_config_path_1,
             aging_config_path_2;
@@ -103,7 +111,7 @@ int main(int argc, char *argv[])
 
         auto stop = std::chrono::high_resolution_clock::now();
         auto duration_seconds = 
-            std::chrono::duration_cast<std::chrono::seconds>(stop - start);
+            std::chrono::duration_cast<std::chrono::seconds>(stop - start_t);
         double duration_double_seconds = 
             std::chrono::duration<double>(duration_seconds).count();
 
@@ -112,7 +120,25 @@ int main(int argc, char *argv[])
         psi_config_counter.write_to_disk(psi_config_path);
         aging_config_grid.close_outfile();
 
-        printf("%s ~ %s done in %.02f s\n", dt_string.c_str(), ii_str.c_str(),
-            duration_double_seconds);
+        #pragma omp atomic
+        loop_count++;
+
+        if (loop_count % step_size == 0 | loop_count == 1)
+        {
+            #pragma omp critical
+            {
+                auto stop_g = std::chrono::high_resolution_clock::now();
+                auto duration_seconds_g = 
+                    std::chrono::duration_cast<std::chrono::seconds>(
+                        stop_g - start_t_global_clock);
+                double duration_double_seconds_g = 
+                    std::chrono::duration<double>(duration_seconds_g).count();
+                printf(
+                    "%s ~ %s done in %.02f s (%i/%i) total elapsed %.02f s\n",
+                    dt_string.c_str(), ii_str.c_str(), duration_double_seconds,
+                    loop_count, total_steps, duration_double_seconds_g
+                );
+            }
+        }
     }
 }
