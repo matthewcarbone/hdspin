@@ -63,30 +63,19 @@ int main(int argc, char *argv[])
         const FileNames fnames = get_filenames(ii, target_directory,
             grids_directory);
 
-        // Define all the observable trackers ---------------------------------
-        // Energy
-        EnergyGrid energy_grid(grids_directory);
-        energy_grid.open_outfile(fnames.energy);
-        // Psi config
-        PsiConfigCounter psi_config_counter(log_N_timesteps);
-        // Pi/Aging config
-        AgingConfigGrid aging_config_grid(grids_directory);
-        aging_config_grid.open_outfile(fnames.aging_config_1,
-            fnames.aging_config_2);
-
         // --------------------------------------------------------------------
 
         if (dynamics == 1)
         {
             // printf("Running Gillespie dynamics\n");
-            gillespie(energy_grid, psi_config_counter, aging_config_grid,
+            gillespie(fnames,
                 log_N_timesteps, N_spins, beta, beta_critical, landscape);
         }
 
         else if (dynamics == 0)
         {
             // printf("Running standard dynamics\n");
-            standard(energy_grid, psi_config_counter, aging_config_grid,
+            standard(fnames,
                 log_N_timesteps, N_spins, beta, beta_critical, landscape);
         }
 
@@ -106,11 +95,6 @@ int main(int argc, char *argv[])
             std::chrono::duration_cast<std::chrono::seconds>(stop - start_t);
         double duration_double_seconds = 
             std::chrono::duration<double>(duration_seconds).count();
-
-        // Close the outfiles and write to disk when not doing so dynamically
-        energy_grid.close_outfile();
-        psi_config_counter.write_to_disk(fnames.psi_config);
-        aging_config_grid.close_outfile();
 
         #pragma omp atomic
         loop_count++;

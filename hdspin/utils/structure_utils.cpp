@@ -24,7 +24,7 @@ RuntimeParameters get_runtime_params(const int log_N_timesteps,
     const int N_spins, const double beta, const double beta_critical,
     const int landscape)
 {
-    double energetic_threshold, entropic_attractor;
+    double et, ea;
     RuntimeParameters params;
     params.log_N_timesteps = log_N_timesteps;
     params.N_spins = N_spins;
@@ -34,8 +34,8 @@ RuntimeParameters get_runtime_params(const int log_N_timesteps,
 
     if (landscape == 0) // EREM
     {
-        energetic_threshold = -1.0 / beta_critical * log(N_spins);
-        entropic_attractor = 1.0 / (beta - beta_critical)
+        et = -1.0 / beta_critical * log(N_spins);
+        ea = 1.0 / (beta - beta_critical)
             * log((2.0 * beta_critical - beta) / beta_critical);
 
         if (beta >= 2.0 * beta_critical | beta <= beta_critical)
@@ -47,16 +47,16 @@ RuntimeParameters get_runtime_params(const int log_N_timesteps,
     }
     else if (landscape == 1) // REM
     {
-        energetic_threshold = -sqrt(2.0 * N_spins * log(N_spins));
-        entropic_attractor = -N_spins * beta / 2.0;
+        et = -sqrt(2.0 * N_spins * log(N_spins));
+        ea = -N_spins * beta / 2.0;
     }
     else
     {
         throw std::runtime_error("Unknown landscape flag");
     }
 
-    params.energetic_threshold = energetic_threshold;
-    params.entropic_attractor = entropic_attractor;
+    params.energetic_threshold = et;
+    params.entropic_attractor = ea;
 
     // Arguments pertaining to the job itself
     printf("log_N_timesteps = %i\n", log_N_timesteps);
@@ -64,8 +64,8 @@ RuntimeParameters get_runtime_params(const int log_N_timesteps,
     printf("beta = %.02f\n", beta);
     printf("beta_critical = %.02f\n", beta_critical);
     printf("landscape = %i (0=EREM, 1=REM)\n", landscape);
-    printf("energetic threshold = %.02f\n", energetic_threshold);
-    printf("entropic attractor = %.02f\n", entropic_attractor);
+    printf("energetic threshold = %.02f\n", et);
+    printf("entropic attractor = %.02f\n", ea);
 
     return params;
 }

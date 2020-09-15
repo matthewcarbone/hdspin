@@ -3,9 +3,9 @@
 
 #include <iostream>
 
-#include "utils/grid_utils.h"
+#include "utils/structure_utils.h"
 
-void standard(EnergyGrid &, PsiConfigCounter &, AgingConfigGrid &, const int,
+void standard(const FileNames, const int,
     const int, const double, const double, const int);
 
 #endif

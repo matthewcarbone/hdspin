@@ -14,11 +14,11 @@
 #include "utils/init_utils.h"
 #include "utils/general_utils.h"
 #include "utils/grid_utils.h"
+#include "utils/structure_utils.h"
 
 
 
-void standard(EnergyGrid &energy_grid, PsiConfigCounter &psi_config_counter,
-    AgingConfigGrid &aging_config_grid, const int log_N_timesteps,
+void standard(const FileNames fnames, const int log_N_timesteps,
     const int N_spins, const double beta, const double beta_critical,
     const int landscape)
 {
@@ -55,7 +55,7 @@ void standard(EnergyGrid &energy_grid, PsiConfigCounter &psi_config_counter,
     // heap else we will get a stackoverflow error for N ~ 20 or so.
     const long long n_configs = ipow(2, N_spins);
     const long long N_timesteps = ipow(10, log_N_timesteps) + 2;
-    std::cout << std::flush;
+
     double *energy_arr = new double[n_configs];
     if (landscape == 0)
     {
@@ -99,6 +99,18 @@ void standard(EnergyGrid &energy_grid, PsiConfigCounter &psi_config_counter,
     // thus it does not represent the configuration itself, but pretends that
     // every configuration, even if it is revisited, is different.
     long long config_index = 0;
+
+
+    // Define all the observable trackers ---------------------------------
+    // Energy
+    EnergyGrid energy_grid(fnames.grids_directory);
+    energy_grid.open_outfile(fnames.energy);
+    // Psi config
+    PsiConfigCounter psi_config_counter(log_N_timesteps);
+    // Pi/Aging config
+    AgingConfigGrid aging_config_grid(fnames.grids_directory);
+    aging_config_grid.open_outfile(fnames.aging_config_1,
+        fnames.aging_config_2);
 
     for (long long timestep=0; timestep<N_timesteps; timestep++)
     {
@@ -161,6 +173,11 @@ void standard(EnergyGrid &energy_grid, PsiConfigCounter &psi_config_counter,
         aging_config_grid.step(timestep, config_index, config_int,
             config_int_IS);
     }
+
+    // Close the outfiles and write to disk when not doing so dynamically
+    energy_grid.close_outfile();
+    psi_config_counter.write_to_disk(fnames.psi_config);
+    aging_config_grid.close_outfile();
 
     delete[] energy_arr;
     delete[] inherent_structure_mapping;

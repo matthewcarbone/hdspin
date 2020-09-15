@@ -13,16 +13,13 @@
 #include "utils/init_utils.h"
 #include "utils/general_utils.h"
 #include "utils/grid_utils.h"
+#include "utils/structure_utils.h"
 
 
-void gillespie(EnergyGrid &energy_grid, PsiConfigCounter &psi_config_counter,
-    AgingConfigGrid &aging_config_grid, const int log_N_timesteps,
+void gillespie(const FileNames fnames, const int log_N_timesteps,
     const int N_spins, const double beta, const double beta_critical,
     const int landscape)
 {
-
-    /* We first initialize counters, trackers and grids for the various
-    observables we are interested in recording.*/
 
     // ========================================================================
     // Random =================================================================
@@ -93,6 +90,17 @@ void gillespie(EnergyGrid &energy_grid, PsiConfigCounter &psi_config_counter,
     // every configuration, even if it is revisited, is different.
     long long config_index = 0;
 
+    // Define all the observable trackers ---------------------------------
+    // Energy
+    EnergyGrid energy_grid(fnames.grids_directory);
+    energy_grid.open_outfile(fnames.energy);
+    // Psi config
+    PsiConfigCounter psi_config_counter(log_N_timesteps);
+    // Pi/Aging config
+    AgingConfigGrid aging_config_grid(fnames.grids_directory);
+    aging_config_grid.open_outfile(fnames.aging_config_1,
+        fnames.aging_config_2);
+
     while (true)
     {
 
@@ -147,6 +155,11 @@ void gillespie(EnergyGrid &energy_grid, PsiConfigCounter &psi_config_counter,
         if (current_time >= N_timesteps){break;}
 
     }
+
+    // Close the outfiles and write to disk when not doing so dynamically
+    energy_grid.close_outfile();
+    psi_config_counter.write_to_disk(fnames.psi_config);
+    aging_config_grid.close_outfile();
 
     delete[] energy_arr;
     delete[] inherent_structure_mapping;
