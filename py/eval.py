@@ -47,7 +47,6 @@ class Evaluator:
         )
 
         for full_dir_path in self.all_dirs:
-            print(f"Evaluating {full_dir_path}")
 
             results_path = os.path.join(full_dir_path, 'results')
             all_trials = os.listdir(results_path)
@@ -64,7 +63,7 @@ class Evaluator:
             # Find where the config index, the standard config integer rep, and
             # the inherent structure rep are equal
             eq = pi1 == pi2
-            print(eq.shape)
+            print(f"Evaluating {full_dir_path} - shape {eq.shape}")
 
             final_path = os.path.join(
                 full_dir_path, 'final/aging_config_sd.pkl'
@@ -82,7 +81,6 @@ class Evaluator:
         )
 
         for full_dir_path in self.all_dirs:
-            print(f"Evaluating {full_dir_path}")
 
             results_path = os.path.join(full_dir_path, 'results')
             all_trials = os.listdir(results_path)
@@ -115,11 +113,10 @@ class Evaluator:
                         stats[ii, key] = value
 
             final_path = os.path.join(full_dir_path, 'final/psi_config.txt')
-            print(
-                f"Saving psi_config of shape {stats.shape} to {final_path}"
-            )
+            print(f"Evaluating {full_dir_path} - shape {stats.shape}")
 
             np.savetxt(final_path, stats)
+
         print("Done\n")
 
     def eval_traj(self):
@@ -129,7 +126,6 @@ class Evaluator:
         print(f"Energy: evaluating {len(self.all_dirs)} total directories")
 
         for full_dir_path in self.all_dirs:
-            print(f"Evaluating {full_dir_path}")
 
             results_path = os.path.join(full_dir_path, 'results')
             all_trials = os.listdir(results_path)
@@ -151,12 +147,9 @@ class Evaluator:
             # print(energies_inherent.min())
             # print("\n\n")
 
-            print(f"Loaded energies of shape {energies.shape}")
+            # print(f"Loaded energies of shape {energies.shape}")
 
             final_path = os.path.join(full_dir_path, 'final/energy.txt')
-            print(
-                f"Saving energy and energy inherent structure to {final_path}"
-            )
 
             to_save = np.array([
                 res[0, :, 0].squeeze(),
@@ -165,6 +158,9 @@ class Evaluator:
                 energies_inherent.mean(axis=0).squeeze(),
                 energies_inherent.std(axis=0).squeeze()
             ])
-            # print(to_save.shape)
+
+            print(f"Evaluating {full_dir_path} - shape {to_save.T.shape}")
+
             np.savetxt(final_path, to_save.T)
+
         print("Done\n")
