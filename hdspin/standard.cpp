@@ -17,6 +17,15 @@
 #include "utils/structure_utils.h"
 
 
+struct SystemInformation
+{
+    long long x, x_prev;
+    long double e, e_prev;
+
+    // The amount of time the system has spent in some configuration
+    long double waiting_time = 0.0;
+};
+
 
 void standard(const FileNames fnames, const RuntimeParameters params)
 {
@@ -68,8 +77,8 @@ void standard(const FileNames fnames, const RuntimeParameters params)
 
     // The current energy is the energy of the current configuraiton BEFORE
     // stepping to the next one at the end of each algorithm step.
-    double current_energy, proposed_energy, energy_IS;
-    long long config_int, proposed_config_int, config_int_IS;
+    double proposed_energy;
+    long long proposed_config_int;
 
     // Initialize an array for tracking the inherent structures. This is
     // basically a mapping between the index of the array (configuration) and
@@ -88,16 +97,7 @@ void standard(const FileNames fnames, const RuntimeParameters params)
     // ========================================================================
 
     int spin_to_flip;
-    double dE, metropolis_prob, new_energy, sampled;
-
-    // Use an artificial waiting time for the standard dynamics.
-    long double waiting_time = 1.0;
-
-    // The config index will iterate very time we change configurations, and
-    // thus it does not represent the configuration itself, but pretends that
-    // every configuration, even if it is revisited, is different.
-    long long config_index = 0;
-
+    double dE, metropolis_prob, sampled;
 
     // Define all the observable trackers ---------------------------------
     // Energy
@@ -110,9 +110,31 @@ void standard(const FileNames fnames, const RuntimeParameters params)
     aging_config_grid.open_outfile(fnames.aging_config_1,
         fnames.aging_config_2);
 
+    // Initialize the original values
+    SystemInformation sys, sys_IS;
+    sys.x = binary_vector_to_int(config, params.N_spins);
+    sys.x_prev = sys.x;
+    sys.e = energy_arr[sys.x];
+    sys.e_prev = sys.e;
+
+    // Do the same for the inherent structure
+    sys_IS.x = query_inherent_structure(params.N_spins, config,
+        energy_arr, inherent_structure_mapping);
+    sys_IS.x_prev = sys_IS.x;
+    sys_IS.e = energy_arr[sys_IS.x];
+    sys_IS.e_prev = sys_IS.e;
+
+    // This index will iterate very time we accept a new configuration, and
+    // thus it does not represent the configuration itself, but pretends that
+    // every configuration, even if it is revisited, is different.
+    long long n_accepted = 0;
+
     for (long long timestep=0; timestep<N_timesteps; timestep++)
     {
-        config_int = binary_vector_to_int(config, params.N_spins);
+        
+        // --------------------------------------------------------------------
+        // ---------------------------- ENGINE --------------------------------
+        // --------------------------------------------------------------------
 
         // Step 2, select a random spin to flip
         spin_to_flip = spin_distribution(generator);
@@ -126,7 +148,7 @@ void standard(const FileNames fnames, const RuntimeParameters params)
 
         // Step 5, compute the difference between the energies, and find the
         // metropolis criterion
-        dE = proposed_energy - current_energy;
+        dE = proposed_energy - sys.e;
         metropolis_prob = exp(-params.beta * dE);
 
         // Step 6, sample a random number between 0 and 1.
@@ -143,33 +165,52 @@ void standard(const FileNames fnames, const RuntimeParameters params)
         if (sampled > metropolis_prob)  // reject
         {
             flip_spin_(config, spin_to_flip);  // flip the spin back
-            new_energy = current_energy;
-            waiting_time += 1.0;
+            sys.waiting_time += 1.0;
+            sys_IS.waiting_time += 1.0;
         }
         else  // accept, don't flip the spin back
         {
-            // set the energy to the new value
-            config_int = proposed_config_int;
-            new_energy = proposed_energy;
-            psi_config_counter.step(waiting_time);
-            waiting_time = 1.0;
-            config_index += 1;
+            // Update the values for the system and inherent structure
+            sys.x_prev = sys.x;
+            sys.x = proposed_config_int;
+            sys.e_prev = sys.e;
+            sys.e = proposed_energy;
+
+            psi_config_counter.step(sys.waiting_time);
+            sys.waiting_time = 0.0;
+
+            // Update the inherent structure values
+            sys_IS.x_prev = sys_IS.x;
+            sys_IS.e_prev = sys_IS.e;
+            sys_IS.x = query_inherent_structure(params.N_spins, config,
+                energy_arr, inherent_structure_mapping);
+            sys_IS.e = energy_arr[sys_IS.x];
+
+            // This is a tricky update for the inherent structure, since it
+            // will have a different waiting time than the normal
+            // configuration, as it may not change even though the normal
+            // configuration does.
+            if (sys_IS.x == sys_IS.x_prev){sys_IS.waiting_time += 1.0;}
+            else
+            {
+                // NEED TO APPEND A NEW COUNTER HERE FOR PSI IS!!!
+                sys_IS.waiting_time = 0.0;
+            }
+
+            n_accepted += 1;
 
             // Check for possible (although unlikely) overflow
-            assert(config_index > 0);
+            assert(n_accepted > 0);
         }
 
-        current_energy = new_energy;
+        // --------------------------------------------------------------------
+        // ----------------------- ENGINE FINISH ------------------------------
+        // --------------------------------------------------------------------
 
-        // Step 8, append all of the observable trackers.
-        config_int_IS = query_inherent_structure(params.N_spins, config,
-            energy_arr, inherent_structure_mapping);
-        energy_IS = energy_arr[config_int_IS];
+        // Append trackers
+        energy_grid.step(timestep, sys.x, sys_IS.x, sys.e, sys_IS.e);
+        aging_config_grid.step(timestep, n_accepted, sys.x, sys_IS.x);
 
-        energy_grid.step(timestep, config_int, config_int_IS, current_energy,
-            energy_IS);
-        aging_config_grid.step(timestep, config_index, config_int,
-            config_int_IS);
     }
 
     // Close the outfiles and write to disk when not doing so dynamically

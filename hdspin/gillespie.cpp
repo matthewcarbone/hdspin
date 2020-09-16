@@ -56,8 +56,8 @@ void gillespie(const FileNames fnames, const RuntimeParameters params)
 
     // The current energy is the energy of the current configuraiton BEFORE
     // stepping to the next one at the end of each algorithm step.
-    double current_energy, energy_IS;
-    long long config_int, config_int_IS;
+    double current_energy, current_energy_IS;
+    long long current_config_int, current_config_int_IS;
 
     // Vector of the neighboring energies which is rewritten at every step of
     // the while loop. Also a vector of the dE values, exit rates...
@@ -99,11 +99,19 @@ void gillespie(const FileNames fnames, const RuntimeParameters params)
     aging_config_grid.open_outfile(fnames.aging_config_1,
         fnames.aging_config_2);
 
+    // Initialize the original values
+    current_config_int = binary_vector_to_int(config, params.N_spins);
+    current_energy = energy_arr[current_config_int];
+    current_config_int_IS = query_inherent_structure(params.N_spins, config,
+        energy_arr, inherent_structure_mapping);
+    current_energy_IS = energy_arr[current_config_int_IS];
+
     while (true)
     {
 
-        config_int = binary_vector_to_int(config, params.N_spins);
-        current_energy = energy_arr[config_int];
+        // --------------------------------------------------------------------
+        // ---------------------------- ENGINE --------------------------------
+        // --------------------------------------------------------------------
 
         // Step 1: get the neighboring energies by filling the relevant object
         get_neighboring_energies(config, energy_arr, neighboring_energies,
@@ -131,26 +139,31 @@ void gillespie(const FileNames fnames, const RuntimeParameters params)
 
         // Step 4: update the current time of the simulation clock
         current_time += waiting_time;
-        assert(current_time > 0.0);
 
-        // Step 5, append all of the observable trackers; also compute the
-        // inherent structure.
-        config_int_IS = query_inherent_structure(params.N_spins, config,
-            energy_arr, inherent_structure_mapping);
-        energy_IS = energy_arr[config_int_IS];
-
-        energy_grid.step(current_time, config_int, config_int_IS,
-            current_energy, energy_IS);
+        energy_grid.step(current_time, current_config_int,
+            current_config_int_IS, current_energy, current_energy_IS);
         psi_config_counter.step(waiting_time);
-        aging_config_grid.step(current_time, config_index, config_int,
-            config_int_IS);
+        aging_config_grid.step(current_time, config_index, current_config_int,
+            current_config_int_IS);
 
         // Step 6: step to the next state and store the proposed (new) energy
         step_next_state_(config, exit_rates, total_exit_rate, params.N_spins,
             generator);
+
+        current_config_int = binary_vector_to_int(config, params.N_spins);
+        current_energy = energy_arr[current_config_int];
+        current_config_int_IS = query_inherent_structure(params.N_spins,
+            config, energy_arr, inherent_structure_mapping);
+        current_energy_IS = energy_arr[current_config_int_IS];
+
+        // --------------------------------------------------------------------
+        // ----------------------- ENGINE FINISH ------------------------------
+        // --------------------------------------------------------------------
+
         config_index += 1;
 
         // Check for possible (although unlikely) overflow
+        assert(current_time > 0.0);
         assert(config_index > 0);
 
         if (current_time >= N_timesteps){break;}
