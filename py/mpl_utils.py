@@ -70,10 +70,14 @@ class PlottingManager:
 
     def plot_psi_config(
         self, ax, directory, cache=os.environ['HDSPIN_CACHE_DIR'],
-        fname='final/psi_config.txt', standard_error=False, color=None,
-        label=None
+        fname_base='final/psi_config', standard_error=False, color=None,
+        label=None, inherent_structure=False
     ):
 
+        if inherent_structure:
+            fname = fname_base + "_IS.txt"
+        else:
+            fname = fname_base + ".txt"
         arr = np.loadtxt(os.path.join(cache, directory, fname))
         grid = [2**ii for ii in range(arr.shape[1])]
         e = arr.mean(axis=0)

@@ -54,11 +54,6 @@ void gillespie(const FileNames fnames, const RuntimeParameters params)
             params.N_spins, params.beta_critical);
     }
 
-    // The current energy is the energy of the current configuraiton BEFORE
-    // stepping to the next one at the end of each algorithm step.
-    double current_energy, current_energy_IS;
-    long long current_config_int, current_config_int_IS;
-
     // Vector of the neighboring energies which is rewritten at every step of
     // the while loop. Also a vector of the dE values, exit rates...
     double neighboring_energies[params.N_spins];
@@ -86,7 +81,7 @@ void gillespie(const FileNames fnames, const RuntimeParameters params)
     // The config index will iterate very time we change configurations, and
     // thus it does not represent the configuration itself, but pretends that
     // every configuration, even if it is revisited, is different.
-    long long config_index = 0;
+    long long n_accept = 0;
 
     // Define all the observable trackers ---------------------------------
     // Energy
@@ -99,12 +94,20 @@ void gillespie(const FileNames fnames, const RuntimeParameters params)
     aging_config_grid.open_outfile(fnames.aging_config_1,
         fnames.aging_config_2);
 
+    SystemInformation sys, inh;
+
     // Initialize the original values
-    current_config_int = binary_vector_to_int(config, params.N_spins);
-    current_energy = energy_arr[current_config_int];
-    current_config_int_IS = query_inherent_structure(params.N_spins, config,
-        energy_arr, inherent_structure_mapping);
-    current_energy_IS = energy_arr[current_config_int_IS];
+    sys.x = binary_vector_to_int(config, params.N_spins);
+    sys.x_prev = sys.x;
+    sys.e = energy_arr[sys.x];
+    sys.e_prev = sys.e;
+
+    // Do the same for the inherent structure
+    inh.x = query_inherent_structure(params.N_spins, config, energy_arr,
+        inherent_structure_mapping);
+    inh.x_prev = inh.x;
+    inh.e = energy_arr[inh.x];
+    inh.e_prev = inh.e;
 
     while (true)
     {
@@ -118,7 +121,7 @@ void gillespie(const FileNames fnames, const RuntimeParameters params)
             params.N_spins);
 
         // Step 2: get the exit rates and dE values
-        get_exit_rates(current_energy, params.beta, neighboring_energies,
+        get_exit_rates(sys.e, params.beta, neighboring_energies,
             exit_rates,  delta_E, params.N_spins);
         total_exit_rate = 0.0;
         for (int ii=0; ii<params.N_spins; ii++)
@@ -140,31 +143,62 @@ void gillespie(const FileNames fnames, const RuntimeParameters params)
         // Step 4: update the current time of the simulation clock
         current_time += waiting_time;
 
-        energy_grid.step(current_time, current_config_int,
-            current_config_int_IS, current_energy, current_energy_IS);
-        psi_config_counter.step(waiting_time);
-        aging_config_grid.step(current_time, config_index, current_config_int,
-            current_config_int_IS);
-
         // Step 6: step to the next state and store the proposed (new) energy
         step_next_state_(config, exit_rates, total_exit_rate, params.N_spins,
             generator);
 
-        current_config_int = binary_vector_to_int(config, params.N_spins);
-        current_energy = energy_arr[current_config_int];
-        current_config_int_IS = query_inherent_structure(params.N_spins,
-            config, energy_arr, inherent_structure_mapping);
-        current_energy_IS = energy_arr[current_config_int_IS];
+        //         -------------------------------------------------
+        //         ---------------- STEP TRACKERS ------------------
+        //         -------------------------------------------------
+
+        // Append trackers. Note that Gillespie dynamics are different than
+        // standard in the order in which we update the grids, so the grids are
+        // actually stepped before the sys/inh objects are updated.  
+        energy_grid.step(current_time, sys, inh);
+        aging_config_grid.step(current_time, n_accept, sys.x, inh.x);
+        psi_config_counter.step(waiting_time, false);  // Step standard
+
+        // This is a tricky update for the inherent structure, since it
+        // will have a different waiting time than the normal
+        // configuration, as it may not change even though the normal
+        // configuration does.
+        if (inh.x == inh.x_prev){inh.waiting_time += waiting_time;}
+        else
+        {
+            // Step the inherent structure psi config counter
+            psi_config_counter.step(inh.waiting_time, true);  // Step IS
+            inh.waiting_time = 0.0;
+        }
+
+        //         -------------------------------------------------
+        //         -------------- DONE STEP TRACKERS ---------------
+        //         -------------------------------------------------
+
+        // Update values for the system
+        sys.x_prev = sys.x;
+        sys.x = binary_vector_to_int(config, params.N_spins);
+        sys.e_prev = sys.e;
+        sys.e = energy_arr[sys.x];
+        
+
+        // Update the inherent structure values
+        inh.x_prev = inh.x;
+        inh.e_prev = inh.e;
+        inh.x = query_inherent_structure(params.N_spins, config,
+            energy_arr, inherent_structure_mapping);
+        inh.e = energy_arr[inh.x];
+
+        
 
         // --------------------------------------------------------------------
         // ----------------------- ENGINE FINISH ------------------------------
         // --------------------------------------------------------------------
 
-        config_index += 1;
+        n_accept += 1;
 
         // Check for possible (although unlikely) overflow
         assert(current_time > 0.0);
-        assert(config_index > 0);
+        assert(n_accept > 0);
 
         if (current_time >= N_timesteps){break;}
 

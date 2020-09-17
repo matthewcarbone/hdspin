@@ -17,16 +17,6 @@
 #include "utils/structure_utils.h"
 
 
-struct SystemInformation
-{
-    long long x, x_prev;
-    long double e, e_prev;
-
-    // The amount of time the system has spent in some configuration
-    long double waiting_time = 0.0;
-};
-
-
 void standard(const FileNames fnames, const RuntimeParameters params)
 {
 
@@ -110,19 +100,20 @@ void standard(const FileNames fnames, const RuntimeParameters params)
     aging_config_grid.open_outfile(fnames.aging_config_1,
         fnames.aging_config_2);
 
+    SystemInformation sys, inh;
+
     // Initialize the original values
-    SystemInformation sys, sys_IS;
     sys.x = binary_vector_to_int(config, params.N_spins);
     sys.x_prev = sys.x;
     sys.e = energy_arr[sys.x];
     sys.e_prev = sys.e;
 
     // Do the same for the inherent structure
-    sys_IS.x = query_inherent_structure(params.N_spins, config,
-        energy_arr, inherent_structure_mapping);
-    sys_IS.x_prev = sys_IS.x;
-    sys_IS.e = energy_arr[sys_IS.x];
-    sys_IS.e_prev = sys_IS.e;
+    inh.x = query_inherent_structure(params.N_spins, config, energy_arr,
+        inherent_structure_mapping);
+    inh.x_prev = inh.x;
+    inh.e = energy_arr[inh.x];
+    inh.e_prev = inh.e;
 
     // This index will iterate very time we accept a new configuration, and
     // thus it does not represent the configuration itself, but pretends that
@@ -166,35 +157,37 @@ void standard(const FileNames fnames, const RuntimeParameters params)
         {
             flip_spin_(config, spin_to_flip);  // flip the spin back
             sys.waiting_time += 1.0;
-            sys_IS.waiting_time += 1.0;
+            inh.waiting_time += 1.0;
         }
         else  // accept, don't flip the spin back
         {
-            // Update the values for the system and inherent structure
+            // Update the values for the system
             sys.x_prev = sys.x;
             sys.x = proposed_config_int;
             sys.e_prev = sys.e;
             sys.e = proposed_energy;
 
-            psi_config_counter.step(sys.waiting_time);
+            // Step the standard config psi counter
+            psi_config_counter.step(sys.waiting_time, false);
             sys.waiting_time = 0.0;
 
             // Update the inherent structure values
-            sys_IS.x_prev = sys_IS.x;
-            sys_IS.e_prev = sys_IS.e;
-            sys_IS.x = query_inherent_structure(params.N_spins, config,
+            inh.x_prev = inh.x;
+            inh.e_prev = inh.e;
+            inh.x = query_inherent_structure(params.N_spins, config,
                 energy_arr, inherent_structure_mapping);
-            sys_IS.e = energy_arr[sys_IS.x];
+            inh.e = energy_arr[inh.x];
 
             // This is a tricky update for the inherent structure, since it
             // will have a different waiting time than the normal
             // configuration, as it may not change even though the normal
             // configuration does.
-            if (sys_IS.x == sys_IS.x_prev){sys_IS.waiting_time += 1.0;}
+            if (inh.x == inh.x_prev){inh.waiting_time += 1.0;}
             else
             {
-                // NEED TO APPEND A NEW COUNTER HERE FOR PSI IS!!!
-                sys_IS.waiting_time = 0.0;
+                // Step the inherent structure psi config counter
+                psi_config_counter.step(inh.waiting_time, true);
+                inh.waiting_time = 0.0;
             }
 
             n_accepted += 1;
@@ -207,9 +200,16 @@ void standard(const FileNames fnames, const RuntimeParameters params)
         // ----------------------- ENGINE FINISH ------------------------------
         // --------------------------------------------------------------------
 
-        // Append trackers
-        energy_grid.step(timestep, sys.x, sys_IS.x, sys.e, sys_IS.e);
-        aging_config_grid.step(timestep, n_accepted, sys.x, sys_IS.x);
+        //         -------------------------------------------------
+        //         ------------- STEP [other] TRACKERS -------------
+        //         -------------------------------------------------
+
+        energy_grid.step(timestep, sys, inh);
+        aging_config_grid.step(timestep, n_accepted, sys.x, inh.x);
+
+        //         -------------------------------------------------
+        //         -------------- DONE STEP TRACKERS ---------------
+        //         -------------------------------------------------
 
     }
 

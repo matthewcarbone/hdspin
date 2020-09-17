@@ -5,6 +5,7 @@
 
 #include "general_utils.h"
 #include "grid_utils.h"
+#include "structure_utils.h"
 
 
 // ============================================================================
@@ -38,8 +39,8 @@ void EnergyGrid::open_outfile(const std::string d)
 
 void EnergyGrid::close_outfile(){fclose(outfile);}
 
-void EnergyGrid::step(const double current_time, const long long config_int,
-    const long long config_IS_int, const double energy, const double energy_IS)
+void EnergyGrid::step(const double current_time, const SystemInformation sys,
+    const SystemInformation inh)
 {
 
     // No updates necessary
@@ -50,8 +51,8 @@ void EnergyGrid::step(const double current_time, const long long config_int,
     // Write to the outfile
     while (grid[pointer] < current_time)
     {   
-        fprintf(outfile, "%lli %lli %.05f %lli %.05f\n", grid[pointer],
-            config_int, energy, config_IS_int, energy_IS);
+        fprintf(outfile, "%lli %lli %.05Lf %lli %.05Lf\n", grid[pointer],
+            sys.x, sys.e, inh.x, inh.e);
         pointer += 1;
         if (pointer > length - 1){return;}
     }
@@ -72,6 +73,7 @@ PsiConfigCounter::PsiConfigCounter(const int log_N_timesteps)
     max_counter += 10;
 
     for (int ii=0; ii<max_counter; ii++){counter.push_back(0);}
+    for (int ii=0; ii<max_counter; ii++){counter_IS.push_back(0);}
 }
 
 void PsiConfigCounter::write_to_disk(const std::string outfile_location)
@@ -80,12 +82,12 @@ void PsiConfigCounter::write_to_disk(const std::string outfile_location)
     outfile = fopen(outfile_location.c_str(), "w");
     for (int ii=0; ii<max_counter; ii++)
     {
-        fprintf(outfile, "%i %lli\n", ii, counter[ii]);
+        fprintf(outfile, "%i %lli %lli\n", ii, counter[ii], counter_IS[ii]);
     }
     fclose(outfile);
 }
 
-void PsiConfigCounter::step(const long double t)
+void PsiConfigCounter::step(const long double t, const bool inherent_structure)
 {
 
     long long key;
@@ -102,7 +104,9 @@ void PsiConfigCounter::step(const long double t)
         // Gillespie dynamics since they can be chalked up to edge effects.
         if (key > max_counter - 1){return;}
     }
-    counter[key] += 1;
+
+    if (inherent_structure == true){counter_IS[key] += 1;}
+    else{counter[key] += 1;}
 }
 
 

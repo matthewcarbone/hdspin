@@ -25,6 +25,15 @@ struct RuntimeParameters
     double entropic_attractor;
 };
 
+struct SystemInformation
+{
+    long long x, x_prev;
+    long double e, e_prev;
+
+    // The amount of time the system has spent in some configuration
+    long double waiting_time = 0.0;
+};
+
 FileNames get_filenames(const int, const std::string, const std::string);
 
 RuntimeParameters get_runtime_params(const int, const int, const double,

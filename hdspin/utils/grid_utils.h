@@ -1,9 +1,11 @@
+#ifndef GRID_UTILS_H
+#define GRID_UTILS_H
+
 #include <iostream>
 #include <vector>
 #include <fstream>
 
-#ifndef GRID_UTILS_H
-#define GRID_UTILS_H
+#include "structure_utils.h"
 
 
 // ============================================================================
@@ -26,8 +28,7 @@ public:
     // Step the grid by performing the following steps:
     // 1) Stepping the pointer
     // 2) Saving the configuration/energy information to disk
-    void step(const double, const long long, const long long, const double,
-        const double);
+    void step(const double, const SystemInformation, const SystemInformation);
     
 private:
 
@@ -70,12 +71,12 @@ public:
     // Step the grid by performing the following steps:
     // 1) Stepping the pointer
     // 2) Saving the configuration/energy information to disk
-    void step(const long double);
+    void step(const long double, const bool);
     
 private:
 
     // The log2-binned trapping times
-    std::vector<long long> counter;
+    std::vector<long long> counter, counter_IS;
 
     // The maximum key value
     long long max_counter;
