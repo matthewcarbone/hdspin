@@ -187,3 +187,147 @@ class Evaluator:
             np.savetxt(final_path, to_save.T)
 
         print("Done\n")
+
+    def eval_psi_basin_S(self):
+        """Evaluates all saved psi basin entropy results."""
+
+        print(
+            f"Psi Basin: evaluating {len(self.all_dirs)} total directories"
+        )
+
+        for full_dir_path in self.all_dirs:
+
+            results_path = os.path.join(full_dir_path, 'results')
+            all_trials = os.listdir(results_path)
+            res = [
+                np.loadtxt(os.path.join(results_path, f), delimiter=" ")
+                for f in all_trials if "psi_basin" in f
+            ]
+
+            # Construct dictionaries out of each result while also keeping
+            # track of the max key value. There's probably a way to do this
+            # using list comprehension, but this is easier for now, and the
+            # total number of results will never more more than ~10k, so it
+            # should be ok.
+            dict_res = []
+            dict_res_IS = []
+            max_key = 0
+            for res_arr in res:
+
+                # Standard
+                d = {
+                    int(key): int(value) for key, value
+                    in zip(res_arr[:, 0], res_arr[:, 3])
+                }
+                for key, value in d.items():
+                    if key > max_key and value > 0:
+                        max_key = key
+                dict_res.append(d)
+
+                # Inherent structure
+                d = {
+                    int(key): int(value) for key, value
+                    in zip(res_arr[:, 0], res_arr[:, 4])
+                }
+                for key, value in d.items():
+                    if key > max_key and value > 0:
+                        max_key = key
+                dict_res_IS.append(d)
+
+            # Standard
+            stats = np.zeros(shape=(len(dict_res), max_key + 1))
+            for ii, d in enumerate(dict_res):
+                for key, value in d.items():
+                    if value > 0:
+                        stats[ii, key] = value
+            final_path = os.path.join(full_dir_path, 'final/psi_basin_S.txt')
+            print(f"Evaluating {full_dir_path} -> {final_path}")
+            np.savetxt(final_path, stats)
+
+            # Inherent structure
+            stats_IS = np.zeros(shape=(len(dict_res_IS), max_key + 1))
+            for ii, d in enumerate(dict_res_IS):
+                for key, value in d.items():
+                    if value > 0:
+                        stats_IS[ii, key] = value
+            final_path = os.path.join(
+                full_dir_path, 'final/psi_basin_S_IS.txt'
+            )
+            print(f"Evaluating {full_dir_path} -> {final_path}")
+            np.savetxt(final_path, stats_IS)
+
+        print("Done\n")
+
+    def eval_psi_basin_E(self):
+        """Evaluates all saved psi basin energy results."""
+
+        print(
+            f"Psi Basin: evaluating {len(self.all_dirs)} total directories"
+        )
+
+        for full_dir_path in self.all_dirs:
+
+            results_path = os.path.join(full_dir_path, 'results')
+            all_trials = os.listdir(results_path)
+            res = [
+                np.loadtxt(os.path.join(results_path, f), delimiter=" ")
+                for f in all_trials if "psi_basin" in f
+            ]
+
+            # Construct dictionaries out of each result while also keeping
+            # track of the max key value. There's probably a way to do this
+            # using list comprehension, but this is easier for now, and the
+            # total number of results will never more more than ~10k, so it
+            # should be ok.
+            dict_res = []
+            dict_res_IS = []
+            max_key = 0
+            for res_arr in res:
+
+                # Standard
+                d = {
+                    int(key): int(value) for key, value
+                    in zip(res_arr[:, 0], res_arr[:, 1])
+                }
+                for key, value in d.items():
+                    if key > max_key and value > 0:
+                        max_key = key
+                dict_res.append(d)
+
+                # Inherent structure
+                d = {
+                    int(key): int(value) for key, value
+                    in zip(res_arr[:, 0], res_arr[:, 2])
+                }
+                for key, value in d.items():
+                    if key > max_key and value > 0:
+                        max_key = key
+                dict_res_IS.append(d)
+
+            # Standard
+            stats = np.zeros(shape=(len(dict_res), max_key + 1))
+            for ii, d in enumerate(dict_res):
+                for key, value in d.items():
+                    if value > 0:
+                        stats[ii, key] = value
+            final_path = os.path.join(full_dir_path, 'final/psi_basin_E.txt')
+            print(f"Evaluating {full_dir_path} -> {final_path}")
+            np.savetxt(final_path, stats)
+
+            # Inherent structure
+            stats_IS = np.zeros(shape=(len(dict_res_IS), max_key + 1))
+            for ii, d in enumerate(dict_res_IS):
+                for key, value in d.items():
+                    if value > 0:
+                        stats_IS[ii, key] = value
+            final_path = os.path.join(
+                full_dir_path, 'final/psi_basin_E_IS.txt'
+            )
+            print(f"Evaluating {full_dir_path} -> {final_path}")
+            np.savetxt(final_path, stats_IS)
+
+        print("Done\n")
+
+    def eval_psi_basin(self):
+        self.eval_psi_basin_E()
+        self.eval_psi_basin_S()

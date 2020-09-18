@@ -52,7 +52,7 @@ private:
 
 
 // ============================================================================
-// Psi ========================================================================
+// Psi config =================================================================
 // ============================================================================
 
 
@@ -126,6 +126,45 @@ private:
     int pointer1 = 0;
     int pointer2 = 0;
 };
+
+
+// ============================================================================
+// Psi basin =================================================================
+// ============================================================================
+
+
+class PsiBasinCounter
+{
+public:
+
+    // Constructor
+    PsiBasinCounter(const int, const double, const double);
+
+    // Close the output stream when done; this also writes the counter to
+    // disk, since this file will be relatively small compared to the others
+    // that are written dynamically.
+    void write_to_disk(const std::string);
+
+    // Step the grid by performing the following steps:
+    // 1) Stepping the pointer
+    // 2) Saving the configuration/energy information to disk
+    void step(SystemInformation *, SystemInformation *);
+    
+private:
+
+    // The thresholds
+    double energetic_threshold, entropic_attractor;
+
+    // The log2-binned trapping times
+    std::vector<long long> counter_E, counter_E_IS, counter_S, counter_S_IS;
+
+    // The maximum key value
+    long long max_counter;
+
+    // The location to save the file
+    std::string outfile_location;
+};
+
 
 
 #endif

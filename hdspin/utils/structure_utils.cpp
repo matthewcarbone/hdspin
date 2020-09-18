@@ -4,6 +4,7 @@
 
 #include "structure_utils.h"
 
+
 FileNames get_filenames(const int ii, const std::string target_dir,
     const std::string grids_directory)
 {
@@ -12,6 +13,7 @@ FileNames get_filenames(const int ii, const std::string target_dir,
     FileNames fnames;
     fnames.energy = target_dir + "/" + ii_str + "_energy.txt";
     fnames.psi_config = target_dir + "/" + ii_str + "_psi_config.txt";
+    fnames.psi_basin = target_dir + "/" + ii_str + "_psi_basin.txt";
     fnames.aging_config_1 = target_dir + "/" + ii_str + "_pi1_config.txt";
     fnames.aging_config_2 = target_dir + "/" + ii_str + "_pi2_config.txt";
     fnames.ii_str = ii_str;
@@ -68,4 +70,53 @@ RuntimeParameters get_runtime_params(const int log_N_timesteps,
     printf("entropic attractor = %.02f\n", ea);
 
     return params;
+}
+
+
+void update_basin_information(SystemInformation * system,
+    const RuntimeParameters params, const double waiting_time)
+{
+
+    // We just entered a basin
+    if (system->e < params.energetic_threshold &
+        system->e_prev >= params.energetic_threshold)
+    {
+        system->basin_energy += 1;
+
+        // This value is appended to the counter at every iteration of the
+        // outer while loop. This is checked and reset by the basin tracker. If
+        // its value is non-zero it will be appended to the counter. Else, it
+        // will not be appended. This allows for compatibility with both
+        // standard and Gillespie dynamics.
+        system->tmp_t_basin_energy = system->t_basin_energy;
+
+        system->t_basin_energy = 0.0;
+    }
+
+    // Regardless of if we exited the basin in the next step, we always
+    // append the waiting time if the previous energy was below the threshold
+    else if (system->e_prev < params.energetic_threshold)
+    {
+        system->t_basin_energy += waiting_time;
+    }
+
+
+    // Same update for the entroyp
+
+    // We just entered a basin
+    if (system->e < params.entropic_attractor &
+        system->e_prev >= params.entropic_attractor)
+    {
+        system->basin_entropy += 1;
+        system->tmp_t_basin_entropy = system->t_basin_entropy;
+        system->t_basin_entropy = 0.0;
+    }
+
+    // Regardless of if we exited the basin in the next step, we always
+    // append the waiting time if the previous energy was below the threshold
+    else if (system->e_prev < params.entropic_attractor)
+    {
+        system->t_basin_entropy += waiting_time;
+    }
+
 }

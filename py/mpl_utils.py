@@ -122,3 +122,26 @@ class PlottingManager:
             pi_grid, mu, yerr=sd / div, color=color, label=label,
             **self.plot_kwargs
         )
+
+    def plot_psi_basin(
+        self, ax, directory, cache=os.environ['HDSPIN_CACHE_DIR'],
+        fname_base='final/psi_basin', standard_error=False, color=None,
+        label=None, inherent_structure=False, threshold='E'
+    ):
+
+        if inherent_structure:
+            fname = fname_base + f"_{threshold}_IS.txt"
+        else:
+            fname = fname_base + f"_{threshold}.txt"
+        arr = np.loadtxt(os.path.join(cache, directory, fname))
+        grid = [2**ii for ii in range(arr.shape[1])]
+        e = arr.mean(axis=0)
+        e_sd = arr.std(axis=0)
+        div = 1.0
+        if standard_error:
+            div = np.sqrt(arr.shape[0] - 1)
+        norm = e.sum()
+        ax.errorbar(
+            grid, e / norm, yerr=e_sd / norm / div, color=color, label=label,
+            **self.plot_kwargs
+        )

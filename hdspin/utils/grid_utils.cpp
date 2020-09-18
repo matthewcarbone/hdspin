@@ -61,7 +61,7 @@ void EnergyGrid::step(const double current_time, const SystemInformation sys,
 
 
 // ============================================================================
-// Psi config =================================================================
+// Psi config ===========================================================
 // ============================================================================
 
 
@@ -193,5 +193,127 @@ void AgingConfigGrid::step(const double current_time,
             pointer2 += 1;
             if (pointer2 > length_pi2 - 1){break;}
         }  
+    }
+}
+
+
+
+// ============================================================================
+// Psi basin ==================================================================
+// ============================================================================
+
+
+PsiBasinCounter::PsiBasinCounter(const int log_N_timesteps,
+    const double thresh_E, const double thresh_S)
+{
+    max_counter = (long long) log2l(ipow(10, log_N_timesteps));
+
+    // Give the max counter a lot of space
+    max_counter += 10;
+
+    for (int ii=0; ii<max_counter; ii++){counter_E.push_back(0);}
+    for (int ii=0; ii<max_counter; ii++){counter_E_IS.push_back(0);}
+    for (int ii=0; ii<max_counter; ii++){counter_S.push_back(0);}
+    for (int ii=0; ii<max_counter; ii++){counter_S_IS.push_back(0);}
+
+    energetic_threshold = thresh_E;
+    entropic_attractor = thresh_S;
+}
+
+void PsiBasinCounter::write_to_disk(const std::string outfile_location)
+{
+    FILE *outfile;
+    outfile = fopen(outfile_location.c_str(), "w");
+    for (int ii=0; ii<max_counter; ii++)
+    {
+        fprintf(outfile, "%i %lli %lli %lli %lli\n", ii, counter_E[ii],
+            counter_E_IS[ii], counter_S[ii], counter_S_IS[ii]);
+    }
+    fclose(outfile);
+}
+
+
+
+void PsiBasinCounter::step(SystemInformation * sys,
+    SystemInformation * inh)
+{
+
+    long long key;
+
+    if (sys->tmp_t_basin_energy > 0.0)
+    {
+        // If the waiting time is < 1, round it to 1.
+        if (sys->tmp_t_basin_energy < 1.0){key = 0;}
+
+        else
+        {
+            const long double log_t = log2l(sys->tmp_t_basin_energy);
+            key = (long long) roundl(log_t);
+
+            // We ignore any crazy waiting times produced near the end of the
+            // Gillespie dynamics since they can be chalked up to edge effects.
+            if (key > max_counter - 1){return;}
+        }
+
+        counter_E[key] += 1;
+        sys->tmp_t_basin_energy = 0.0;
+    }
+
+    if (sys->tmp_t_basin_entropy > 0.0)
+    {
+        // If the waiting time is < 1, round it to 1.
+        if (sys->tmp_t_basin_entropy < 1.0){key = 0;}
+
+        else
+        {
+            const long double log_t = log2l(sys->tmp_t_basin_entropy);
+            key = (long long) roundl(log_t);
+
+            // We ignore any crazy waiting times produced near the end of the
+            // Gillespie dynamics since they can be chalked up to edge effects.
+            if (key > max_counter - 1){return;}
+        }
+
+        counter_S[key] += 1;
+        sys->tmp_t_basin_entropy = 0.0;
+    }
+
+
+    if (inh->tmp_t_basin_energy > 0.0)
+    {
+        // If the waiting time is < 1, round it to 1.
+        if (inh->tmp_t_basin_energy < 1.0){key = 0;}
+
+        else
+        {
+            const long double log_t = log2l(inh->tmp_t_basin_energy);
+            key = (long long) roundl(log_t);
+
+            // We ignore any crazy waiting times produced near the end of the
+            // Gillespie dynamics since they can be chalked up to edge effects.
+            if (key > max_counter - 1){return;}
+        }
+
+        counter_E_IS[key] += 1;
+        inh->tmp_t_basin_energy = 0.0;
+    }
+
+    if (inh->tmp_t_basin_entropy > 0.0)
+    {
+        // If the waiting time is < 1, round it to 1.
+        if (inh->tmp_t_basin_entropy < 1.0){key = 0;}
+
+        else
+        {
+            const long double log_t = log2l(inh->tmp_t_basin_entropy);
+            key = (long long) roundl(log_t);
+
+            // We ignore any crazy waiting times produced near the end of the
+            // Gillespie dynamics since they can be chalked up to edge effects.
+            if (key > max_counter - 1){return;}
+        }
+
+        counter_S_IS[key] += 1;
+        inh->tmp_t_basin_entropy = 0.0;
     }
 }

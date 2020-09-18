@@ -89,6 +89,9 @@ void gillespie(const FileNames fnames, const RuntimeParameters params)
     energy_grid.open_outfile(fnames.energy);
     // Psi config
     PsiConfigCounter psi_config_counter(params.log_N_timesteps);
+    // Psi basin
+    PsiBasinCounter psi_basin_counter(params.log_N_timesteps,
+        params.energetic_threshold, params.entropic_attractor);
     // Pi/Aging config
     AgingConfigGrid aging_config_grid(fnames.grids_directory);
     aging_config_grid.open_outfile(fnames.aging_config_1,
@@ -101,6 +104,7 @@ void gillespie(const FileNames fnames, const RuntimeParameters params)
     sys.x_prev = sys.x;
     sys.e = energy_arr[sys.x];
     sys.e_prev = sys.e;
+    update_basin_information(&sys, params, 0.0);
 
     // Do the same for the inherent structure
     inh.x = query_inherent_structure(params.N_spins, config, energy_arr,
@@ -108,6 +112,7 @@ void gillespie(const FileNames fnames, const RuntimeParameters params)
     inh.x_prev = inh.x;
     inh.e = energy_arr[inh.x];
     inh.e_prev = inh.e;
+    update_basin_information(&inh, params, 0.0);
 
     while (true)
     {
@@ -170,6 +175,8 @@ void gillespie(const FileNames fnames, const RuntimeParameters params)
             inh.waiting_time = 0.0;
         }
 
+        psi_basin_counter.step(&sys, &inh);
+
         //         -------------------------------------------------
         //         -------------- DONE STEP TRACKERS ---------------
         //         -------------------------------------------------
@@ -179,7 +186,7 @@ void gillespie(const FileNames fnames, const RuntimeParameters params)
         sys.x = binary_vector_to_int(config, params.N_spins);
         sys.e_prev = sys.e;
         sys.e = energy_arr[sys.x];
-        
+        update_basin_information(&sys, params, waiting_time);
 
         // Update the inherent structure values
         inh.x_prev = inh.x;
@@ -187,7 +194,7 @@ void gillespie(const FileNames fnames, const RuntimeParameters params)
         inh.x = query_inherent_structure(params.N_spins, config,
             energy_arr, inherent_structure_mapping);
         inh.e = energy_arr[inh.x];
-
+        update_basin_information(&inh, params, waiting_time);
         
 
         // --------------------------------------------------------------------
@@ -207,6 +214,7 @@ void gillespie(const FileNames fnames, const RuntimeParameters params)
     // Close the outfiles and write to disk when not doing so dynamically
     energy_grid.close_outfile();
     psi_config_counter.write_to_disk(fnames.psi_config);
+    psi_basin_counter.write_to_disk(fnames.psi_basin);
     aging_config_grid.close_outfile();
 
     delete[] energy_arr;
