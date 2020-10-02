@@ -4,6 +4,12 @@
 #define STRUCTURE_UTILS_H
 
 
+struct Vals
+{
+    long long int_rep, int_rep_IS;
+    long double energy, energy_IS;
+};
+
 struct FileNames
 {
     std::string energy;
@@ -15,38 +21,25 @@ struct FileNames
     std::string grids_directory;
 };
 
+FileNames get_filenames(const int, const std::string, const std::string);
+
 struct RuntimeParameters
 {
     int log_N_timesteps;
+    long long N_timesteps;
     int N_spins;
+    long long N_configs;
     double beta;
     double beta_critical;
     int landscape;
+    int dynamics;
     double energetic_threshold;
     double entropic_attractor;
 };
 
-struct SystemInformation
-{
-    long long x, x_prev;
-    long double e, e_prev;
-
-    // The amount of time the system has spent in some configuration
-    long double waiting_time = 0.0;
-
-    // The last basin that the tracer was in
-    long long basin_energy = 0;
-    long double t_basin_energy = 0.0, tmp_t_basin_energy;
-    long long basin_entropy = 0;
-    long double t_basin_entropy = 0.0, tmp_t_basin_entropy;
-};
-
-FileNames get_filenames(const int, const std::string, const std::string);
 
 RuntimeParameters get_runtime_params(const int, const int, const double,
     const double, const int);
 
-void update_basin_information(SystemInformation *,
-    const RuntimeParameters, const double);
 
 #endif

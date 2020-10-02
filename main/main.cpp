@@ -7,10 +7,8 @@
 #include <sstream>
 #include <omp.h>
 
-#include "gillespie.h"
-#include "standard.h"
-#include "utils/grid_utils.h"
-#include "utils/structure_utils.h"
+#include "Utils/structures.h"
+#include "Engine/sim.h"
 
 
 int main(int argc, char *argv[])
@@ -54,7 +52,6 @@ int main(int argc, char *argv[])
     const int step_size = total_steps / 10; // Print at 10 percent steps
     int loop_count = 0;
 
-
     auto start_t_global_clock = std::chrono::high_resolution_clock::now();
 
     #pragma omp parallel for
@@ -66,8 +63,16 @@ int main(int argc, char *argv[])
             grids_directory);
 
         // Run dynamics START -------------------------------------------------
-        if (dynamics == 1){gillespie(fnames, params);}
-        else if (dynamics == 0){standard(fnames, params);}
+        if (dynamics == 1)
+        {
+            GillespieSimulation gillespie_sim(fnames, params);
+            gillespie_sim.execute();
+        }
+        else if (dynamics == 0)
+        {
+            StandardSimulation standard_sim(fnames, params);
+            standard_sim.execute();
+        }
         else{throw std::runtime_error("Unsupported dynamics flag");}
         // Run dynamics END ---------------------------------------------------
 
