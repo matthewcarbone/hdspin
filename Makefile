@@ -17,6 +17,9 @@ REMOTE_FLAGS_1=-fopenmp -std=c++17
 rr: 
 	$(CC) $(INC) $(REMOTE_FLAGS_1) main/main.cpp -o exe/main.out $(SRC) -O3
 
+local: 
+	$(CC) $(INC) $(LOCAL_FLAGS) main/main.cpp -o exe/main.out $(SRC) -O3
+
 debug:
 	$(CC) $(INC) $(LOCAL_FLAGS) main/debug.cpp -o exe/debug.out $(SRC)
 

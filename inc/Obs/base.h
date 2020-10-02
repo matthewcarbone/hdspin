@@ -5,15 +5,16 @@
 #include <vector>
 #include <fstream>
 
+#include "Utils/structures.h"
+
 class Base
 {
 protected:
+    FileNames fnames;
     FILE *outfile;
-    int grid_length;
-
 public:
-    void open_outfile(const std::string);
-    void close_outfile();  // Close the output stream when done
+    Base(const FileNames);
+    ~Base();
 };
 
 #endif

@@ -147,7 +147,7 @@ def write_bash_script(args, base_dir, max_index):
     # Then we append
     if os.path.exists(script_name):
         with open(script_name, 'a') as f:
-            f.write(f"./main.out {args_str}\n")
+            f.write(f"./exe/main.out {args_str}\n")
         print(f"Script {script_name} appended with new trial")
 
     # Else we write a new file
@@ -155,7 +155,7 @@ def write_bash_script(args, base_dir, max_index):
         with open(script_name, 'w') as f:
             f.write("#!/bin/bash\n")
             f.write("\n")
-            f.write(f"./main.out {args_str}\n")
+            f.write(f"./exe/main.out {args_str}\n")
         print(f"Script {script_name} written to disk")
 
 
@@ -224,7 +224,7 @@ def write_SLURM_script(args, base_dir, max_index):
         f.write(f"export OMP_NUM_THREADS={n_cpus_per_job}\n")
         f.write('\n')
 
-        f.write(f'./main.out {args_str}\n')
+        f.write(f'./exe/main.out {args_str}\n')
 
 
 def _call_subprocess(script):

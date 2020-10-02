@@ -23,7 +23,7 @@ private:
 public:
 
     // Constructor: reads in the grid from the specified grid directory
-    Energy(const std::string);
+    Energy(const FileNames);
 
     // Step the grid by performing the following steps:
     // 1) Stepping the pointer

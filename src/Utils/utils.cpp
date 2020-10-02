@@ -82,7 +82,7 @@ void _helper_calculate_neighboring_energies_(int *cfg,
     }
 }
 
-void load_long_long_grid_(std::vector<double> &grid, const std::string loc)
+void load_long_long_grid_(std::vector<long long> &grid, const std::string loc)
 {
     std::ifstream myfile (loc);
     std::string line;

@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
 
     // Define some helpers to be used to track progress.
     const int total_steps = end - start;
-    const int step_size = total_steps / 10; // Print at 10 percent steps
+    const int step_size = total_steps / 50; // Print at 50 percent steps
     int loop_count = 0;
 
     auto start_t_global_clock = std::chrono::high_resolution_clock::now();

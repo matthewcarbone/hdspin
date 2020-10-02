@@ -1,18 +1,20 @@
+#include "Obs/base.h"
 #include "Obs/energy.h"
 #include "Utils/utils.h"
 #include "Utils/structures.h"
 
-Energy::Energy(const std::string grid_directory)
+Energy::Energy(const FileNames fnames) : Base(fnames)
 {
-    const std::string grid_location = grid_directory + "/energy.txt";
+    const std::string grid_location = fnames.grids_directory + "/energy.txt";
     load_long_long_grid_(grid, grid_location);
     length = grid.size();
     max_time = grid[length - 1];
+    outfile = fopen(fnames.energy.c_str(), "w");
 }
 
-void Energy::step_(const double simulation_clock, const Vals v)
-{
 
+void Energy::step_(const long double simulation_clock, const Vals v)
+{
     // No updates necessary
     if (simulation_clock <= grid[pointer]){return;}
 

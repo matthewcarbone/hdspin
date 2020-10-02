@@ -4,11 +4,7 @@
  *
  */
 
-#include <math.h>
-#include <string>
-#include <fstream>      // std::ofstream
 #include <assert.h>
-#include <stdio.h>
 
 #include "Utils/structures.h"
 #include "Spin/gillespie.h"
@@ -17,6 +13,7 @@
 
 // Observable includes
 #include "Obs/energy.h"
+#include "Obs/psi.h"
 
 
 Simulation::Simulation(const FileNames fnames,
@@ -32,18 +29,24 @@ StandardSimulation::StandardSimulation(const FileNames fnames,
 void GillespieSimulation::execute()
 {
     GillespieSpinSystem sys(rtp);
-
+    Vals prev, curr;
     double waiting_time;
 
-    Energy obs_energy(fnames.grids_directory);
+    Energy obs_energy(fnames);
+    PsiConfig obs_psi_config(fnames, rtp);
 
+    // Simulation clock is 0 before entering the while loop
     while (true)
     {
         waiting_time = sys.step_();
         simulation_clock += waiting_time;
 
         // Step observables
-        obs_energy.step_(simulation_clock, sys.get_curr());
+        prev = sys.get_prev();
+        curr = sys.get_curr();
+        obs_energy.step_(simulation_clock, prev);
+        obs_psi_config.step_(waiting_time, prev, curr);
+
 
         /*
         //         -------------------------------------------------
@@ -87,8 +90,6 @@ void GillespieSimulation::execute()
 
     }
 
-    obs_energy.close_outfile();
-
     // Close the outfiles and write to disk when not doing so dynamically
     /*
     energy_grid.close_outfile();
@@ -102,11 +103,14 @@ void GillespieSimulation::execute()
 void StandardSimulation::execute()
 {
     StandardSpinSystem sys(rtp);
-
+    Vals prev, curr;
     bool accepted;
+    const long double waiting_time = 1.0;
 
-    Energy obs_energy(fnames.grids_directory);
+    Energy obs_energy(fnames);
+    PsiConfig obs_psi_config(fnames, rtp);
 
+    // Simulation clock is 0 before entering the while loop
     while (true)
     {
         
@@ -119,10 +123,13 @@ void StandardSimulation::execute()
         // spin system before the step, and that all observables are indexed
         // by the state after the step. Thus, we step the simulation_clock
         // before stepping the observables.
-        simulation_clock += 1.0;
+        simulation_clock += waiting_time;
 
         // Step observables
-        obs_energy.step_(simulation_clock, sys.get_curr());
+        prev = sys.get_prev();
+        curr = sys.get_curr();
+        obs_energy.step_(simulation_clock, prev);
+        obs_psi_config.step_(waiting_time, prev, curr);
 
 
         // --------------------------------------------------------------------
@@ -148,8 +155,6 @@ void StandardSimulation::execute()
         if (simulation_clock > rtp.N_timesteps){break;}
 
     }
-
-    obs_energy.close_outfile();
 
     /*
     // Close the outfiles and write to disk when not doing so dynamically
