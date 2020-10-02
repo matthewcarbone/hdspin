@@ -61,8 +61,9 @@ public:
     double get_current_energy() const;
     long long get_inherent_structure() const;
     std::vector<int> get_spin_config() const;
-    Vals get_prev() const;
-    Vals get_curr() const;
+    Vals get_prev() const {return prev;}
+    Vals get_curr() const {return curr;}
+    long long get_n_accept() const {return n_accept;}
 
     // Release memory in the destructor
     ~SpinSystem();

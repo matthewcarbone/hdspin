@@ -17,7 +17,7 @@ PsiConfig::PsiConfig(const FileNames fnames, const RuntimeParameters rtp) :
 }
 
 
-void PsiConfig::_help_step(const bool inherent_structure)
+void PsiConfig::_help_step_(const bool inherent_structure)
 {
     long long key;
 
@@ -62,8 +62,8 @@ void PsiConfig::step_(const long double current_waiting_time, const Vals prev,
     // to the counters they are reset in the helper functions.
     waiting_time += current_waiting_time;
     waiting_time_IS += current_waiting_time;
-    if (curr.int_rep != prev.int_rep){_help_step(false);}
-    if (curr.int_rep_IS != prev.int_rep_IS){_help_step(true);}
+    if (curr.int_rep != prev.int_rep){_help_step_(false);}
+    if (curr.int_rep_IS != prev.int_rep_IS){_help_step_(true);}
 }
 
 

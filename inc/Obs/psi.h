@@ -25,7 +25,7 @@ private:
     long double waiting_time_IS = 0.0;
 
     // Helper methods
-    void _help_step(const bool);
+    void _help_step_(const bool);
 
 public:
 

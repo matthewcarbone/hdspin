@@ -24,7 +24,7 @@ public:
     // Step computes the neighboring energies, delta E values and exit rates,
     // then based on that information, steps the spin configuration and
     // returns the waiting time. Note that a Gillespie step is always accepted.
-    double step_();
+    long double step_();
 
     ~GillespieSpinSystem();
 };

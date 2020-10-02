@@ -13,10 +13,6 @@
 
 void SpinSystem::_initialize_spin_system()
 {
-    // Seed the RNG
-    unsigned int seed = std::random_device{}();
-    std::mt19937 generator(seed);
-
     // Initialize the distribution
     std::bernoulli_distribution distribution;
     
@@ -71,15 +67,15 @@ void SpinSystem::_initialize_inherent_structure_mapping_()
 
 SpinSystem::SpinSystem(const RuntimeParameters rtp) : rtp(rtp)
 {
+    unsigned int seed = std::random_device{}();
+    generator.seed(seed);
+
     spin_config = new int[rtp.N_spins];
     _initialize_spin_system();
     emap = new double[rtp.N_configs];
     _initialize_energy_mapping_();
     ism = new long long[rtp.N_configs];
     _initialize_inherent_structure_mapping_();
-
-    unsigned int seed = std::random_device{}();
-    generator.seed(seed);
 }
 
 
@@ -92,8 +88,6 @@ void SpinSystem::init_prev_()
     prev.energy_IS = emap[prev.int_rep_IS];
 }
 
-Vals SpinSystem::get_prev() const {return prev;}
-
 void SpinSystem::init_curr_()
 {
     // Initialize the "current" values
@@ -102,8 +96,6 @@ void SpinSystem::init_curr_()
     curr.energy = emap[curr.int_rep];
     curr.energy_IS = emap[curr.int_rep_IS];
 }
-
-Vals SpinSystem::get_curr() const {return curr;}
 
 void SpinSystem::_calculate_neighboring_energies()
 {

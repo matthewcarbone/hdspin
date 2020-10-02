@@ -14,6 +14,7 @@
 // Observable includes
 #include "Obs/energy.h"
 #include "Obs/psi.h"
+#include "Obs/age.h"
 
 
 Simulation::Simulation(const FileNames fnames,
@@ -30,10 +31,11 @@ void GillespieSimulation::execute()
 {
     GillespieSpinSystem sys(rtp);
     Vals prev, curr;
-    double waiting_time;
+    long double waiting_time;
 
     Energy obs_energy(fnames);
     PsiConfig obs_psi_config(fnames, rtp);
+    AgingConfig obs_age_config(fnames);
 
     // Simulation clock is 0 before entering the while loop
     while (true)
@@ -41,11 +43,13 @@ void GillespieSimulation::execute()
         waiting_time = sys.step_();
         simulation_clock += waiting_time;
 
-        // Step observables
         prev = sys.get_prev();
         curr = sys.get_curr();
+
+        // Step observables
         obs_energy.step_(simulation_clock, prev);
         obs_psi_config.step_(waiting_time, prev, curr);
+        obs_age_config.step_(simulation_clock, sys.get_n_accept(), prev);
 
 
         /*
@@ -109,6 +113,7 @@ void StandardSimulation::execute()
 
     Energy obs_energy(fnames);
     PsiConfig obs_psi_config(fnames, rtp);
+    AgingConfig obs_age_config(fnames);
 
     // Simulation clock is 0 before entering the while loop
     while (true)
@@ -125,11 +130,13 @@ void StandardSimulation::execute()
         // before stepping the observables.
         simulation_clock += waiting_time;
 
-        // Step observables
         prev = sys.get_prev();
         curr = sys.get_curr();
+
+        // Step observables
         obs_energy.step_(simulation_clock, prev);
         obs_psi_config.step_(waiting_time, prev, curr);
+        obs_age_config.step_(simulation_clock, sys.get_n_accept(), prev);
 
 
         // --------------------------------------------------------------------

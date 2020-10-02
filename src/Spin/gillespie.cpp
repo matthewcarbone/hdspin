@@ -43,7 +43,7 @@ double GillespieSpinSystem::_calculate_exit_rates()
     return total_exit_rate;
 }
 
-double GillespieSpinSystem::step_()
+long double GillespieSpinSystem::step_()
 {
     _calculate_neighboring_energies();
     const double total_exit_rate = _calculate_exit_rates();
@@ -64,6 +64,8 @@ double GillespieSpinSystem::step_()
 
     flip_spin_(spin_to_flip);
     init_curr_();  // Initialize the current state
+
+    n_accept += 1;
 
     std::exponential_distribution<long double> tmp_exp_dist(total_exit_rate);
     return tmp_exp_dist(generator);
