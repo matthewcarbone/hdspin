@@ -126,7 +126,7 @@ class PlottingManager:
     def plot_psi_basin(
         self, ax, directory, cache=os.environ['HDSPIN_CACHE_DIR'],
         fname_base='final/psi_basin', standard_error=False, color=None,
-        label=None, inherent_structure=False, threshold='E'
+        label=None, inherent_structure=False, threshold='E', style='-'
     ):
 
         if inherent_structure:
@@ -143,5 +143,5 @@ class PlottingManager:
         norm = e.sum()
         ax.errorbar(
             grid, e / norm, yerr=e_sd / norm / div, color=color, label=label,
-            **self.plot_kwargs
+            linestyle=style, **self.plot_kwargs
         )
