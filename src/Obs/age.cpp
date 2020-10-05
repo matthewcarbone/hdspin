@@ -3,7 +3,7 @@
 #include "Utils/utils.h"
 #include "Utils/structures.h"
 
-AgingConfig::AgingConfig(const FileNames fnames)
+Aging::Aging(const FileNames fnames)
 {
     const std::string pi_1_grid_location = fnames.grids_directory + "/pi1.txt";
     const std::string pi_2_grid_location = fnames.grids_directory + "/pi2.txt";
@@ -19,6 +19,16 @@ AgingConfig::AgingConfig(const FileNames fnames)
     outfile_pi1 = fopen(fnames.aging_config_1.c_str(), "w");
     outfile_pi2 = fopen(fnames.aging_config_2.c_str(), "w");
 }
+
+
+Aging::~Aging()
+{
+    fclose(outfile_pi1);
+    fclose(outfile_pi2);
+}
+
+
+AgingConfig::AgingConfig(const FileNames fnames) : Aging(fnames) {};
 
 
 void AgingConfig::_help_step_1_(const long double simulation_clock,
@@ -61,8 +71,26 @@ void AgingConfig::step_(const long double simulation_clock,
     else{_help_step_2_(simulation_clock, config_index, prev);}
 }
 
-AgingConfig::~AgingConfig()
+
+AgingBasin::AgingBasin(const FileNames fnames, const RuntimeParameters rtp) :
+    Aging(fnames), rtp(rtp) {};
+
+
+void AgingBasin::_help_step_1_E_(const long double simulation_clock,
+    const Vals prev, const Vals curr)
 {
-    fclose(outfile_pi1);
-    fclose(outfile_pi2);
+    ;
+}
+
+
+void AgingBasin::step_(const long double simulation_clock,
+    const Vals prev, const Vals curr)
+{
+    if (simulation_clock <= grid_pi1[pointer1]){;}
+    else if (pointer1 > length_pi1 - 1){;}
+    else{_help_step_1_(simulation_clock, prev, curr);}
+
+    if (simulation_clock <= grid_pi2[pointer2]){;}
+    else if (pointer2 > length_pi2 - 1){;}
+    else{_help_step_2_(simulation_clock, prev, curr);}
 }
