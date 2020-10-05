@@ -49,11 +49,22 @@ private:
     // basin the tracer is currently in. Whether or not a tracer is currently
     // in a basin or not can be determined by comparing the energies to the
     // thresholds in the RuntimeParameters, rtp.
-    int bi1 = 0;  // First basin index
-    int bi2 = 0;  // Second basin index
+    long long bi1_E = 0;  // First basin index
+    long long bi1_E_IS = 0;  // First basin index for the inherent structure
+    long long bi2_E = 0;  // Second basin index
+    long long bi2_E_IS = 0;  // Second basin index for the inherent structure
+    long long bi1_S = 0;
+    long long bi1_S_IS = 0;
+    long long bi2_S = 0;
+    long long bi2_S_IS = 0;
+
+    // Helpers
+    void _help_step_1_(const long double, const Vals, const Vals);
+    void _help_step_2_(const long double, const Vals, const Vals);
+
 public:
     AgingBasin(const FileNames, const RuntimeParameters);
-    void step_(const long double, const long long, const Vals);
+    void step_(const long double, const Vals, const Vals);
 };
 
 

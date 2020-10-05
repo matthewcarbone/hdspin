@@ -17,6 +17,8 @@ struct FileNames
     std::string psi_basin;
     std::string aging_config_1;
     std::string aging_config_2;
+    std::string aging_basin_1;
+    std::string aging_basin_2;
     std::string ii_str;
     std::string grids_directory;
 };

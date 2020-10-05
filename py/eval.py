@@ -74,6 +74,38 @@ class Evaluator:
 
         print("Done\n")
 
+    def eval_aging_basin(self):
+        """Evalutes all saved pi/aging config results."""
+
+        print(
+            f"Pi/Aging Basin: evaluating {len(self.all_dirs)} total "
+            "directories"
+        )
+
+        for full_dir_path in self.all_dirs:
+
+            results_path = os.path.join(full_dir_path, 'results')
+            all_trials = os.listdir(results_path)
+            all_trials.sort()
+            pi1 = np.array([
+                np.loadtxt(os.path.join(results_path, f), delimiter=" ")
+                for f in all_trials if "pi1_basin" in f
+            ])
+            pi2 = np.array([
+                np.loadtxt(os.path.join(results_path, f), delimiter=" ")
+                for f in all_trials if "pi2_basin" in f
+            ])
+
+            final_path = os.path.join(
+                full_dir_path, 'final/aging_basin_sd.pkl'
+            )
+
+            print(f"Evaluating {full_dir_path} -> {final_path}")
+
+            pickle.dump([pi1, pi2], open(final_path, 'wb'), protocol=4)
+
+        print("Done\n")
+
     def eval_psi_config(self):
         """Evaluates all saved psi config results."""
 

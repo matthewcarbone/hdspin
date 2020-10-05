@@ -17,6 +17,8 @@ FileNames get_filenames(const int ii, const std::string target_dir,
     fnames.psi_basin = target_dir + "/" + ii_str + "_psi_basin.txt";
     fnames.aging_config_1 = target_dir + "/" + ii_str + "_pi1_config.txt";
     fnames.aging_config_2 = target_dir + "/" + ii_str + "_pi2_config.txt";
+    fnames.aging_basin_1 = target_dir + "/" + ii_str + "_pi1_basin.txt";
+    fnames.aging_basin_2 = target_dir + "/" + ii_str + "_pi2_basin.txt";
     fnames.ii_str = ii_str;
     fnames.grids_directory = grids_directory;
     return fnames;
@@ -46,6 +48,7 @@ RuntimeParameters get_runtime_params(const int log_N_timesteps,
             printf(
                 "---WARNING: beta restriction bc < b < 2bc not satisfied---\n"
             );
+            ea = 1e16;  // Set purposefully invalid value instead of nan or inf
         }
     }
     else if (landscape == 1) // REM

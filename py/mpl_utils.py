@@ -123,6 +123,62 @@ class PlottingManager:
             **self.plot_kwargs
         )
 
+    def plot_aging_basin(
+        self, ax, directory, cache=os.environ['HDSPIN_CACHE_DIR'],
+        fname='final/aging_basin_sd.pkl', standard_error=False, color=None,
+        label=None, ctype='standard', grid_loc='grids/pi1.txt', threshold='E'
+    ):
+        """Choose ctype from index, standard, and inherent_structure."""
+
+        arr = pickle.load(open(os.path.join(cache, directory, fname), 'rb'))
+        pi_grid = np.loadtxt(os.path.join(cache, directory, grid_loc))
+
+        if ctype == 'standard' and threshold == 'E':
+            slice1 = 1
+            slice2 = 2
+        elif ctype == 'inherent_structure' and threshold == 'E':
+            slice1 = 3
+            slice2 = 4
+        elif ctype == 'standard' and threshold == 'S':
+            slice1 = 5
+            slice2 = 6
+        elif ctype == 'inherent_structure' and threshold == 'S':
+            slice1 = 7
+            slice2 = 8
+        else:
+            raise NotImplementedError
+
+        mu = []
+        sd = []
+        npts = []
+        for gridpoint in range(arr[0].shape[1]):
+
+            # This indexes whether or not the tracer is in a basin at pi1.
+            # We only consider these pionts
+            current_arr_pi1 = arr[0][:, gridpoint, slice2]
+            in_basin = np.where(current_arr_pi1 == 1)[0]
+            to_consider_pi1 = arr[0][in_basin, gridpoint, slice1]
+            to_consider_pi2 = arr[1][in_basin, gridpoint, slice1]
+
+            # We only care about when those basin indexes are equal
+            eq = to_consider_pi1 == to_consider_pi2
+            npts.append(eq.shape[0])
+            mu.append(np.mean(eq))
+            sd.append(np.std(eq))
+
+        mu = np.array(mu)
+        sd = np.array(sd)
+        npts = np.array(npts)
+
+        div = np.ones(shape=(npts.shape[0]))
+        if standard_error:
+            div = np.sqrt(npts - 1)
+
+        ax.errorbar(
+            pi_grid, mu, yerr=sd / div, color=color, label=label,
+            **self.plot_kwargs
+        )
+
     def plot_psi_basin(
         self, ax, directory, cache=os.environ['HDSPIN_CACHE_DIR'],
         fname_base='final/psi_basin', standard_error=False, color=None,

@@ -37,6 +37,7 @@ void GillespieSimulation::execute()
     PsiConfig obs_psi_config(fnames, rtp);
     AgingConfig obs_age_config(fnames);
     PsiBasin obs_psi_basin(fnames, rtp);
+    AgingBasin obs_age_basin(fnames, rtp);
 
     // Simulation clock is 0 before entering the while loop
     while (true)
@@ -52,6 +53,7 @@ void GillespieSimulation::execute()
         obs_psi_config.step_(waiting_time, prev, curr);
         obs_age_config.step_(simulation_clock, sys.get_n_accept(), prev);
         obs_psi_basin.step_(waiting_time, prev, curr);
+        obs_age_basin.step_(simulation_clock, prev, curr);
 
 
         /*
@@ -117,6 +119,7 @@ void StandardSimulation::execute()
     PsiConfig obs_psi_config(fnames, rtp);
     AgingConfig obs_age_config(fnames);
     PsiBasin obs_psi_basin(fnames, rtp);
+    AgingBasin obs_age_basin(fnames, rtp);
 
     // Simulation clock is 0 before entering the while loop
     while (true)
@@ -141,6 +144,7 @@ void StandardSimulation::execute()
         obs_psi_config.step_(waiting_time, prev, curr);
         obs_age_config.step_(simulation_clock, sys.get_n_accept(), prev);
         obs_psi_basin.step_(waiting_time, prev, curr);
+        obs_age_basin.step_(simulation_clock, prev, curr);
 
 
         // --------------------------------------------------------------------

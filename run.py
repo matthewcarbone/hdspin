@@ -61,6 +61,7 @@ if __name__ == '__main__':
         ev.eval_psi_config()
         ev.eval_aging_config()
         ev.eval_psi_basin()
+        ev.eval_aging_basin()
 
     else:
         raise RuntimeError("Unknown error")
