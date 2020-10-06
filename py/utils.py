@@ -92,6 +92,7 @@ def make_directory_and_configs(args):
     max_index = 0
     if os.path.exists(base_dir):
         dirs_in_results = os.listdir(os.path.join(base_dir, "results"))
+        dirs_in_results = [d for d in dirs_in_results if "energy" in d]
         if len(dirs_in_results) > 0:
             dirs_in_results = sorted(dirs_in_results)[-1]
             max_index = int(dirs_in_results.split("_energy.txt")[0]) + 1
