@@ -130,6 +130,7 @@ class Evaluator:
             dict_res = []
             dict_res_IS = []
             max_key = 0
+            max_key_IS = 0
             for res_arr in res:
 
                 # Standard
@@ -148,8 +149,8 @@ class Evaluator:
                     in zip(res_arr[:, 0], res_arr[:, 2])
                 }
                 for key, value in d.items():
-                    if key > max_key and value > 0:
-                        max_key = key
+                    if key > max_key_IS and value > 0:
+                        max_key_IS = key
                 dict_res_IS.append(d)
 
             # Standard
@@ -163,7 +164,7 @@ class Evaluator:
             np.savetxt(final_path, stats)
 
             # Inherent structure
-            stats_IS = np.zeros(shape=(len(dict_res_IS), max_key + 1))
+            stats_IS = np.zeros(shape=(len(dict_res_IS), max_key_IS + 1))
             for ii, d in enumerate(dict_res_IS):
                 for key, value in d.items():
                     if value > 0:
