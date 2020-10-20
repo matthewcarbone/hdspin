@@ -191,7 +191,7 @@ def write_SLURM_script(args, base_dir, max_index):
     grids_dir = os.path.join(base_dir, "grids")
     timesteps = args.timesteps
     args_str = f"{results_dir} {grids_dir} {timesteps} {args.nspin} " \
-        f"{args.beta} {args.beta_critical} {args.landscape} {args.dynamics}" \
+        f"{args.beta} {args.beta_critical} {args.landscape} {args.dynamics} " \
         f"{max_index} $SLURM_ARRAY_TASK_ID {sims_per_job}"
 
     with open(submit_fname, 'w') as f:
