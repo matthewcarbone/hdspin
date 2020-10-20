@@ -51,7 +51,7 @@ if __name__ == '__main__':
             u.write_SLURM_script(args, base_dir, max_iter)
 
     elif args.protocol == 'execute':
-        if not os.path.exists("main.out"):
+        if not os.path.exists("/exe/main.out"):
             raise RuntimeError("Run Make before using run.py execute")
         u.submit(args)
 
