@@ -1,3 +1,5 @@
+#include <cassert>
+
 #include "Obs/base.h"
 #include "Obs/age.h"
 #include "Utils/utils.h"

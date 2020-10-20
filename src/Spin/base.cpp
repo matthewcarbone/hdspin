@@ -4,6 +4,7 @@
  *
  */
 
+#include <cstring>
 #include <random>
 
 #include "Utils/structures.h"
