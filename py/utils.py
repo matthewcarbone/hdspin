@@ -184,7 +184,8 @@ def write_SLURM_script(args, base_dir, max_index):
     arr_len = total_cpus // n_cpus_per_job
     sims_per_job = args.nsim // arr_len
 
-    approximate_memory = approximate_mem_per_cpu(args, n_cpus_per_job)
+    # approximate_memory = approximate_mem_per_cpu(args, n_cpus_per_job)
+    approximate_memory = configs['mem_per_cpu']
 
     results_dir = os.path.join(base_dir, "results")
     grids_dir = os.path.join(base_dir, "grids")
