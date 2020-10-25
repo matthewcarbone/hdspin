@@ -107,6 +107,7 @@ int main(int argc, char *argv[])
                     duration_double_seconds, loop_count, total_steps, 
                     duration_double_seconds_g
                 );
+                fflush(stdout);
             }
         }
     }
