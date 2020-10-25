@@ -193,8 +193,8 @@ def write_SLURM_script(args, base_dir, max_index):
         f.write(f"#SBATCH --cpus-per-task={n_cpus_per_job}\n")
         f.write(f"#SBATCH --mem-per-cpu={configs['mem_per_cpu']}M\n")
 
-        f.write(f"#SBATCH --output=job_data/hdspin_%A.out\n")
-        f.write(f"#SBATCH --error=job_data/hdspin_%A.err\n")
+        f.write(f"#SBATCH --output=job_data/hdspin_%A_%a.out\n")
+        f.write(f"#SBATCH --error=job_data/hdspin_%A_%a.err\n")
 
         if max_concurrent is None:
             f.write(f"#SBATCH --array=0-{arr_len - 1}\n")
