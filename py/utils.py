@@ -173,9 +173,9 @@ def write_SLURM_script(args, base_dir, max_index):
     runtime = configs['time']
     account = configs['account']
     constraint = configs['constraint']
-    n_cpus_per_job = configs['n_cpus_per_job']
+    n_cpus_per_job = 1
     total_cpus = configs['total_cpus']
-    module = configs['module']
+    modules = configs['modules']
     max_concurrent = configs['max_concurrent']
 
     # simplify things: let's use an even divisor
@@ -183,9 +183,6 @@ def write_SLURM_script(args, base_dir, max_index):
     assert args.nsim % total_cpus == 0
     arr_len = total_cpus // n_cpus_per_job
     sims_per_job = args.nsim // arr_len
-
-    # approximate_memory = approximate_mem_per_cpu(args, n_cpus_per_job)
-    approximate_memory = configs['mem_per_cpu']
 
     results_dir = os.path.join(base_dir, "results")
     grids_dir = os.path.join(base_dir, "grids")
@@ -207,8 +204,8 @@ def write_SLURM_script(args, base_dir, max_index):
             f.write(f"#SBATCH -C {constraint}\n")
 
         f.write("#SBATCH -n 1\n")
-        f.write(f"#SBATCH --cpus-per-task={n_cpus_per_job}\n")
-        f.write(f"#SBATCH --mem-per-cpu={approximate_memory}M\n")
+        f.write(f"#SBATCH -c 1\n")  # Each run gets 1
+        f.write(f"#SBATCH --mem-per-cpu={configs['mem_per_cpu']}M\n")
 
         f.write(f"#SBATCH --output=job_data/hdspin_%A.out\n")
         f.write(f"#SBATCH --error=job_data/hdspin_%A.err\n")
@@ -219,8 +216,9 @@ def write_SLURM_script(args, base_dir, max_index):
             f.write(f"#SBATCH --array=0-{arr_len - 1}%{max_concurrent}\n")
         f.write('\n')
 
-        if module is not None:
-            f.write(f"module load {module}\n")
+        if modules is not None:
+            for m in modules:
+                f.write(f"module load {m}\n")
             f.write('\n')
 
         f.write(f"export OMP_NUM_THREADS={n_cpus_per_job}\n")
