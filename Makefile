@@ -15,7 +15,7 @@ REMOTE_FLAGS_1=-fopenmp -std=c++17
 # 	/usr/local/bin/mpic++ -Xpreprocessor -fopenmp -lomp hdspin/main.cpp -std=c++11 -o main.out hdspin/gillespie.cpp hdspin/standard.cpp hdspin/utils/general_utils.cpp hdspin/utils/init_utils.cpp
 
 rr: 
-	$(CC) $(INC) $(REMOTE_FLAGS_1) main/main.cpp -o exe/main.out $(SRC) -O3
+	$(CC) $(INC) $(REMOTE_FLAGS_1) main/main.cpp -o exe/main.out $(SRC) -O3 -march=native
 
 local: 
 	$(CC) $(INC) $(LOCAL_FLAGS) main/main.cpp -o exe/main.out $(SRC) -O3
