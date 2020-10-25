@@ -189,8 +189,9 @@ def write_SLURM_script(args, base_dir, max_index):
             f.write(f"#SBATCH -C {constraint}\n")
 
         f.write("#SBATCH -n 1\n")
-        f.write(f"#SBATCH -c 1\n")  # Each run gets 1
-        f.write(f"#SBATCH --mem={configs['mem_per_cpu']}M\n")
+
+        f.write(f"#SBATCH --cpus-per-task={n_cpus_per_job}\n")
+        f.write(f"#SBATCH --mem-per-cpu={configs['mem_per_cpu']}M\n")
 
         f.write(f"#SBATCH --output=job_data/hdspin_%A.out\n")
         f.write(f"#SBATCH --error=job_data/hdspin_%A.err\n")
