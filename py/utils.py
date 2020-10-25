@@ -114,21 +114,6 @@ def make_directory_and_configs(args):
     return base_dir, max_index
 
 
-def approximate_mem_per_cpu(args, cpu_per_task):
-    """Using an empirical formula that the approximate required size of the
-    arrays used during computation are ~8 (bytes) * 2 (arrays) * 2^N
-    (configurations), we approximate the amount of memory allocated per CPU.
-    Will return a minimum value of 2MB."""
-
-    n_configs = int(2**args.nspin)
-    approximate_memory = 32 * n_configs / 1e6  # MB
-
-    # Add 10% overhead
-    with_overhead = int(1.1 * approximate_memory / cpu_per_task)
-
-    return max(50, with_overhead)
-
-
 def write_bash_script(args, base_dir, max_index):
     """Writes a single bash script to the working directory, which stacks
     various primed protocols sequentially. This is intended for local debugging
@@ -205,7 +190,7 @@ def write_SLURM_script(args, base_dir, max_index):
 
         f.write("#SBATCH -n 1\n")
         f.write(f"#SBATCH -c 1\n")  # Each run gets 1
-        f.write(f"#SBATCH --mem-per-cpu={configs['mem_per_cpu']}M\n")
+        f.write(f"#SBATCH --mem={configs['mem_per_cpu']}M\n")
 
         f.write(f"#SBATCH --output=job_data/hdspin_%A.out\n")
         f.write(f"#SBATCH --error=job_data/hdspin_%A.err\n")
