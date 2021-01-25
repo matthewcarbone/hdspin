@@ -14,6 +14,11 @@ private:
     double *delta_E = 0;
     double *exit_rates = 0;
 
+    // Gillespie dynamics-only multiplier for sampling from the total
+    // exit rate. This is 1 by default but is set to try and find the
+    // equivalent Gillespie simulation for the "loop" standard dynamics.
+    double _exit_rate_multiplier = 1.0;
+
     // Fills the exit_rates and delta_E arrays and returns the total exit
     // rate.
     double _calculate_exit_rates();

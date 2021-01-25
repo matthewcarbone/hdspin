@@ -128,7 +128,7 @@ def write_bash_script(args, base_dir, max_index):
     timesteps = args.timesteps
     args_str = f"{results_dir} {grids_dir} {timesteps} {args.nspin} " \
         f"{args.beta} {args.beta_critical} {args.landscape} " \
-        f"{args.dynamics} {max_index} 0 {args.nsim}"
+        f"{args.dynamics} {int(args.loopN)} {max_index} 0 {args.nsim}"
 
     # Then we append
     if os.path.exists(script_name):

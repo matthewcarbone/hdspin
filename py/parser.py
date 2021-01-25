@@ -101,6 +101,11 @@ def global_parser(sys_argv):
         'script to the cache.'
     )
 
+    prime_sp.add_argument(
+        '--loopN', dest='loopN', default=False, action='store_true',
+        help='Uses the loop over N dynamics.'
+    )
+
     # (2) ---------------------------------------------------------------------
     execute_sp = subparsers.add_parser(
         "execute", formatter_class=SortingHelpFormatter,

@@ -21,17 +21,20 @@ int main(int argc, char *argv[])
     const double beta_critical = atof(argv[6]);
     const int landscape = atoi(argv[7]);  // 0 for EREM, 1 for REM
     const int dynamics = atoi(argv[8]);  // 0 for standard, 1 for gillespie
+
+    // 0 for standard, 1 for loop over N
+    const int loop_dynamics = atoi(argv[9]);
     const RuntimeParameters params = get_runtime_params(log_N_timesteps,
-        N_spins, beta, beta_critical, landscape);
+        N_spins, beta, beta_critical, landscape, loop_dynamics);
 
     // This will be the minimum job index to resume at
-    const int resume_at = atoi(argv[9]);
+    const int resume_at = atoi(argv[10]);
 
     // Slurm array task id
-    const int slurm_arr_id = atoi(argv[10]);
+    const int slurm_arr_id = atoi(argv[11]);
 
     // Number of jobs to run on this execution
-    const int njobs = atoi(argv[11]);
+    const int njobs = atoi(argv[12]);
 
     // Arguments pertaining to the job itself
     printf("saving data to %s\n", argv[1]);
@@ -41,6 +44,7 @@ int main(int argc, char *argv[])
     printf("beta_critical = %.02f\n", beta_critical);
     printf("landscape = %i (0=EREM, 1=REM)\n", landscape);
     printf("dynamics = %i (0=standard, 1=gillespie)\n", dynamics);
+    printf("loopN = %i", loop_dynamics);
 
     const int start = resume_at + slurm_arr_id * njobs;
     const int end = resume_at + (slurm_arr_id + 1) * njobs;

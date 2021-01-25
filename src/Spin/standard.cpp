@@ -22,19 +22,23 @@ bool StandardSpinSystem::step_()
     // Distributions are cheap, so we can safely re-initialize them at
     // every step. The generator, however, has a lot of overhead and should
     // be passed.
-    // Randomly pick a spin from 0 -> N - 1
-    // std::uniform_int_distribution<> spin_distribution(0, rtp.N_spins - 1);
     // Randomly pick a random number in [0, 1)
     std::uniform_real_distribution<> uniform_0_1_distribution(0.0, 1.0);
 
-    // Select a random spin to flip
-    // int spin_to_flip = spin_distribution(generator);
-
-    for (int spin_to_flip=0; spin_to_flip<rtp.N_spins; spin_to_flip++)
+    int spin_to_flip = 0;
+    while (spin_to_flip < rtp.N_spins)
     {
         init_prev_();  // Initialize the current state
 
         // Step 3, flip that spin
+        if (rtp.loop_dynamics == 1)
+        {
+            // Randomly pick a spin from 0 -> N - 1
+            std::uniform_int_distribution<> spin_distribution(
+                0, rtp.N_spins - 1);
+            // Select a random spin to flip (override the outer loop)
+            spin_to_flip = spin_distribution(generator);
+        }
         flip_spin_(spin_to_flip);
 
         // Step 4, get the proposed energy (energy of the new configuration)
@@ -95,6 +99,10 @@ bool StandardSpinSystem::step_()
         }
 
         init_curr_();
+
+        if (rtp.loop_dynamics == 1){break;}
+
+        spin_to_flip++;
     }
 
     // If no change is ever accepted, increment

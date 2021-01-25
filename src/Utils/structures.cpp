@@ -28,7 +28,7 @@ FileNames get_filenames(const int ii, const std::string target_dir,
 
 RuntimeParameters get_runtime_params(const int log_N_timesteps,
     const int N_spins, const double beta, const double beta_critical,
-    const int landscape)
+    const int landscape, const int loop_dynamics)
 {
     double et, ea;
     RuntimeParameters params;
@@ -37,6 +37,7 @@ RuntimeParameters get_runtime_params(const int log_N_timesteps,
     params.beta = beta;
     params.beta_critical = beta_critical;
     params.landscape = landscape;
+    params.loop_dynamics = loop_dynamics;
 
     if (landscape == 0) // EREM
     {

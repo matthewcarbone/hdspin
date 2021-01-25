@@ -126,7 +126,8 @@ class PlottingManager:
     def plot_aging_basin(
         self, ax, directory, cache=os.environ['HDSPIN_CACHE_DIR'],
         fname='final/aging_basin_sd.pkl', standard_error=False, color=None,
-        label=None, ctype='standard', grid_loc='grids/pi1.txt', threshold='E'
+        label=None, ctype='standard', grid_loc='grids/pi1.txt', threshold='E',
+        div_x_axis_by=1.0
     ):
         """Choose ctype from index, standard, and inherent_structure."""
 
@@ -134,8 +135,8 @@ class PlottingManager:
         pi_grid = np.loadtxt(os.path.join(cache, directory, grid_loc))
 
         if ctype == 'standard' and threshold == 'E':
-            slice1 = 1
-            slice2 = 2
+            slice1 = 1  # Basin index
+            slice2 = 2  # In basin (1) or not (0)
         elif ctype == 'inherent_structure' and threshold == 'E':
             slice1 = 3
             slice2 = 4
@@ -151,11 +152,13 @@ class PlottingManager:
         mu = []
         sd = []
         npts = []
+        # print(arr[0].shape)
         for gridpoint in range(arr[0].shape[1]):
 
             # This indexes whether or not the tracer is in a basin at pi1.
-            # We only consider these pionts
+            # We only consider these points
             current_arr_pi1 = arr[0][:, gridpoint, slice2]
+            # current_arr_pi2 = arr[1][:, gridpoint, slice2]
             in_basin = np.where(current_arr_pi1 == 1)[0]
             to_consider_pi1 = arr[0][in_basin, gridpoint, slice1]
             to_consider_pi2 = arr[1][in_basin, gridpoint, slice1]
@@ -175,8 +178,8 @@ class PlottingManager:
             div = np.sqrt(npts - 1)
 
         ax.errorbar(
-            pi_grid, mu, yerr=sd / div, color=color, label=label,
-            **self.plot_kwargs
+            pi_grid / div_x_axis_by, mu, yerr=sd / div, color=color,
+            label=label, **self.plot_kwargs
         )
 
     def plot_psi_basin(

@@ -37,11 +37,12 @@ struct RuntimeParameters
     int dynamics;
     double energetic_threshold;
     double entropic_attractor;
+    int loop_dynamics;
 };
 
 
 RuntimeParameters get_runtime_params(const int, const int, const double,
-    const double, const int);
+    const double, const int, const int);
 
 
 #endif
