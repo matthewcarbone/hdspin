@@ -85,7 +85,7 @@ def make_directory_and_configs(args):
     cache = args.cache
     basename = make_basename(
         args.nspin, args.beta, args.beta_critical, args.dynamics,
-        args.landscape, args.timesteps, args.loopN
+        args.landscape, args.timesteps, int(args.loopN)
     )
     base_dir = os.path.join(cache, basename)
 
