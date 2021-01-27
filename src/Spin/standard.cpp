@@ -25,13 +25,15 @@ bool StandardSpinSystem::step_()
     // Randomly pick a random number in [0, 1)
     std::uniform_real_distribution<> uniform_0_1_distribution(0.0, 1.0);
 
+    // We assume in the outer loop that we're running loop dynamics
     int spin_to_flip = 0;
     while (spin_to_flip < rtp.N_spins)
     {
         init_prev_();  // Initialize the current state
 
-        // Step 3, flip that spin
-        if (rtp.loop_dynamics == 1)
+        // But if we're not, randomly sample the spin, overriding the
+        // for loop
+        if (rtp.loop_dynamics == 0)
         {
             // Randomly pick a spin from 0 -> N - 1
             std::uniform_int_distribution<> spin_distribution(
@@ -100,7 +102,9 @@ bool StandardSpinSystem::step_()
 
         init_curr_();
 
-        if (rtp.loop_dynamics == 1){break;}
+        // Once again, if we're not running the loop over N dynamics, break
+        // here.
+        if (rtp.loop_dynamics == 0){break;}
 
         spin_to_flip++;
     }

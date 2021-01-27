@@ -19,9 +19,6 @@ GillespieSpinSystem::GillespieSpinSystem(const RuntimeParameters rtp) :
     neighboring_energies = new double[rtp.N_spins];
     delta_E = new double[rtp.N_spins];
     exit_rates = new double[rtp.N_spins];
-    if (rtp.loop_dynamics == 1){
-        _exit_rate_multiplier = 1.0 / ((double) rtp.N_spins);
-    }
 }
 
 
@@ -70,9 +67,14 @@ long double GillespieSpinSystem::step_()
 
     n_accept += 1;
 
-    std::exponential_distribution<long double> tmp_exp_dist(
-        total_exit_rate * _exit_rate_multiplier);
-    return tmp_exp_dist(generator);
+    std::exponential_distribution<long double> tmp_exp_dist(total_exit_rate);
+
+    // If we're running the loop dynamics, (loopN is true)
+    if (rtp.loop_dynamics == 1)
+    {
+        _waiting_time_multiplier = 1.0 / ((double) rtp.N_spins);
+    }
+    return tmp_exp_dist(generator) * _waiting_time_multiplier;
 }
 
 GillespieSpinSystem::~GillespieSpinSystem()

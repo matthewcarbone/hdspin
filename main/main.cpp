@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
     printf("beta_critical = %.02f\n", beta_critical);
     printf("landscape = %i (0=EREM, 1=REM)\n", landscape);
     printf("dynamics = %i (0=standard, 1=gillespie)\n", dynamics);
-    printf("loopN = %i", loop_dynamics);
+    printf("loopN = %i\n", loop_dynamics);
 
     const int start = resume_at + slurm_arr_id * njobs;
     const int end = resume_at + (slurm_arr_id + 1) * njobs;
