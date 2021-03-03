@@ -45,6 +45,16 @@ private:
     std::vector<long long> counter_S;
     std::vector<long long> counter_S_IS;
 
+    // Number of unique configs per basin
+    std::vector<long long> counter_unique_configs_per_basin_S;
+    std::vector<long long> counter_unique_configs_per_basin_S_IS;
+    std::vector<long long> tmp_unique_configs_in_basin_S;
+    std::vector<long long> tmp_unique_configs_in_basin_S_IS;
+    std::vector<long long> counter_unique_configs_per_basin_E;
+    std::vector<long long> counter_unique_configs_per_basin_E_IS;
+    std::vector<long long> tmp_unique_configs_in_basin_E;
+    std::vector<long long> tmp_unique_configs_in_basin_E_IS;
+
     long double waiting_time_E = 0.0;
     long double waiting_time_E_IS = 0.0;
     long double waiting_time_S = 0.0;

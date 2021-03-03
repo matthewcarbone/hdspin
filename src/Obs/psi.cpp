@@ -1,3 +1,5 @@
+#include <set>
+
 #include "Obs/base.h"
 #include "Obs/psi.h"
 #include "Utils/utils.h"
@@ -100,6 +102,18 @@ PsiBasin::PsiBasin(const FileNames fnames, const RuntimeParameters rtp) :
     for (int ii=0; ii<max_counter; ii++){counter_E_IS.push_back(0);}
     for (int ii=0; ii<max_counter; ii++){counter_S.push_back(0);}
     for (int ii=0; ii<max_counter; ii++){counter_S_IS.push_back(0);}
+    for (int ii=0; ii<max_counter; ii++){
+        counter_unique_configs_per_basin_E.push_back(0);
+    }
+    for (int ii=0; ii<max_counter; ii++){
+        counter_unique_configs_per_basin_E_IS.push_back(0);
+    }
+    for (int ii=0; ii<max_counter; ii++){
+        counter_unique_configs_per_basin_S.push_back(0);
+    }
+    for (int ii=0; ii<max_counter; ii++){
+        counter_unique_configs_per_basin_S_IS.push_back(0);
+    }
 }
 
 
@@ -110,14 +124,29 @@ void PsiBasin::_step_E_(const long double current_waiting_time,
     if (prev.energy < rtp.energetic_threshold)
     {
         waiting_time_E += current_waiting_time;
+        tmp_unique_configs_in_basin_E.push_back(prev.int_rep);
+
         if (curr.energy >= rtp.energetic_threshold)
         {
             const long double local_waiting_time = waiting_time_E;
             waiting_time_E = 0.0;
 
             const long long key = _get_key(local_waiting_time);
-            if (key > max_counter - 1){return;}
-            counter_E[key] += 1;  // Update
+            if (key <= max_counter - 1)
+            {
+                counter_E[key] += 1;  // Update
+            }
+            
+            // We also count the number of unique configs per basin
+            const long double n_unique = 
+                std::set<long long>(tmp_unique_configs_in_basin_E.begin(),
+                    tmp_unique_configs_in_basin_E.end()).size();
+            const long long key2 = _get_key(n_unique);
+            if (key2 <= max_counter - 1)
+            {
+                counter_unique_configs_per_basin_E[key2] += 1;
+            }
+            tmp_unique_configs_in_basin_E.clear();
         }
     }
 }
@@ -130,14 +159,29 @@ void PsiBasin::_step_E_IS_(const long double current_waiting_time,
     if (prev.energy_IS < rtp.energetic_threshold)
     {
         waiting_time_E_IS += current_waiting_time;
+        tmp_unique_configs_in_basin_E_IS.push_back(prev.int_rep_IS);
+
         if (curr.energy_IS >= rtp.energetic_threshold)
         {
             const long double local_waiting_time = waiting_time_E_IS;
             waiting_time_E_IS = 0.0;
 
             const long long key = _get_key(local_waiting_time);
-            if (key > max_counter - 1){return;}
-            counter_E_IS[key] += 1;  // Update
+            if (key <= max_counter - 1)
+            {
+                counter_E_IS[key] += 1;  // Update
+            }
+
+            // We also count the number of unique configs per basin
+            const long double n_unique = 
+                std::set<long long>(tmp_unique_configs_in_basin_E_IS.begin(),
+                    tmp_unique_configs_in_basin_E_IS.end()).size();
+            const long long key2 = _get_key(n_unique);
+            if (key2 <= max_counter - 1)
+            {
+                counter_unique_configs_per_basin_E_IS[key2] += 1;
+            }
+            tmp_unique_configs_in_basin_E_IS.clear();
         }
     }
 }
@@ -150,14 +194,29 @@ void PsiBasin::_step_S_(const long double current_waiting_time,
     if (prev.energy < rtp.entropic_attractor)
     {
         waiting_time_S += current_waiting_time;
+        tmp_unique_configs_in_basin_S.push_back(prev.int_rep);
+
         if (curr.energy >= rtp.entropic_attractor)
         {
             const long double local_waiting_time = waiting_time_S;
             waiting_time_S = 0.0;
 
             const long long key = _get_key(local_waiting_time);
-            if (key > max_counter - 1){return;}
-            counter_S[key] += 1;  // Update
+            if (key <= max_counter - 1)
+            {
+                counter_S[key] += 1;  // Update
+            }
+
+            // We also count the number of unique configs per basin
+            const long double n_unique = 
+                std::set<long long>(tmp_unique_configs_in_basin_S.begin(),
+                    tmp_unique_configs_in_basin_S.end()).size();
+            const long long key2 = _get_key(n_unique);
+            if (key2 <= max_counter - 1)
+            {
+                counter_unique_configs_per_basin_S[key2] += 1;
+            }
+            tmp_unique_configs_in_basin_S.clear();
         }
     }
 }
@@ -170,14 +229,29 @@ void PsiBasin::_step_S_IS_(const long double current_waiting_time,
     if (prev.energy_IS < rtp.entropic_attractor)
     {
         waiting_time_S_IS += current_waiting_time;
+        tmp_unique_configs_in_basin_S_IS.push_back(prev.int_rep_IS);
+
         if (curr.energy_IS >= rtp.entropic_attractor)
         {
             const long double local_waiting_time = waiting_time_S_IS;
             waiting_time_S_IS = 0.0;
 
             const long long key = _get_key(local_waiting_time);
-            if (key > max_counter - 1){return;}
-            counter_S_IS[key] += 1;  // Update
+            if (key <= max_counter - 1)
+            {
+                counter_S_IS[key] += 1;  // Update
+            }
+
+            // We also count the number of unique configs per basin
+            const long double n_unique = 
+                std::set<long long>(tmp_unique_configs_in_basin_S_IS.begin(),
+                    tmp_unique_configs_in_basin_S_IS.end()).size();
+            const long long key2 = _get_key(n_unique);
+            if (key2 <= max_counter - 1)
+            {
+                counter_unique_configs_per_basin_S_IS[key2] += 1;
+            }
+            tmp_unique_configs_in_basin_S_IS.clear();
         }
     }
 }
@@ -197,7 +271,11 @@ PsiBasin::~PsiBasin()
     outfile = fopen(fnames.psi_basin.c_str(), "w");
     for (int ii=0; ii<max_counter; ii++)
     {
-        fprintf(outfile, "%i %lli %lli %lli %lli\n", ii, counter_E[ii],
-            counter_E_IS[ii], counter_S[ii], counter_S_IS[ii]);
+        fprintf(outfile, "%i %lli %lli %lli %lli %lli %lli %lli %lli\n",
+            ii, counter_E[ii], counter_E_IS[ii], counter_S[ii],
+            counter_S_IS[ii], counter_unique_configs_per_basin_E[ii],
+            counter_unique_configs_per_basin_E_IS[ii],
+            counter_unique_configs_per_basin_S[ii],
+            counter_unique_configs_per_basin_S_IS[ii]);
     }
 }
