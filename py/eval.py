@@ -244,6 +244,8 @@ class Evaluator:
             # should be ok.
             dict_res = []
             dict_res_IS = []
+            dict_res_unique_per_basin = []
+            dict_res_IS_unique_per_basin = []
             max_key = 0
             for res_arr in res:
 
@@ -267,6 +269,26 @@ class Evaluator:
                         max_key = key
                 dict_res_IS.append(d)
 
+                # Standard - unique configs per basin
+                d = {
+                    int(key): int(value) for key, value
+                    in zip(res_arr[:, 0], res_arr[:, 7])
+                }
+                for key, value in d.items():
+                    if key > max_key and value > 0:
+                        max_key = key
+                dict_res_unique_per_basin.append(d)
+
+                # Inherent structure - unique configs per basin
+                d = {
+                    int(key): int(value) for key, value
+                    in zip(res_arr[:, 0], res_arr[:, 8])
+                }
+                for key, value in d.items():
+                    if key > max_key and value > 0:
+                        max_key = key
+                dict_res_IS_unique_per_basin.append(d)
+
             # Standard
             stats = np.zeros(shape=(len(dict_res), max_key + 1))
             for ii, d in enumerate(dict_res):
@@ -288,6 +310,28 @@ class Evaluator:
             )
             print(f"Evaluating {full_dir_path} -> {final_path}")
             np.savetxt(final_path, stats_IS)
+
+            # Standard - unique configs per basin
+            stats_u = np.zeros(shape=(len(dict_res_unique_per_basin), max_key + 1))
+            for ii, d in enumerate(dict_res_unique_per_basin):
+                for key, value in d.items():
+                    if value > 0:
+                        stats_u[ii, key] = value
+            final_path = os.path.join(full_dir_path, 'final/psi_basin_S_u.txt')
+            print(f"Evaluating {full_dir_path} -> {final_path}")
+            np.savetxt(final_path, stats_u)
+
+            # Inherent structure - unique configs per basin
+            stats_IS_u = np.zeros(shape=(len(dict_res_IS_unique_per_basin), max_key + 1))
+            for ii, d in enumerate(dict_res_IS_unique_per_basin):
+                for key, value in d.items():
+                    if value > 0:
+                        stats_IS_u[ii, key] = value
+            final_path = os.path.join(
+                full_dir_path, 'final/psi_basin_S_IS_u.txt'
+            )
+            print(f"Evaluating {full_dir_path} -> {final_path}")
+            np.savetxt(final_path, stats_IS_u)
 
         print("Done\n")
 
@@ -314,6 +358,8 @@ class Evaluator:
             # should be ok.
             dict_res = []
             dict_res_IS = []
+            dict_res_unique_per_basin = []
+            dict_res_IS_unique_per_basin = []
             max_key = 0
             for res_arr in res:
 
@@ -337,6 +383,26 @@ class Evaluator:
                         max_key = key
                 dict_res_IS.append(d)
 
+                # Standard - unique configs per basin
+                d = {
+                    int(key): int(value) for key, value
+                    in zip(res_arr[:, 0], res_arr[:, 5])
+                }
+                for key, value in d.items():
+                    if key > max_key and value > 0:
+                        max_key = key
+                dict_res_unique_per_basin.append(d)
+
+                # Inherent structure - unique configs per basin
+                d = {
+                    int(key): int(value) for key, value
+                    in zip(res_arr[:, 0], res_arr[:, 6])
+                }
+                for key, value in d.items():
+                    if key > max_key and value > 0:
+                        max_key = key
+                dict_res_IS_unique_per_basin.append(d)
+
             # Standard
             stats = np.zeros(shape=(len(dict_res), max_key + 1))
             for ii, d in enumerate(dict_res):
@@ -358,6 +424,28 @@ class Evaluator:
             )
             print(f"Evaluating {full_dir_path} -> {final_path}")
             np.savetxt(final_path, stats_IS)
+
+            # Standard - unique configs per basin
+            stats_u = np.zeros(shape=(len(dict_res_unique_per_basin), max_key + 1))
+            for ii, d in enumerate(dict_res_unique_per_basin):
+                for key, value in d.items():
+                    if value > 0:
+                        stats_u[ii, key] = value
+            final_path = os.path.join(full_dir_path, 'final/psi_basin_E_u.txt')
+            print(f"Evaluating {full_dir_path} -> {final_path}")
+            np.savetxt(final_path, stats_u)
+
+            # Inherent structure - unique configs per basin
+            stats_IS_u = np.zeros(shape=(len(dict_res_IS_unique_per_basin), max_key + 1))
+            for ii, d in enumerate(dict_res_IS_unique_per_basin):
+                for key, value in d.items():
+                    if value > 0:
+                        stats_IS_u[ii, key] = value
+            final_path = os.path.join(
+                full_dir_path, 'final/psi_basin_E_IS_u.txt'
+            )
+            print(f"Evaluating {full_dir_path} -> {final_path}")
+            np.savetxt(final_path, stats_IS_u)
 
         print("Done\n")
 
