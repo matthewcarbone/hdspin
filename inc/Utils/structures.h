@@ -19,6 +19,7 @@ struct FileNames
     std::string aging_config_2;
     std::string aging_basin_1;
     std::string aging_basin_2;
+    std::string rolling;
     std::string ii_str;
     std::string grids_directory;
 };

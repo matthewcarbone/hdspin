@@ -20,6 +20,7 @@ FileNames get_filenames(const int ii, const std::string target_dir,
     fnames.aging_config_2 = target_dir + "/" + ii_str + "_pi2_config.txt";
     fnames.aging_basin_1 = target_dir + "/" + ii_str + "_pi1_basin.txt";
     fnames.aging_basin_2 = target_dir + "/" + ii_str + "_pi2_basin.txt";
+    fnames.rolling = target_dir + "/" + ii_str + "_rolling.txt";
     fnames.ii_str = ii_str;
     fnames.grids_directory = grids_directory;
     return fnames;
