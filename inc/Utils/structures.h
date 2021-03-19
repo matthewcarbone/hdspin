@@ -19,6 +19,7 @@ struct FileNames
     std::string aging_config_2;
     std::string aging_basin_1;
     std::string aging_basin_2;
+    std::string rolling;
     std::string ii_str;
     std::string grids_directory;
 };
@@ -37,11 +38,12 @@ struct RuntimeParameters
     int dynamics;
     double energetic_threshold;
     double entropic_attractor;
+    int loop_dynamics;
 };
 
 
 RuntimeParameters get_runtime_params(const int, const int, const double,
-    const double, const int);
+    const double, const int, const int);
 
 
 #endif

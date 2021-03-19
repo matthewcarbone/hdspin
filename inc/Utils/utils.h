@@ -38,4 +38,10 @@ void _helper_calculate_neighboring_energies_(int *, const double *,
 
 void load_long_long_grid_(std::vector<long long> &, const std::string);
 
+long double iterative_mean(long double, long double, long long);
+
+long double iterative_S(long double, long double, long double, long double);
+
+long double var_from_S(long double, long long);
+
 #endif

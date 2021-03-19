@@ -36,13 +36,13 @@ def get_cache(args):
     raise RuntimeError("Unknown cache location.")
 
 
-def make_basename(nspin, beta, bc, dynamics, landscape, timesteps):
+def make_basename(nspin, beta, bc, dynamics, landscape, timesteps, loopN):
     """Creates the base filename for the simulation by simply combining the
     number of spins, beta, beta critical, the dynamics flag, the landscape
     flag, and the number of timesteps. This is a simple helper to ensure
     consistency."""
 
-    return f"{nspin}_{beta:.03f}_{bc:.03f}_{dynamics}_{landscape}_{timesteps}"
+    return f"{nspin}_{beta:.03f}_{bc:.03f}_{dynamics}_{landscape}_{timesteps}_{loopN}"
 
 
 def make_grids(args, grid_path):
@@ -85,7 +85,7 @@ def make_directory_and_configs(args):
     cache = args.cache
     basename = make_basename(
         args.nspin, args.beta, args.beta_critical, args.dynamics,
-        args.landscape, args.timesteps
+        args.landscape, args.timesteps, int(args.loopN)
     )
     base_dir = os.path.join(cache, basename)
 
@@ -128,7 +128,7 @@ def write_bash_script(args, base_dir, max_index):
     timesteps = args.timesteps
     args_str = f"{results_dir} {grids_dir} {timesteps} {args.nspin} " \
         f"{args.beta} {args.beta_critical} {args.landscape} " \
-        f"{args.dynamics} {max_index} 0 {args.nsim}"
+        f"{args.dynamics} {int(args.loopN)} {max_index} 0 {args.nsim}"
 
     # Then we append
     if os.path.exists(script_name):
@@ -174,7 +174,7 @@ def write_SLURM_script(args, base_dir, max_index):
     timesteps = args.timesteps
     args_str = f"{results_dir} {grids_dir} {timesteps} {args.nspin} " \
         f"{args.beta} {args.beta_critical} {args.landscape} {args.dynamics} " \
-        f"{max_index} $SLURM_ARRAY_TASK_ID {sims_per_job}"
+        f"{int(args.loopN)} {max_index} $SLURM_ARRAY_TASK_ID {sims_per_job}"
 
     with open(submit_fname, 'w') as f:
         f.write("#!/bin/bash\n")

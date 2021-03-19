@@ -15,6 +15,7 @@
 #include "Obs/energy.h"
 #include "Obs/psi.h"
 #include "Obs/age.h"
+#include "Obs/rolling.h"
 
 
 Simulation::Simulation(const FileNames fnames,
@@ -38,6 +39,7 @@ void GillespieSimulation::execute()
     AgingConfig obs_age_config(fnames);
     PsiBasin obs_psi_basin(fnames, rtp);
     AgingBasin obs_age_basin(fnames, rtp);
+    Rolling obs_rolling(fnames, rtp);
 
     // Simulation clock is 0 before entering the while loop
     while (true)
@@ -54,6 +56,7 @@ void GillespieSimulation::execute()
         obs_age_config.step_(simulation_clock, sys.get_n_accept(), prev);
         obs_psi_basin.step_(waiting_time, prev, curr);
         obs_age_basin.step_(simulation_clock, prev, curr);
+        obs_rolling.step_(prev, curr);
 
 
         /*
@@ -120,6 +123,7 @@ void StandardSimulation::execute()
     AgingConfig obs_age_config(fnames);
     PsiBasin obs_psi_basin(fnames, rtp);
     AgingBasin obs_age_basin(fnames, rtp);
+    Rolling obs_rolling(fnames, rtp);
 
     // Simulation clock is 0 before entering the while loop
     while (true)
@@ -145,6 +149,7 @@ void StandardSimulation::execute()
         obs_age_config.step_(simulation_clock, sys.get_n_accept(), prev);
         obs_psi_basin.step_(waiting_time, prev, curr);
         obs_age_basin.step_(simulation_clock, prev, curr);
+        obs_rolling.step_(prev, curr);
 
 
         // --------------------------------------------------------------------

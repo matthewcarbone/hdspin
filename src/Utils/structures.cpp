@@ -20,6 +20,7 @@ FileNames get_filenames(const int ii, const std::string target_dir,
     fnames.aging_config_2 = target_dir + "/" + ii_str + "_pi2_config.txt";
     fnames.aging_basin_1 = target_dir + "/" + ii_str + "_pi1_basin.txt";
     fnames.aging_basin_2 = target_dir + "/" + ii_str + "_pi2_basin.txt";
+    fnames.rolling = target_dir + "/" + ii_str + "_rolling.txt";
     fnames.ii_str = ii_str;
     fnames.grids_directory = grids_directory;
     return fnames;
@@ -28,7 +29,7 @@ FileNames get_filenames(const int ii, const std::string target_dir,
 
 RuntimeParameters get_runtime_params(const int log_N_timesteps,
     const int N_spins, const double beta, const double beta_critical,
-    const int landscape)
+    const int landscape, const int loop_dynamics)
 {
     double et, ea;
     RuntimeParameters params;
@@ -37,6 +38,7 @@ RuntimeParameters get_runtime_params(const int log_N_timesteps,
     params.beta = beta;
     params.beta_critical = beta_critical;
     params.landscape = landscape;
+    params.loop_dynamics = loop_dynamics;
 
     if (landscape == 0) // EREM
     {
