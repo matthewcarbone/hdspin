@@ -75,6 +75,16 @@ SpinSystem::SpinSystem(const RuntimeParameters rtp) : rtp(rtp)
     _initialize_spin_system();
     emap = new double[rtp.N_configs];
     _initialize_energy_mapping_();
+
+    // long double lowest_energy = 1e15;
+    // long double highest_energy = -1e15;
+    // for (int ii=0; ii<rtp.N_configs; ii++)
+    // {
+    //     if (emap[ii] < lowest_energy){lowest_energy = emap[ii];}
+    //     if (emap[ii] > highest_energy){highest_energy = emap[ii];}
+    // }
+    // printf("Energy range: %.03Le -> %.03Le\n", lowest_energy, highest_energy);
+
     ism = new long long[rtp.N_configs];
     _initialize_inherent_structure_mapping_();
 }
