@@ -175,6 +175,64 @@ class Evaluator:
 
         print("Done\n")
 
+    def eval_rolling_ridge(self):
+        """Evaluates the ridge energy information."""
+
+        print(f"Ridge: evaluating {len(self.all_dirs)} total directories")
+
+        for full_dir_path in self.all_dirs:
+
+            results_path = os.path.join(full_dir_path, 'results')
+            all_trials = os.listdir(results_path)
+            res = np.array([
+                np.loadtxt(os.path.join(results_path, f), delimiter=" ")
+                for f in all_trials if "rolling" in f
+            ])
+
+            to_save = []
+
+            for row in range(8):
+
+                # Each row has a different meaning. First, it is the
+                # Same/diff Energy
+                # Same/diff Entropy
+                # Same/diff IS Energy
+                # Same/diff IS Entropy
+
+                # The columns are:
+                # The mean, variance, min, max and n samples
+
+                row_mean = res[:, row, 0]
+                row_var = res[:, row, 1]
+                row_min = res[:, row, 2]
+                row_max = res[:, row, 3]
+                row_n = res[:, row, 4]
+                row_standard_error = np.sqrt(row_var / row_n)
+
+                overall_min_of_min = row_min.min()
+                overall_min_of_max = row_max.min()
+                overall_max_of_max = row_max.max()
+                overall_max_of_min = row_min.max()
+
+                overall_mean = row_mean.mean()
+                overall_standard_error = np.sqrt(np.sum(row_standard_error**2))
+
+                to_save.append([
+                    overall_mean, overall_standard_error,
+                    overall_min_of_min, overall_max_of_min,
+                    overall_min_of_max, overall_max_of_max
+                ])
+
+            final_path = os.path.join(full_dir_path, 'final/rolling_ridge.txt')
+
+            to_save = np.array(to_save)
+
+            print(f"Evaluating {full_dir_path} -> {final_path}")
+
+            np.savetxt(final_path, to_save.T)
+
+        print("Done\n")
+
     def eval_traj(self):
         """Performs the evaluate of the energy, trajectories and inherent
         structure for every directory as listed in all_dirs."""

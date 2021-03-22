@@ -31,6 +31,7 @@ if __name__ == '__main__':
     elif args.protocol == 'eval':
         ev = Evaluator(args)
         ev.eval_traj()
+        ev.eval_rolling_ridge()
         ev.eval_psi_config()
         ev.eval_aging_config()
         ev.eval_psi_basin()
