@@ -3,13 +3,16 @@ executables := $(shell find exe -maxdepth 1 -name "*.out")
 INC=-I inc
 SRC = $(wildcard src/*/*.cpp)
 
-CC=g++
+CC=mpic++
 LOCAL_CC=/usr/local/bin/mpic++
 
 # Previous local flags using -fopenmp
 # LOCAL_FLAGS=-Xpreprocessor -fopenmp -lomp -std=c++17
 LOCAL_FLAGS=-std=c++17
-REMOTE_FLAGS_1=-fopenmp -std=c++17
+
+# Previous remote flags
+#REMOTE_FLAGS_1=-fopenmp -std=c++17
+REMOTE_FLAGS_1=-std=c++17
 
 # rr:
 # 	mpic++ -fopenmp hdspin/main.cpp -std=c++11 -o main.out hdspin/gillespie.cpp hdspin/standard.cpp hdspin/utils/general_utils.cpp hdspin/utils/init_utils.cpp
