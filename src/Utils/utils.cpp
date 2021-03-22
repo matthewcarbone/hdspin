@@ -96,26 +96,25 @@ void load_long_long_grid_(std::vector<long long> &grid, const std::string loc)
     }
 }
 
-long double iterative_mean(long double mu0, long double x1, long long n)
+double iterative_mean(double mu0, double x1, long long n)
 {
-    return mu0 + (x1 - mu0) / ((long double) n);
+    return mu0 + (x1 - mu0) / ((double) n);
 }
 
 
 // S_n is a helper function for calculating the variance, such that
 // var = S_n / n.
-long double iterative_S(long double mu0, long double mu1, long double x1,
-    long double S0)
+double iterative_S(double mu0, double mu1, double x1, double S0)
 {
     return S0 + (x1 - mu0) * (x1 - mu1);
 }
 
-long double var_from_S(long double S, long long n)
+double var_from_S(double S, long long n)
 {
     assert(n >= 0);
     if (n == 0)
     {
         return 0.0;
     }
-    return S / ((long double) n);
+    return S / ((double) n);
 }

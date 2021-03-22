@@ -6,13 +6,13 @@
 
 struct ridge_tracker
 {
-    long double mu0 = 0.0;
-    long double mu1 = 0.0;
-    long double S0 = 0.0;
-    long double S1 = 0.0;
+    double mu0 = 0.0;
+    double mu1 = 0.0;
+    double S0 = 0.0;
+    double S1 = 0.0;
     long long counter = 1;
-    long double current_min = 1e15;
-    long double current_max = -1e15;
+    double current_min = 1e15;
+    double current_max = -1e15;
 };
 
 class Rolling : public Base
@@ -27,17 +27,17 @@ private:
     ridge_tracker E_IS_e_same, E_IS_e_diff, S_IS_e_same, S_IS_e_diff;
 
     // Last energies that were under the threshold
-    long double E_last_energy = 0.0;
-    long double E_current_ridge = 0.0;
+    double E_last_energy = 0.0;
+    double E_current_ridge = 0.0;
 
-    long double E_IS_last_energy = 0.0;
-    long double E_IS_current_ridge = 0.0;
+    double E_IS_last_energy = 0.0;
+    double E_IS_current_ridge = 0.0;
 
-    long double S_last_energy = 0.0;
-    long double S_current_ridge = 0.0;
+    double S_last_energy = 0.0;
+    double S_current_ridge = 0.0;
 
-    long double S_IS_last_energy = 0.0;
-    long double S_IS_current_ridge = 0.0;
+    double S_IS_last_energy = 0.0;
+    double S_IS_current_ridge = 0.0;
 
     void _log_ridge_E(const Vals);
     void _log_ridge_E_IS(const Vals);

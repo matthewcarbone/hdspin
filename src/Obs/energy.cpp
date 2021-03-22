@@ -23,7 +23,7 @@ void Energy::step_(const long double simulation_clock, const Vals v)
     // Write to the outfile
     while (grid[pointer] < simulation_clock)
     {   
-        fprintf(outfile, "%lli %lli %.05Lf %lli %.05Lf\n", grid[pointer],
+        fprintf(outfile, "%lli %lli %.05f %lli %.05f\n", grid[pointer],
             v.int_rep, v.energy, v.int_rep_IS, v.energy_IS);
         pointer += 1;
         if (pointer > length - 1){return;}

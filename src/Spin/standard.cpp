@@ -45,11 +45,11 @@ bool StandardSpinSystem::step_()
 
         // Step 4, get the proposed energy (energy of the new configuration)
         // long long proposed_config_int = get_int_rep();
-        long double proposed_energy = get_current_energy();
+        double proposed_energy = get_current_energy();
 
         // Step 5, compute the difference between the energies, and find the
         // metropolis criterion
-        long double dE = proposed_energy - prev.energy;
+        double dE = proposed_energy - prev.energy;
         double metropolis_prob = exp(-rtp.beta * dE);
 
         // Step 6, sample a random number between 0 and 1.

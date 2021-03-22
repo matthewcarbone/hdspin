@@ -250,30 +250,30 @@ Rolling::~Rolling()
     outfile = fopen(fnames.rolling.c_str(), "w");
 
     // Dump the results to disk for the standard trajectory
-    fprintf(outfile, "%.05Le %.05Le %.05Le %.05Le %lli\n",
+    fprintf(outfile, "%.05e %.05e %.05e %.05e %lli\n",
         E_e_same.mu1, var_from_S(E_e_same.S1, E_e_same.counter),
         E_e_same.current_max, E_e_same.current_min, E_e_same.counter); 
-    fprintf(outfile, "%.05Le %.05Le %.05Le %.05Le %lli\n",
+    fprintf(outfile, "%.05e %.05e %.05e %.05e %lli\n",
         E_e_diff.mu1, var_from_S(E_e_diff.S1, E_e_diff.counter),
         E_e_diff.current_max, E_e_diff.current_min, E_e_diff.counter);
-    fprintf(outfile, "%.05Le %.05Le %.05Le %.05Le %lli\n",
+    fprintf(outfile, "%.05e %.05e %.05e %.05e %lli\n",
         S_e_same.mu1, var_from_S(S_e_same.S1, S_e_same.counter),
         S_e_same.current_max, S_e_same.current_min, S_e_same.counter);
-    fprintf(outfile, "%.05Le %.05Le %.05Le %.05Le %lli\n",
+    fprintf(outfile, "%.05e %.05e %.05e %.05e %lli\n",
         S_e_diff.mu1, var_from_S(S_e_diff.S1, S_e_diff.counter),
         S_e_diff.current_max, S_e_diff.current_min, S_e_diff.counter);
 
     // Dump the inherent structure trajectory results
-    fprintf(outfile, "%.05Le %.05Le %.05Le %.05Le %lli\n",
+    fprintf(outfile, "%.05e %.05e %.05e %.05e %lli\n",
         E_IS_e_same.mu1, var_from_S(E_IS_e_same.S1, E_IS_e_same.counter),
         E_IS_e_same.current_max, E_IS_e_same.current_min, E_IS_e_same.counter);
-    fprintf(outfile, "%.05Le %.05Le %.05Le %.05Le %lli\n",
+    fprintf(outfile, "%.05e %.05e %.05e %.05e %lli\n",
         E_IS_e_diff.mu1, var_from_S(E_IS_e_diff.S1, E_IS_e_diff.counter),
         E_IS_e_diff.current_max, E_IS_e_diff.current_min, E_IS_e_diff.counter);
-    fprintf(outfile, "%.05Le %.05Le %.05Le %.05Le %lli\n",
+    fprintf(outfile, "%.05e %.05e %.05e %.05e %lli\n",
         S_IS_e_same.mu1, var_from_S(S_IS_e_same.S1, S_IS_e_same.counter),
         S_IS_e_same.current_max, S_IS_e_same.current_min, S_IS_e_same.counter);
-    fprintf(outfile, "%.05Le %.05Le %.05Le %.05Le %lli\n",
+    fprintf(outfile, "%.05e %.05e %.05e %.05e %lli\n",
         S_IS_e_diff.mu1, var_from_S(S_IS_e_diff.S1, S_IS_e_diff.counter),
         S_IS_e_diff.current_max, S_IS_e_diff.current_min, S_IS_e_diff.counter);
 }
