@@ -216,11 +216,14 @@ class Evaluator:
 
                 overall_mean = row_mean.mean()
                 overall_standard_error = np.sqrt(np.sum(row_standard_error**2))
+                avg_num_samples = np.mean(row_n)
+                avg_spread_samples = np.std(row_n)
 
                 to_save.append([
                     overall_mean, overall_standard_error,
                     overall_min_of_min, overall_max_of_min,
-                    overall_min_of_max, overall_max_of_max
+                    overall_min_of_max, overall_max_of_max,
+                    avg_num_samples, avg_spread_samples
                 ])
 
             final_path = os.path.join(full_dir_path, 'final/rolling_ridge.txt')

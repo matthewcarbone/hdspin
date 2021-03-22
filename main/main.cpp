@@ -111,10 +111,10 @@ int main(int argc, char *argv[])
     const int start = resume_at + MPI_RANK * n_tracers;
     const int end = resume_at + (MPI_RANK + 1) * n_tracers;
 
+    MPI_Barrier(MPI_COMM_WORLD);
+
     printf("RANK %i/%i job ID's %i -> %i\n", MPI_RANK, MPI_WORLD_SIZE, start,
         end);
-
-    MPI_Barrier(MPI_COMM_WORLD);
 
     // Define some helpers to be used to track progress.
     const int total_steps = end - start;
