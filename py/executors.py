@@ -17,6 +17,8 @@ from pathlib import Path
 import shutil
 import yaml
 
+from py import utils as u
+
 
 PURPLE = '\033[95m'
 CYAN = '\033[96m'
@@ -115,7 +117,7 @@ def cleanup():
         shutil.rmtree(str(p))
         print(f"Removed tree: {str(p)}")
 
-    p = os.environ.get("HDSPIN_CACHE_DIR")
+    p = u.get_cache()
     if p is not None:
         p = Path(p)
     if p.exists():
@@ -258,9 +260,7 @@ class Primer:
     """
 
     def _set_cache(self):
-        self.cache = os.environ.get("HDSPIN_CACHE_DIR")
-        assert self.cache is not None
-        assert isinstance(self.cache, str)
+        self.cache = u.get_cache()
         if not Path(self.cache).exists():
             Path(self.cache).mkdir(parents=True, exist_ok=True)
             assert Path(self.cache).exists()
@@ -362,9 +362,7 @@ class Executor:
     """Runs the code!"""
 
     def _set_cache(self):
-        self.cache = os.environ.get("HDSPIN_CACHE_DIR")
-        assert self.cache is not None
-        assert isinstance(self.cache, str)
+        self.cache = u.get_cache()
         assert Path(self.cache).exists()
 
     def _load_from_FIFO_queue(self, load_all=False):
