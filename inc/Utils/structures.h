@@ -35,7 +35,6 @@ struct RuntimeParameters
     double beta;
     double beta_critical;
     int landscape;
-    int dynamics;
     double energetic_threshold;
     double entropic_attractor;
     int loop_dynamics;

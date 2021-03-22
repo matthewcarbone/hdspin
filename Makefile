@@ -4,7 +4,11 @@ INC=-I inc
 SRC = $(wildcard src/*/*.cpp)
 
 CC=g++
-LOCAL_FLAGS=-Xpreprocessor -fopenmp -lomp -std=c++17
+LOCAL_CC=/usr/local/bin/mpic++
+
+# Previous local flags using -fopenmp
+# LOCAL_FLAGS=-Xpreprocessor -fopenmp -lomp -std=c++17
+LOCAL_FLAGS=-std=c++17
 REMOTE_FLAGS_1=-fopenmp -std=c++17
 
 # rr:
@@ -18,7 +22,7 @@ rr:
 	$(CC) $(INC) $(REMOTE_FLAGS_1) main/main.cpp -o exe/main.out $(SRC) -O3
 
 local: 
-	$(CC) $(INC) $(LOCAL_FLAGS) main/main.cpp -o exe/main.out $(SRC) -O3
+	$(LOCAL_CC) $(INC) $(LOCAL_FLAGS) main/main.cpp -o exe/main.out $(SRC) -O3
 
 debug:
 	$(CC) $(INC) $(LOCAL_FLAGS) main/debug.cpp -o exe/debug.out $(SRC)

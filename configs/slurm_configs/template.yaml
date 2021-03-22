@@ -1,8 +1,0 @@
-partition: New
-time: null
-account: null
-constraint: null
-total_cpus: 96
-mem_per_cpu: 2500
-modules: [compilers/gcc-10.1.0]
-max_concurrent: null
