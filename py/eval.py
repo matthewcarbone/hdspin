@@ -225,7 +225,7 @@ class Evaluator:
 
             final_path = os.path.join(full_dir_path, 'final/rolling_ridge.txt')
 
-            to_save = np.array(to_save)
+            to_save = np.array(to_save).T
 
             print(f"Evaluating {full_dir_path} -> {final_path}")
 
