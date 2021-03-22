@@ -7,6 +7,8 @@ __status__ = "Prototype"
 
 
 import os
+import shlex
+import subprocess
 
 
 def listdir_fp(d):
@@ -18,3 +20,20 @@ def get_cache():
     assert cache is not None
     assert isinstance(cache, str)
     return cache
+
+
+def run_command(command, silent=True):
+    """https://www.endpoint.com/blog/2015/01/28/
+    getting-realtime-output-using-python"""
+
+    process = subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE)
+
+    while True:
+        output = process.stdout.readline()
+        if output == b'' and process.poll() is not None:
+            break
+        if output and not silent:
+            print(output.strip().decode())
+
+    rc = process.poll()
+    return rc

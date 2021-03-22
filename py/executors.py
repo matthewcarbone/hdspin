@@ -498,3 +498,13 @@ class Executor:
             else:
                 self.write_SLURM_script(base_dir, srp)
         print(f"{len(self.primed)} jobs with local={local}: READY")
+
+    def execute(self):
+        """Submits the SLURM jobs."""
+
+        cache_full_paths = u.listdir_fp(self.cache)
+        for path in cache_full_paths:
+            script_loc = Path(path) / Path("submit.sh")
+            u.run_command(f"mv {script_loc} .", silent=False)
+            u.run_command("sbatch submit.sh", silent=False)
+            u.run_command(f"mv submit.sh {path}", silent=False)

@@ -27,6 +27,8 @@ if __name__ == '__main__':
 
     elif args.protocol == 'execute':
         executor = Executor(args.config_location, args.run_one, args.local)
+        if not args.local:
+            executor.execute()
 
     elif args.protocol == 'eval':
         ev = Evaluator(args)
