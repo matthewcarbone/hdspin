@@ -34,7 +34,7 @@ class Evaluator:
     def __init__(self, args):
         """Initializer."""
 
-        self.cache = u.get_cache(args)
+        self.cache = u.get_cache()
         _all_dirs = u.listdir_fp(self.cache)
         self.all_dirs = [d for d in _all_dirs if os.path.isdir(d)]
 
