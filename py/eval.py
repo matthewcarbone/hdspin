@@ -202,29 +202,38 @@ class Evaluator:
                 # The columns are:
                 # The mean, variance, min, max and n samples
 
-                row_mean = res[:, row, 0]
-                row_var = res[:, row, 1]
-                row_min = res[:, row, 2]
-                row_max = res[:, row, 3]
-                row_n = res[:, row, 4]
-                row_standard_error = np.sqrt(row_var / row_n)
+                where_neq_0 = np.where(res[:, row, 0] != 0)
 
-                overall_min_of_min = row_min.min()
-                overall_min_of_max = row_max.min()
-                overall_max_of_max = row_max.max()
-                overall_max_of_min = row_min.max()
+                try:
+                    row_mean = res[where_neq_0, row, 0]
+                    row_var = res[where_neq_0, row, 1]
+                    row_max = res[where_neq_0, row, 2]
+                    row_min = res[where_neq_0, row, 3]
+                    row_n = res[where_neq_0, row, 4]
+                    row_standard_error = np.sqrt(row_var / row_n)
 
-                overall_mean = row_mean.mean()
-                overall_standard_error = np.sqrt(np.sum(row_standard_error**2))
-                avg_num_samples = np.mean(row_n)
-                avg_spread_samples = np.std(row_n)
+                    overall_min_of_min = row_min.min()
+                    overall_min_of_max = row_max.min()
+                    overall_max_of_max = row_max.max()
+                    overall_max_of_min = row_min.max()
 
-                to_save.append([
-                    overall_mean, overall_standard_error,
-                    overall_min_of_min, overall_max_of_min,
-                    overall_min_of_max, overall_max_of_max,
-                    avg_num_samples, avg_spread_samples
-                ])
+                    overall_mean = row_mean.mean()
+                    overall_standard_error = np.sqrt(np.sum(row_standard_error**2))
+                    avg_num_samples = np.mean(row_n)
+                    avg_spread_samples = np.std(row_n)
+
+                    to_save.append([
+                        overall_mean, overall_standard_error,
+                        overall_min_of_min, overall_max_of_min,
+                        overall_min_of_max, overall_max_of_max,
+                        avg_num_samples, avg_spread_samples
+                    ])
+
+                # ValueError: zero-size array to reduction operation minimum
+                # which has no identity. I.e., no points where the mean is
+                # != 0, which means no ridges.
+                except ValueError:
+                    to_save.append([np.nan] * 8)
 
             final_path = os.path.join(full_dir_path, 'final/rolling_ridge.txt')
 
