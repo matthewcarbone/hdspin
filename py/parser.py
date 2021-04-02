@@ -27,7 +27,7 @@ def global_parser(sys_argv):
     )
     ap.add_argument(
         '-i', '--input', dest='config_location', type=str,
-        default='template_config.yaml',
+        default='config.yaml',
         help="Input file location."
     )
 

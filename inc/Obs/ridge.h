@@ -1,5 +1,5 @@
-#ifndef OBS_ROLLING_H
-#define OBS_ROLLING_H
+#ifndef OBS_RIDGE_H
+#define OBS_RIDGE_H
 
 #include "Obs/base.h"
 #include "Utils/structures.h"
@@ -15,46 +15,42 @@ struct ridge_tracker
     double current_max = -1e15;
 };
 
-class Rolling : public Base
+class RidgeEnergy : public Base
 {
 private:
+
+    bool inherent_structure;
+    bool energetic_threshold;
+
+    double threshold;
 
     RuntimeParameters rtp;
 
     // Private data for the rolling means and variances for the ridge energy
     // calculation.
-    ridge_tracker E_e_same, E_e_diff, S_e_same, S_e_diff;
-    ridge_tracker E_IS_e_same, E_IS_e_diff, S_IS_e_same, S_IS_e_diff;
+    ridge_tracker same, diff;
 
     // Last energies that were under the threshold
-    double E_last_energy = 0.0;
-    double E_current_ridge = 0.0;
+    double last_energy = 0.0;
+    double current_ridge = 0.0;
 
-    double E_IS_last_energy = 0.0;
-    double E_IS_current_ridge = 0.0;
+    // We must handle the case when the tracer STARTS above the threshold. In
+    // this situation, we should not log the first time it drops below.
+    bool exited_first_basin = false;
 
-    double S_last_energy = 0.0;
-    double S_current_ridge = 0.0;
-
-    double S_IS_last_energy = 0.0;
-    double S_IS_current_ridge = 0.0;
-
-    void _log_ridge_E(const Vals);
-    void _log_ridge_E_IS(const Vals);
-    void _log_ridge_S(const Vals);
-    void _log_ridge_S_IS(const Vals);
+    void _log_ridge_(const double);
 
 public:
 
     // Constructor: reads in the grid from the specified grid directory
-    Rolling(const FileNames, const RuntimeParameters);
+    RidgeEnergy(const FileNames, const RuntimeParameters, const bool, const bool);
 
     // Step the grid by performing the following steps:
     // 1) Stepping the pointer
     // 2) Saving the configuration/energy information to disk
     void step_(const Vals, const Vals);
 
-    ~Rolling();
+    ~RidgeEnergy();
 };
 
 

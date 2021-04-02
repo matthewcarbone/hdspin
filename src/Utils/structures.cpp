@@ -15,16 +15,29 @@ FileNames get_filenames(const int ii, const std::string target_dir,
     FileNames fnames;
     fnames.energy = target_dir + "/" + ii_str + "_energy.txt";
     fnames.psi_config = target_dir + "/" + ii_str + "_psi_config.txt";
-    fnames.psi_basin = target_dir + "/" + ii_str + "_psi_basin.txt";
+    fnames.psi_config_IS = target_dir + "/" + ii_str + "_psi_config_IS.txt";
+
+    fnames.psi_basin_E = target_dir + "/" + ii_str + "_psi_basin_E.txt";
+    fnames.psi_basin_S = target_dir + "/" + ii_str + "_psi_basin_S.txt";
+    fnames.psi_basin_E_IS = target_dir + "/" + ii_str + "_psi_basin_E_IS.txt";
+    fnames.psi_basin_S_IS = target_dir + "/" + ii_str + "_psi_basin_S_IS.txt";
+
     fnames.aging_config_1 = target_dir + "/" + ii_str + "_pi1_config.txt";
     fnames.aging_config_2 = target_dir + "/" + ii_str + "_pi2_config.txt";
+
     fnames.aging_basin_1 = target_dir + "/" + ii_str + "_pi1_basin.txt";
     fnames.aging_basin_2 = target_dir + "/" + ii_str + "_pi2_basin.txt";
-    fnames.rolling = target_dir + "/" + ii_str + "_rolling.txt";
+
+    fnames.ridge_E = target_dir + "/" + ii_str + "_ridge_E.txt";
+    fnames.ridge_S = target_dir + "/" + ii_str + "_ridge_S.txt";
+    fnames.ridge_E_IS = target_dir + "/" + ii_str + "_ridge_E_IS.txt";
+    fnames.ridge_S_IS = target_dir + "/" + ii_str + "_ridge_S_IS.txt";
+
     fnames.ii_str = ii_str;
     fnames.grids_directory = grids_directory;
     return fnames;
 }
+
 
 
 RuntimeParameters get_runtime_params(const int log_N_timesteps,

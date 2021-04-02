@@ -68,6 +68,8 @@ class PlottingManager:
             **self.plot_kwargs
         )
 
+        return grid, e
+
     def plot_psi_config(
         self, ax, directory, cache=os.environ['HDSPIN_CACHE_DIR'],
         fname_base='final/psi_config', standard_error=False, color=None,
@@ -208,3 +210,5 @@ class PlottingManager:
             grid, e / norm, yerr=e_sd / norm / div, color=color, label=label,
             linestyle=style, **self.plot_kwargs
         )
+
+        return grid, e / norm

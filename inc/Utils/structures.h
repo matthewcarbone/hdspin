@@ -12,14 +12,15 @@ struct Vals
 
 struct FileNames
 {
+    // Energy
     std::string energy;
-    std::string psi_config;
-    std::string psi_basin;
+    std::string psi_config, psi_config_IS;
+    std::string psi_basin_E, psi_basin_S, psi_basin_E_IS, psi_basin_S_IS;
     std::string aging_config_1;
     std::string aging_config_2;
     std::string aging_basin_1;
     std::string aging_basin_2;
-    std::string rolling;
+    std::string ridge_E, ridge_S, ridge_E_IS, ridge_S_IS;
     std::string ii_str;
     std::string grids_directory;
 };

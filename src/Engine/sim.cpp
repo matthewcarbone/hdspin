@@ -15,7 +15,7 @@
 #include "Obs/energy.h"
 #include "Obs/psi.h"
 #include "Obs/age.h"
-#include "Obs/rolling.h"
+#include "Obs/ridge.h"
 
 
 Simulation::Simulation(const FileNames fnames,
@@ -35,11 +35,23 @@ void GillespieSimulation::execute()
     long double waiting_time;
 
     Energy obs_energy(fnames);
-    PsiConfig obs_psi_config(fnames, rtp);
-    AgingConfig obs_age_config(fnames);
-    PsiBasin obs_psi_basin(fnames, rtp);
+
+    PsiConfig obs_psi_config(fnames, rtp, false);
+    PsiConfig obs_psi_config_IS(fnames, rtp, true);
+
+    PsiBasin obs_psi_basin_E(fnames, rtp, true, false);
+    PsiBasin obs_psi_basin_S(fnames, rtp, false, false);
+    PsiBasin obs_psi_basin_E_IS(fnames, rtp, true, true);
+    PsiBasin obs_psi_basin_S_IS(fnames, rtp, false, true);
+
+    AgingConfig obs_age_config(fnames);    
     AgingBasin obs_age_basin(fnames, rtp);
-    Rolling obs_rolling(fnames, rtp);
+
+    RidgeEnergy obs_ridge_energy_E(fnames, rtp, true, false);
+    RidgeEnergy obs_ridge_energy_S(fnames, rtp, false, false);
+    RidgeEnergy obs_ridge_energy_E_IS(fnames, rtp, true, true);
+    RidgeEnergy obs_ridge_energy_S_IS(fnames, rtp, false, true);
+
 
     // Simulation clock is 0 before entering the while loop
     while (true)
@@ -50,49 +62,30 @@ void GillespieSimulation::execute()
         prev = sys.get_prev();
         curr = sys.get_curr();
 
-        // Step observables
+        // Step observables - energy
         obs_energy.step_(simulation_clock, prev);
+
+        // ... - psi config
         obs_psi_config.step_(waiting_time, prev, curr);
+        obs_psi_config_IS.step_(waiting_time, prev, curr);
+
+        // ... - psi basin
+        obs_psi_basin_E.step_(waiting_time, prev, curr);
+        obs_psi_basin_S.step_(waiting_time, prev, curr);
+        obs_psi_basin_E_IS.step_(waiting_time, prev, curr);
+        obs_psi_basin_S_IS.step_(waiting_time, prev, curr);
+
+        // ... - pi config
         obs_age_config.step_(simulation_clock, sys.get_n_accept(), prev);
-        obs_psi_basin.step_(waiting_time, prev, curr);
+        
+        // ... - pi basin
         obs_age_basin.step_(simulation_clock, prev, curr);
-        obs_rolling.step_(prev, curr);
 
-
-        /*
-        //         -------------------------------------------------
-        //         ---------------- STEP TRACKERS ------------------
-        //         -------------------------------------------------
-
-        // Append trackers. Note that Gillespie dynamics are different than
-        // standard in the order in which we update the grids, so the grids are
-        // actually stepped before the sys/inh objects are updated.  
-        energy_grid.step(current_time, sys, inh);
-        aging_config_grid.step(current_time, n_accept, sys.x, inh.x);
-        psi_config_counter.step(waiting_time, false);  // Step standard
-
-        // This is a tricky update for the inherent structure, since it
-        // will have a different waiting time than the normal
-        // configuration, as it may not change even though the normal
-        // configuration does.
-        if (inh.x == inh.x_prev){inh.waiting_time += waiting_time;}
-        else
-        {
-            // Step the inherent structure psi config counter
-            psi_config_counter.step(inh.waiting_time, true);  // Step IS
-            inh.waiting_time = 0.0;
-        }
-
-        psi_basin_counter.step(&sys, &inh);
-
-        //         -------------------------------------------------
-        //         -------------- DONE STEP TRACKERS ---------------
-        //         -------------------------------------------------
-
-        */
-        // --------------------------------------------------------------------
-        // ----------------------- ENGINE FINISH ------------------------------
-        // --------------------------------------------------------------------
+        // ... - ridge energies
+        obs_ridge_energy_E.step_(prev, curr);
+        obs_ridge_energy_S.step_(prev, curr);
+        obs_ridge_energy_E_IS.step_(prev, curr);
+        obs_ridge_energy_S_IS.step_(prev, curr);
 
         // Check for possible (although unlikely) overflow
         assert(simulation_clock > 0.0);
@@ -100,14 +93,6 @@ void GillespieSimulation::execute()
         if (simulation_clock > rtp.N_timesteps){break;}
 
     }
-
-    // Close the outfiles and write to disk when not doing so dynamically
-    /*
-    energy_grid.close_outfile();
-    psi_config_counter.write_to_disk(fnames.psi_config);
-    psi_basin_counter.write_to_disk(fnames.psi_basin);
-    aging_config_grid.close_outfile();
-    */
 }
 
 
@@ -118,12 +103,24 @@ void StandardSimulation::execute()
     bool accepted;
     const long double waiting_time = 1.0;
 
+    // Initialize all observables
     Energy obs_energy(fnames);
-    PsiConfig obs_psi_config(fnames, rtp);
-    AgingConfig obs_age_config(fnames);
-    PsiBasin obs_psi_basin(fnames, rtp);
+
+    PsiConfig obs_psi_config(fnames, rtp, false);
+    PsiConfig obs_psi_config_IS(fnames, rtp, true);
+
+    PsiBasin obs_psi_basin_E(fnames, rtp, true, false);
+    PsiBasin obs_psi_basin_S(fnames, rtp, false, false);
+    PsiBasin obs_psi_basin_E_IS(fnames, rtp, true, true);
+    PsiBasin obs_psi_basin_S_IS(fnames, rtp, false, true);
+
+    AgingConfig obs_age_config(fnames);    
     AgingBasin obs_age_basin(fnames, rtp);
-    Rolling obs_rolling(fnames, rtp);
+
+    RidgeEnergy obs_ridge_energy_E(fnames, rtp, true, false);
+    RidgeEnergy obs_ridge_energy_S(fnames, rtp, false, false);
+    RidgeEnergy obs_ridge_energy_E_IS(fnames, rtp, true, true);
+    RidgeEnergy obs_ridge_energy_S_IS(fnames, rtp, false, true);
 
     // Simulation clock is 0 before entering the while loop
     while (true)
@@ -143,47 +140,32 @@ void StandardSimulation::execute()
         prev = sys.get_prev();
         curr = sys.get_curr();
 
-        // Step observables
+        // Step observables - energy
         obs_energy.step_(simulation_clock, prev);
+
+        // ... - psi config
         obs_psi_config.step_(waiting_time, prev, curr);
+        obs_psi_config_IS.step_(waiting_time, prev, curr);
+
+        // ... - psi basin
+        obs_psi_basin_E.step_(waiting_time, prev, curr);
+        obs_psi_basin_S.step_(waiting_time, prev, curr);
+        obs_psi_basin_E_IS.step_(waiting_time, prev, curr);
+        obs_psi_basin_S_IS.step_(waiting_time, prev, curr);
+
+        // ... - pi config
         obs_age_config.step_(simulation_clock, sys.get_n_accept(), prev);
-        obs_psi_basin.step_(waiting_time, prev, curr);
+        
+        // ... - pi basin
         obs_age_basin.step_(simulation_clock, prev, curr);
-        obs_rolling.step_(prev, curr);
 
-
-        // --------------------------------------------------------------------
-        // ----------------------- ENGINE FINISH ------------------------------
-        // --------------------------------------------------------------------
-
-        //         -------------------------------------------------
-        //         ------------- STEP [other] TRACKERS -------------
-        //         -------------------------------------------------
-
-        /*
-        energy_grid.step(timestep, sys, inh);
-        aging_config_grid.step(timestep, n_accepted, sys.x, inh.x);
-        update_basin_information(&sys, params, 1.0);
-        update_basin_information(&inh, params, 1.0);
-        psi_basin_counter.step(&sys, &inh);
-        */
-
-        //         -------------------------------------------------
-        //         -------------- DONE STEP TRACKERS ---------------
-        //         -------------------------------------------------
+        // ... - ridge energies
+        obs_ridge_energy_E.step_(prev, curr);
+        obs_ridge_energy_S.step_(prev, curr);
+        obs_ridge_energy_E_IS.step_(prev, curr);
+        obs_ridge_energy_S_IS.step_(prev, curr);
 
         if (simulation_clock > rtp.N_timesteps){break;}
 
     }
-
-    /*
-    // Close the outfiles and write to disk when not doing so dynamically
-    
-    psi_config_counter.write_to_disk(fnames.psi_config);
-    psi_basin_counter.write_to_disk(fnames.psi_basin);
-    aging_config_grid.close_outfile();
-
-    delete[] energy_arr;
-    delete[] inherent_structure_mapping;
-    */
 }
