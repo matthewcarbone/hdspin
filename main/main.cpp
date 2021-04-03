@@ -116,6 +116,8 @@ int main(int argc, char *argv[])
     printf("RANK %i/%i job ID's %i -> %i\n", MPI_RANK, MPI_WORLD_SIZE, start,
         end);
 
+    MPI_Barrier(MPI_COMM_WORLD);
+
     // Define some helpers to be used to track progress.
     const int total_steps = end - start;
     const int step_size = total_steps / 50; // Print at 50 percent steps
