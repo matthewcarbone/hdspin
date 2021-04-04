@@ -123,6 +123,13 @@ class Evaluator:
         ])
         np.savetxt(final_path, to_save.T)
 
+        # Also save some example raw trajectories.
+        ntraj = min(res.shape[0], 50)
+        final_path = Path(root) / Path("final/energy_eg_traj.txt")
+        np.savetxt(final_path, energies[:ntraj, :, 2].squeeze())
+        final_path = Path(root) / Path("final/energy_IS_eg_traj.txt")
+        np.savetxt(final_path, energies[:ntraj, :, 4].squeeze())
+
         print(f"\tEnergy done")
 
     @staticmethod
