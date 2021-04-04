@@ -31,13 +31,7 @@ if __name__ == '__main__':
             executor.execute()
 
     elif args.protocol == 'eval':
-        ev = Evaluator(args)
-        ev.eval_traj()
-        ev.eval_rolling_ridge()
-        ev.eval_psi_config()
-        ev.eval_aging_config()
-        ev.eval_psi_basin()
-        ev.eval_aging_basin()
+        Evaluator()  # Runs the entire eval protocol automatically
 
     else:
         raise RuntimeError("Unknown error")
