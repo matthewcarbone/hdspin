@@ -112,7 +112,7 @@ class Evaluator:
             res[0, :, 0].squeeze(),
             energies.mean(axis=0).squeeze(), sd, sd / np.sqrt(N - 1)
         ])
-        np.save(final_path, to_save.T)
+        np.savetxt(final_path, to_save.T)
 
         # ... inherent structure trajectories
         final_path = Path(root) / Path("final/energy_IS.txt")
@@ -126,9 +126,15 @@ class Evaluator:
         # Also save some example raw trajectories.
         ntraj = min(res.shape[0], 50)
         final_path = Path(root) / Path("final/energy_eg_traj.txt")
-        np.savetxt(final_path, energies[:ntraj, :, 2].squeeze())
+        to_save = np.concatenate([
+            res[0, :, 0][:, None], energies[:ntraj, :].T
+        ], axis=1)
+        np.savetxt(final_path, to_save)
         final_path = Path(root) / Path("final/energy_IS_eg_traj.txt")
-        np.savetxt(final_path, energies[:ntraj, :, 4].squeeze())
+        to_save = np.concatenate([
+            res[0, :, 0][:, None], energies_inherent[:ntraj, :].T
+        ], axis=1)
+        np.savetxt(final_path, to_save)
 
         print(f"\tEnergy done")
 
