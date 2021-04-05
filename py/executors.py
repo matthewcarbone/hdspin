@@ -452,9 +452,9 @@ class Executor:
             for line in SBATCH_lines:
                 f.write(line)
             f.write(f'\nmpiexec ./exe/main.out {args_str}\n')
-            f.write(
-                f"python3 run.py eval --directory {base_dir}\n"
-            )
+            # f.write(
+            #     f"python3 run.py eval --directory {base_dir}\n"
+            # )
 
     def write_bash_script(args, base_dir, srp):
         """Writes a single bash script to the working directory, which stacks
@@ -476,7 +476,7 @@ class Executor:
                 for line in lines[:-1]:
                     f.write(line)
                 f.write(f"mpiexec -np 10 ./exe/main.out {args_str}\n")
-                f.write(f"python3 run.py eval --directory {base_dir}\n")
+                # f.write(f"python3 run.py eval --directory {base_dir}\n")
             print(f"Script {script_name} appended with new trial")
 
         # Else we write a new file
@@ -485,7 +485,7 @@ class Executor:
                 f.write("#!/bin/bash\n")
                 f.write("\n")
                 f.write(f"mpiexec -np 10 ./exe/main.out {args_str}\n")
-                f.write(f"python3 run.py eval --directory {base_dir}\n")
+                # f.write(f"python3 run.py eval --directory {base_dir}\n")
             print(f"Script {script_name} written to disk")
 
     def __init__(
