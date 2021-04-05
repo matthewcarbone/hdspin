@@ -519,9 +519,9 @@ class Evaluator:
 
         try:
             weighted_stats = DescrStatsW(arr[:, 1], weights=arr[:, 5])
-            mu = weighted_stats.mean()
-            sd = weighted_stats.std()
-            sderr = weighted_stats.std_mean()
+            mu = weighted_stats.mean
+            sd = weighted_stats.std
+            sderr = weighted_stats.std_mean
             total_max = np.max(arr[:, 3])  # Max of max
             total_min = np.min(arr[:, 4])  # Min of min
             return np.array([mu, sd, sderr, total_max, total_min])
