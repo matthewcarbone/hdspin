@@ -13,8 +13,10 @@ import os
 import glob2
 import numpy as np
 from pathlib import Path
+from statsmodels.stats.weightstats import DescrStatsW
 
 from py import utils as u
+from py.utils import get_general_filename
 
 
 def process_file(file_name):
@@ -267,53 +269,6 @@ class Evaluator:
         print(f"\tAging Config done")
 
     @staticmethod
-    def get_general_filename(
-        base_fname, inherent_structure, energetic_threshold,
-        extra_text=None, extension=".txt"
-    ):
-        """[summary]
-
-        [description]
-
-        Parameters
-        ----------
-        base_fname : str
-            The base filename, such as "_psi_basin".
-        inherent_structure : bool
-        energetic_threshold : bool, optional
-            If None, will ignore appending any string corresponding to if this
-            is the energetic threshold or not.
-        extra_text : str, optional
-        extension : str, optional
-            The etension to append at the end of the final string (the default
-            is ".txt").
-
-        Returns
-        -------
-        str
-            The full file name.
-        """
-
-        f = base_fname
-
-        if energetic_threshold is not None:
-            if energetic_threshold:
-                f += "_E"
-            else:
-                f += "_S"
-
-        if inherent_structure:
-            f += "_IS"
-
-        if extra_text is not None:
-            assert isinstance(extra_text, str)
-            f += extra_text
-
-        f += extension
-
-        return f
-
-    @staticmethod
     def psi_basin(root, inherent_structure, energetic_threshold):
         """Evaluates all psi basin results.
 
@@ -328,7 +283,7 @@ class Evaluator:
 
         results_directory = Path(root) / Path("results")
 
-        fname = Evaluator.get_general_filename(
+        fname = get_general_filename(
             "*_psi_basin", inherent_structure, energetic_threshold,
             extra_text=None, extension=".txt"
         )
@@ -387,7 +342,7 @@ class Evaluator:
             sd = stats.std(axis=0) / norm
             stderr = sd / np.sqrt(N - 1)
 
-            fname = Evaluator.get_general_filename(
+            fname = get_general_filename(
                 "psi_basin", inherent_structure, energetic_threshold,
                 extra_text=None, extension=".txt"
             )
@@ -411,7 +366,7 @@ class Evaluator:
             sd = stats_u.std(axis=0)
             stderr = sd / np.sqrt(N - 1)
 
-            fname = Evaluator.get_general_filename(
+            fname = get_general_filename(
                 "psi_basin", inherent_structure, energetic_threshold,
                 extra_text="_unique_configs_per", extension=".txt"
             )
@@ -522,7 +477,7 @@ class Evaluator:
         ]
         for (b1, b2) in combinations:
             mu, sd, stderr = Evaluator._aging_basin_helper([pi1, pi2], b1, b2)
-            fname = Evaluator.get_general_filename(
+            fname = get_general_filename(
                 "aging_basin", b1, b2, extension=".txt"
             )
             final_path = Path(root) / Path(f"final/{fname}")
@@ -563,10 +518,10 @@ class Evaluator:
             return None
 
         try:
-            weighted = arr[:, 1] * arr[:, 5]
-            mu = np.mean(weighted)
-            sd = np.std(weighted)
-            sderr = sd / np.sqrt(weighted.shape[0] - 1)
+            weighted_stats = DescrStatsW(arr[:, 1], weights=arr[:, 5])
+            mu = weighted_stats.mean()
+            sd = weighted_stats.std()
+            sderr = weighted_stats.std_mean()
             total_max = np.max(arr[:, 3])  # Max of max
             total_min = np.min(arr[:, 4])  # Min of min
             return np.array([mu, sd, sderr, total_max, total_min])
@@ -598,7 +553,7 @@ class Evaluator:
         """
 
         results_directory = Path(root) / Path("results")
-        fname = Evaluator.get_general_filename(
+        fname = get_general_filename(
             "*_ridge", inherent_structure, energetic_threshold,
             extra_text=None, extension=".txt"
         )
@@ -608,7 +563,7 @@ class Evaluator:
 
         res_same = Evaluator._process_ridge_energy(res[:, 0, :].squeeze())
         if res_same is not None:
-            fname = Evaluator.get_general_filename(
+            fname = get_general_filename(
                 "ridge_energy", inherent_structure, energetic_threshold,
                 extra_text="_same", extension=".txt"
             )
@@ -617,7 +572,7 @@ class Evaluator:
 
         res_diff = Evaluator._process_ridge_energy(res[:, 1, :].squeeze())
         if res_diff is not None:
-            fname = Evaluator.get_general_filename(
+            fname = get_general_filename(
                 "ridge_energy", inherent_structure, energetic_threshold,
                 extra_text="_diff", extension=".txt"
             )
