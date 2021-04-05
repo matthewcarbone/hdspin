@@ -629,11 +629,15 @@ class Evaluator:
             f"E={energetic_threshold}) done"
         )
 
-    def __init__(self):
+    def __init__(self, specified_directory=None):
         cache = u.get_cache()
         _all_trial_dirs = u.listdir_fp(cache)
         all_trial_dirs = [d for d in _all_trial_dirs if os.path.isdir(d)]
-        print(f"Evaluating {len(all_trial_dirs)} directories...\n")
+        if specified_directory is not None:
+            all_trial_dirs = [
+                d for d in all_trial_dirs if specified_directory in d
+            ]
+        print(f"Evaluating {len(all_trial_dirs)} directories...")
         for full_dir_path in all_trial_dirs:
             print(f"Evaluating {Path(full_dir_path).stem}")
             Evaluator.energy(full_dir_path)
@@ -649,3 +653,4 @@ class Evaluator:
             Evaluator.ridge_energy(full_dir_path, False, False)
             Evaluator.ridge_energy(full_dir_path, False, True)
             Evaluator.ridge_energy(full_dir_path, True, False)
+        print("All done")

@@ -31,7 +31,8 @@ if __name__ == '__main__':
             executor.execute()
 
     elif args.protocol == 'eval':
-        Evaluator()  # Runs the entire eval protocol automatically
+        # Runs the entire eval protocol automatically
+        Evaluator(args.specified_directory)
 
     else:
         raise RuntimeError("Unknown error")
