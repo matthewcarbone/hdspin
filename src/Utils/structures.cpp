@@ -33,6 +33,9 @@ FileNames get_filenames(const int ii, const std::string target_dir,
     fnames.ridge_E_IS = target_dir + "/" + ii_str + "_ridge_E_IS.txt";
     fnames.ridge_S_IS = target_dir + "/" + ii_str + "_ridge_S_IS.txt";
 
+    fnames.ridge_E_proxy_IS = target_dir + "/" + ii_str + "_ridge_E_proxy_IS.txt";
+    fnames.ridge_S_proxy_IS = target_dir + "/" + ii_str + "_ridge_S_proxy_IS.txt";
+
     fnames.ii_str = ii_str;
     fnames.grids_directory = grids_directory;
     return fnames;
@@ -61,10 +64,6 @@ RuntimeParameters get_runtime_params(const int log_N_timesteps,
 
         if (beta >= 2.0 * beta_critical | beta <= beta_critical)
         {
-            // This warning is run in main now on MPI_RANK 0
-            // printf(
-            //     "---WARNING: beta restriction bc < b < 2bc not satisfied---\n"
-            // );
             ea = 1e16;  // Set purposefully invalid value instead of nan or inf
         }
     }
@@ -85,17 +84,6 @@ RuntimeParameters get_runtime_params(const int log_N_timesteps,
     assert(params.N_configs > 0);  // Check for overflow
     params.N_timesteps = ipow(10, params.log_N_timesteps);
     assert(params.N_timesteps > 0);
-
-    // Arguments pertaining to the job itself
-    // printf("log_N_timesteps = %i\n", params.log_N_timesteps);
-    // printf("N_timesteps = %lli\n", params.N_timesteps);
-    // printf("N_spins = %i\n", params.N_spins);
-    // printf("N_configs = %lli\n", params.N_configs);
-    // printf("beta = %.02f\n", params.beta);
-    // printf("beta_critical = %.02f\n", params.beta_critical);
-    // printf("landscape = %i (0=EREM, 1=REM)\n", params.landscape);
-    // printf("energetic threshold = %.02f\n", params.energetic_threshold);
-    // printf("entropic attractor = %.02f\n", params.entropic_attractor);
 
     return params;
 }

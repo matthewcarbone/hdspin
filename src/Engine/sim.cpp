@@ -47,10 +47,14 @@ void GillespieSimulation::execute()
     AgingConfig obs_age_config(fnames);    
     AgingBasin obs_age_basin(fnames, rtp);
 
-    RidgeEnergy obs_ridge_energy_E(fnames, rtp, true, false);
-    RidgeEnergy obs_ridge_energy_S(fnames, rtp, false, false);
-    RidgeEnergy obs_ridge_energy_E_IS(fnames, rtp, true, true);
-    RidgeEnergy obs_ridge_energy_S_IS(fnames, rtp, false, true);
+    // boolearn arguments are inherent structure, energetic threshold, and
+    // compare IS proxy.
+    RidgeEnergy obs_ridge_energy_E(fnames, rtp, true, 0);
+    RidgeEnergy obs_ridge_energy_S(fnames, rtp, false, 0);
+    RidgeEnergy obs_ridge_energy_E_IS(fnames, rtp, true, 1);
+    RidgeEnergy obs_ridge_energy_S_IS(fnames, rtp, false, 1);
+    RidgeEnergy obs_ridge_energy_E_proxy_IS(fnames, rtp, true, 2);
+    RidgeEnergy obs_ridge_energy_S_proxy_IS(fnames, rtp, false, 2);
 
 
     // Simulation clock is 0 before entering the while loop
@@ -86,6 +90,8 @@ void GillespieSimulation::execute()
         obs_ridge_energy_S.step_(prev, curr);
         obs_ridge_energy_E_IS.step_(prev, curr);
         obs_ridge_energy_S_IS.step_(prev, curr);
+        obs_ridge_energy_E_proxy_IS.step_(prev, curr);
+        obs_ridge_energy_S_proxy_IS.step_(prev, curr);
 
         // Check for possible (although unlikely) overflow
         assert(simulation_clock > 0.0);
@@ -114,13 +120,15 @@ void StandardSimulation::execute()
     PsiBasin obs_psi_basin_E_IS(fnames, rtp, true, true);
     PsiBasin obs_psi_basin_S_IS(fnames, rtp, false, true);
 
-    AgingConfig obs_age_config(fnames);    
+    AgingConfig obs_age_config(fnames);
     AgingBasin obs_age_basin(fnames, rtp);
 
-    RidgeEnergy obs_ridge_energy_E(fnames, rtp, true, false);
-    RidgeEnergy obs_ridge_energy_S(fnames, rtp, false, false);
-    RidgeEnergy obs_ridge_energy_E_IS(fnames, rtp, true, true);
-    RidgeEnergy obs_ridge_energy_S_IS(fnames, rtp, false, true);
+    RidgeEnergy obs_ridge_energy_E(fnames, rtp, true, 0);
+    RidgeEnergy obs_ridge_energy_S(fnames, rtp, false, 0);
+    RidgeEnergy obs_ridge_energy_E_IS(fnames, rtp, true, 1);
+    RidgeEnergy obs_ridge_energy_S_IS(fnames, rtp, false, 1);
+    RidgeEnergy obs_ridge_energy_E_proxy_IS(fnames, rtp, true, 2);
+    RidgeEnergy obs_ridge_energy_S_proxy_IS(fnames, rtp, false, 2);
 
     // Simulation clock is 0 before entering the while loop
     while (true)
@@ -164,6 +172,8 @@ void StandardSimulation::execute()
         obs_ridge_energy_S.step_(prev, curr);
         obs_ridge_energy_E_IS.step_(prev, curr);
         obs_ridge_energy_S_IS.step_(prev, curr);
+        obs_ridge_energy_E_proxy_IS.step_(prev, curr);
+        obs_ridge_energy_S_proxy_IS.step_(prev, curr);
 
         if (simulation_clock > rtp.N_timesteps){break;}
 

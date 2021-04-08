@@ -19,7 +19,14 @@ class RidgeEnergy : public Base
 {
 private:
 
-    bool inherent_structure;
+    // inherent_structure
+    // 0 if using all standard trajectories
+    // 1 if using all IS trajectories
+    // 2 if using standard for ridge calculation but IS for diff/same
+    int inherent_structure;
+
+    // energetic_threshold
+    // True or false for E/S threshold usage.
     bool energetic_threshold;
 
     double threshold;
@@ -43,7 +50,8 @@ private:
 public:
 
     // Constructor: reads in the grid from the specified grid directory
-    RidgeEnergy(const FileNames, const RuntimeParameters, const bool, const bool);
+    RidgeEnergy(const FileNames, const RuntimeParameters, const int,
+        const bool);
 
     // Step the grid by performing the following steps:
     // 1) Stepping the pointer
