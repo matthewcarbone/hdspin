@@ -72,8 +72,10 @@ def get_general_filename(
         else:
             f += "_S"
 
-    if inherent_structure:
+    if int(inherent_structure) == 1:
         f += "_IS"
+    elif int(inherent_structure) == 2:
+        f += "_proxy_IS"
 
     if extra_text is not None:
         assert isinstance(extra_text, str)

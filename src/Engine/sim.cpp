@@ -49,12 +49,12 @@ void GillespieSimulation::execute()
 
     // boolearn arguments are inherent structure, energetic threshold, and
     // compare IS proxy.
-    RidgeEnergy obs_ridge_energy_E(fnames, rtp, true, 0);
-    RidgeEnergy obs_ridge_energy_S(fnames, rtp, false, 0);
-    RidgeEnergy obs_ridge_energy_E_IS(fnames, rtp, true, 1);
-    RidgeEnergy obs_ridge_energy_S_IS(fnames, rtp, false, 1);
-    RidgeEnergy obs_ridge_energy_E_proxy_IS(fnames, rtp, true, 2);
-    RidgeEnergy obs_ridge_energy_S_proxy_IS(fnames, rtp, false, 2);
+    RidgeEnergy obs_ridge_energy_E(fnames, rtp, 0, true);
+    RidgeEnergy obs_ridge_energy_S(fnames, rtp, 0, false);
+    RidgeEnergy obs_ridge_energy_E_IS(fnames, rtp, 1, true);
+    RidgeEnergy obs_ridge_energy_S_IS(fnames, rtp, 1, false);
+    RidgeEnergy obs_ridge_energy_E_proxy_IS(fnames, rtp, 2, true);
+    RidgeEnergy obs_ridge_energy_S_proxy_IS(fnames, rtp, 2, false);
 
 
     // Simulation clock is 0 before entering the while loop
@@ -129,12 +129,12 @@ void StandardSimulation::execute()
     AgingConfig obs_age_config(fnames);
     AgingBasin obs_age_basin(fnames, rtp);
 
-    RidgeEnergy obs_ridge_energy_E(fnames, rtp, true, 0);
-    RidgeEnergy obs_ridge_energy_S(fnames, rtp, false, 0);
-    RidgeEnergy obs_ridge_energy_E_IS(fnames, rtp, true, 1);
-    RidgeEnergy obs_ridge_energy_S_IS(fnames, rtp, false, 1);
-    RidgeEnergy obs_ridge_energy_E_proxy_IS(fnames, rtp, true, 2);
-    RidgeEnergy obs_ridge_energy_S_proxy_IS(fnames, rtp, false, 2);
+    RidgeEnergy obs_ridge_energy_E(fnames, rtp, 0, true);
+    RidgeEnergy obs_ridge_energy_S(fnames, rtp, 0, false);
+    RidgeEnergy obs_ridge_energy_E_IS(fnames, rtp, 1, true);
+    RidgeEnergy obs_ridge_energy_S_IS(fnames, rtp, 1, false);
+    RidgeEnergy obs_ridge_energy_E_proxy_IS(fnames, rtp, 2, true);
+    RidgeEnergy obs_ridge_energy_S_proxy_IS(fnames, rtp, 2, false);
 
     // Simulation clock is 0 before entering the while loop
     while (true)

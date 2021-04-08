@@ -524,7 +524,14 @@ class Evaluator:
             sderr = weighted_stats.std_mean
             total_max = np.max(arr[:, 3])  # Max of max
             total_min = np.min(arr[:, 4])  # Min of min
-            return np.array([mu, sd, sderr, total_max, total_min])
+            vals, bins = np.histogram(arr[:, 1], bins=100, weights=arr[:, 5])
+
+            # Return the statistics and histogram data
+            arr = np.array([mu, sd, sderr, total_max, total_min])
+            hist = np.concatenate([vals, bins], axis=0)
+
+            # Simply stack everything in one dimension
+            return np.concatenate([arr, hist], axis=0).squeeze()
 
         # Catches the value error "zero-size array to reduction operation
         # maximum which has no identity". All this is saying is that there are
@@ -568,7 +575,7 @@ class Evaluator:
                 extra_text="_same", extension=".txt"
             )
             final_path = Path(root) / Path(f"final/{fname}")
-            np.savetxt(final_path, res_same[:, None].T)
+            np.savetxt(final_path, res_same[:, None])
 
         res_diff = Evaluator._process_ridge_energy(res[:, 1, :].squeeze())
         if res_diff is not None:
@@ -577,7 +584,7 @@ class Evaluator:
                 extra_text="_diff", extension=".txt"
             )
             final_path = Path(root) / Path(f"final/{fname}")
-            np.savetxt(final_path, res_diff[:, None].T)
+            np.savetxt(final_path, res_diff[:, None])
 
         print(
             f"\tRidge Energy (IS={inherent_structure}, "
@@ -604,8 +611,10 @@ class Evaluator:
             Evaluator.psi_basin(full_dir_path, False, True)
             Evaluator.psi_basin(full_dir_path, True, False)
             Evaluator.aging_basin(full_dir_path)
-            Evaluator.ridge_energy(full_dir_path, True, True)
-            Evaluator.ridge_energy(full_dir_path, False, False)
-            Evaluator.ridge_energy(full_dir_path, False, True)
-            Evaluator.ridge_energy(full_dir_path, True, False)
+            Evaluator.ridge_energy(full_dir_path, 0, True)
+            Evaluator.ridge_energy(full_dir_path, 0, False)
+            Evaluator.ridge_energy(full_dir_path, 1, True)
+            Evaluator.ridge_energy(full_dir_path, 1, False)
+            Evaluator.ridge_energy(full_dir_path, 2, True)
+            Evaluator.ridge_energy(full_dir_path, 2, False)
         print("All done")

@@ -352,7 +352,7 @@ class ResultsManager:
         """[summary]
 
         Plotting must be done manually.
-        [mu, sd, sderr, total_max, total_min]
+        [mu, sd, sderr, total_max, total_min, ...hist..., ...bins...]
         """
 
         key = ResultsManager.get_key(
@@ -363,4 +363,5 @@ class ResultsManager:
             res = self.results[key]
         except KeyError:
             return None
+
         return res
