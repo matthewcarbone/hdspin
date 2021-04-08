@@ -155,7 +155,9 @@ class SingleRankParameters:
     def _set_dynamics(self, _tmp_data):
         self.dynamics = _tmp_data['dynamics']
         assert isinstance(self.dynamics, str)
-        assert self.dynamics in ['standard', 'standard-loop', 'gillespie']
+        assert self.dynamics in [
+            'standard', 'standard-loop', 'gillespie', 'standard-divN'
+        ]
 
     def _set_landscape(self, _tmp_data):
         self.landscape = _tmp_data['landscape']

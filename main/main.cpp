@@ -55,8 +55,12 @@ int main(int argc, char *argv[])
     else if (str_landscape == "rem"){landscape = 1;}
     assert(landscape > -1);
 
+    // Indexes the Standard (0) or Gillespie (1) protocols.
     int dynamics = -1;
-    int loop_dynamics = -1;  // 0 for standard, 1 for loop over N
+
+    // 0 for standard, 1 for loop over N, 2 for standard dynamics but where the
+    // timestep is divided by N.
+    int loop_dynamics = -1;
     if (str_dynamics == "standard")
     {
         dynamics = 0;
@@ -71,6 +75,11 @@ int main(int argc, char *argv[])
     {
         dynamics = 0;
         loop_dynamics = 1;
+    }
+    else if (str_dynamics == "standard-divN")
+    {
+        dynamics = 0;
+        loop_dynamics = 2;
     }
     assert(dynamics > -1);
     assert(loop_dynamics > -1);
@@ -107,11 +116,11 @@ int main(int argc, char *argv[])
         }
     }
 
+    MPI_Barrier(MPI_COMM_WORLD);  // So everything prints cleanly
+
     const int resume_at = 0;
     const int start = resume_at + MPI_RANK * n_tracers;
     const int end = resume_at + (MPI_RANK + 1) * n_tracers;
-
-    MPI_Barrier(MPI_COMM_WORLD);
 
     printf("RANK %i/%i job ID's %i -> %i\n", MPI_RANK, MPI_WORLD_SIZE, start,
         end);

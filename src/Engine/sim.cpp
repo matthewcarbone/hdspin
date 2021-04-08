@@ -107,7 +107,13 @@ void StandardSimulation::execute()
     StandardSpinSystem sys(rtp);
     Vals prev, curr;
     bool accepted;
-    const long double waiting_time = 1.0;
+
+    // Special case of the standard spin dynamics: if rtp.loop_dynamics == 2,
+    // then the timestep is divided by rtp.N_spins.
+    
+    long double waiting_time;
+    if (rtp.loop_dynamics == 2){waiting_time = 1.0 / rtp.N_spins;}
+    else{waiting_time = 1.0;}
 
     // Initialize all observables
     Energy obs_energy(fnames);

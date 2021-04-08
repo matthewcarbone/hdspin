@@ -63,7 +63,6 @@ bool StandardSpinSystem::step_()
         // accept. However, if dE is positive, we only accept with some
         // probability that decays exponentially quickly with the difference
         // in energy.
-
         if (sampled > metropolis_prob)  // reject
         {
             flip_spin_(spin_to_flip);  // flip the spin back
@@ -71,32 +70,6 @@ bool StandardSpinSystem::step_()
 
         else  // accept, don't flip the spin back
         {
-
-            /*
-            // Step the standard config psi counter
-            psi_config_counter.step(sys.waiting_time, false);
-            sys.waiting_time = 0.0;
-
-            // Update the inherent structure values
-            inh.x_prev = inh.x;
-            inh.e_prev = inh.e;
-            inh.x = query_inherent_structure(params.N_spins, config,
-                energy_arr, inherent_structure_mapping);
-            inh.e = energy_arr[inh.x];
-
-            // This is a tricky update for the inherent structure, since it
-            // will have a different waiting time than the normal
-            // configuration, as it may not change even though the normal
-            // configuration does.
-            if (inh.x == inh.x_prev){inh.waiting_time += 1.0;}
-            else
-            {
-                // Step the inherent structure psi config counter
-                psi_config_counter.step(inh.waiting_time, true);
-                inh.waiting_time = 0.0;
-            }
-            */
-
             accepted = true;
         }
 
