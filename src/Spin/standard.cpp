@@ -13,8 +13,14 @@
 StandardSpinSystem::StandardSpinSystem(const RuntimeParameters rtp) :
     SpinSystem(rtp) {};
 
+
 bool StandardSpinSystem::step_()
 {
+    // The loop_dynamics parameter is really important here. If it is equal
+    // to 1, we have loop dynamics, where every spin is checked in order. If
+    // it is not equal to 1, we have either standard (0) or div-N (2) dynamics,
+    // in which case only one spin is checked randomly. The difference in
+    // waiting time is handled outside of this module, in sim.cpp.
 
     // Default assume rejected
     bool accepted = false;
@@ -25,15 +31,15 @@ bool StandardSpinSystem::step_()
     // Randomly pick a random number in [0, 1)
     std::uniform_real_distribution<> uniform_0_1_distribution(0.0, 1.0);
 
-    // We assume in the outer loop that we're running loop dynamics
+    // We assume in the outer loop that we're running loop dynamics ...
     int spin_to_flip = 0;
     while (spin_to_flip < rtp.N_spins)
     {
         init_prev_();  // Initialize the current state
 
-        // But if we're not, randomly sample the spin, overriding the
+        // ... but if we're not, randomly sample the spin, overriding the
         // for loop
-        if (rtp.loop_dynamics == 0)
+        if (rtp.loop_dynamics != 1)
         {
             // Randomly pick a spin from 0 -> N - 1
             std::uniform_int_distribution<> spin_distribution(
@@ -77,16 +83,29 @@ bool StandardSpinSystem::step_()
 
         // Once again, if we're not running the loop over N dynamics, break
         // here.
-        if (rtp.loop_dynamics == 0){break;}
+        if (rtp.loop_dynamics != 1){break;}
 
         spin_to_flip++;
     }
 
-    // If no change is ever accepted, increment
+    // If no change is ever accepted, increment the time in config counters
     if (!accepted)
     {
-        time_in_config += 1.0;
-        time_in_config_IS += 1.0;
+        // In the case of standard dynamics, and standard loop dynamics, this
+        // counter increments by 1
+        if (rtp.loop_dynamics != 2)
+        {
+            time_in_config += 1.0;
+            time_in_config_IS += 1.0;
+        }
+
+        // In the case of the div-N dynamics, this means rejection has only
+        // occurred for a single div-N timestep, which is of course 1/N.
+        else
+        {
+            time_in_config += 1.0 / rtp.N_spins;
+            time_in_config_IS += 1.0 / rtp.N_spins;
+        }
     }
 
     // Else, increment n_accept
