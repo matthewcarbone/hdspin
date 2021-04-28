@@ -66,11 +66,6 @@ int main(int argc, char *argv[])
         dynamics = 0;
         loop_dynamics = 0;
     }
-    else if (str_dynamics == "gillespie")
-    {
-        dynamics = 1;
-        loop_dynamics = 0;
-    }
     else if (str_dynamics == "standard-loop")
     {
         dynamics = 0;
@@ -79,6 +74,16 @@ int main(int argc, char *argv[])
     else if (str_dynamics == "standard-divN")
     {
         dynamics = 0;
+        loop_dynamics = 2;
+    }
+    else if (str_dynamics == "gillespie")
+    {
+        dynamics = 1;
+        loop_dynamics = 0;
+    }
+    else if (str_dynamics == "gillespie-divN")
+    {
+        dynamics = 1;
         loop_dynamics = 2;
     }
     assert(dynamics > -1);
