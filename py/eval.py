@@ -141,7 +141,7 @@ class Evaluator:
         print(f"\tEnergy done")
 
     @staticmethod
-    def psi_config(root, inherent_structure):
+    def psi_config(root, inherent_structure, disable_norm=False):
         """Evaluates all saved psi config results.
 
         Parameters
@@ -192,7 +192,10 @@ class Evaluator:
         grid = [2**ii for ii in range(stats.shape[1])]
         N = stats.shape[0]
         psi = stats.mean(axis=0).squeeze()
-        norm = psi.sum()
+        if disable_norm:
+            norm = 1.0
+        else:
+            norm = psi.sum()
 
         # Compute psi as a "probability distribution"; normalize the sd and
         # standard errors as well.

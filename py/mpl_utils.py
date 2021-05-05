@@ -183,8 +183,10 @@ class ResultsManager:
                 k += "_E"
             else:
                 k += "_S"
-            if inherent_structure:
+            if inherent_structure == 1:
                 k += "_IS"
+            elif inherent_structure == 2:
+                k += "_proxy_IS"
             if diff:
                 k += "_diff"
             else:
@@ -193,7 +195,9 @@ class ResultsManager:
 
         return None
 
-    def _plot_standard(self, ax, arr, standard_error, color, label):
+    def _plot_standard(
+        self, ax, arr, standard_error, color, label, linestyle
+    ):
         """Plots an array (arr) on the provided axis.
 
         Parameters
@@ -209,12 +213,13 @@ class ResultsManager:
         ax.errorbar(
             arr[:, 0], arr[:, 1],
             yerr=arr[:, 3] if standard_error else arr[:, 2],
-            color=color, label=label, **self.plot_kwargs
+            color=color, label=label, linestyle=linestyle, **self.plot_kwargs
         )
 
     def energy(
         self, ax=None, plot=False, standard_error=True, color='black',
-        label=None, inherent_structure=False, single_trajectory=0
+        label=None, inherent_structure=False, single_trajectory=0,
+        linestyle="-"
     ):
         """Plotting for the energy.
 
@@ -248,7 +253,10 @@ class ResultsManager:
             )]
 
             if plot:
-                self._plot_standard(ax, arr, standard_error, color, label)
+                self._plot_standard(
+                    ax, arr, standard_error, color, label,
+                    linestyle
+                )
         else:
             arr = self.results[ResultsManager.get_key(
                 "energy_eg_traj", inherent_structure=inherent_structure
@@ -258,7 +266,7 @@ class ResultsManager:
                 for ii in range(single_trajectory):
                     ax.errorbar(
                         arr[:, 0], arr[:, ii + 1], yerr=None,
-                        **self.plot_kwargs
+                        linestype=linestyle, **self.plot_kwargs
                     )
 
         return arr
@@ -280,7 +288,7 @@ class ResultsManager:
     def psi_basin(
         self, ax=None, plot=False, standard_error=True, color='black',
         label=None, inherent_structure=False, energetic_threshold=True,
-        unique_configs_per=False
+        unique_configs_per=False, linestyle="-"
     ):
         """See the `energy` method for details."""
 
@@ -295,13 +303,15 @@ class ResultsManager:
             return None
 
         if plot:
-            self._plot_standard(ax, arr, standard_error, color, label)
+            self._plot_standard(
+                ax, arr, standard_error, color, label, linestyle
+            )
 
         return arr
 
     def aging_config(
         self, ax=None, plot=False, standard_error=True, color='black',
-        label=None, res_type='standard'
+        label=None, res_type='standard', linestyle="-"
     ):
         """See the `energy` method for details.
 
@@ -320,13 +330,16 @@ class ResultsManager:
         arr = self.results[key]
 
         if plot:
-            self._plot_standard(ax, arr, standard_error, color, label)
+            self._plot_standard(
+                ax, arr, standard_error, color, label, linestyle
+            )
 
         return arr
 
     def aging_basin(
         self, ax=None, plot=False, standard_error=True, color='black',
-        label=None, inherent_structure=False, energetic_threshold=True
+        label=None, inherent_structure=False, energetic_threshold=True,
+        linestyle="-"
     ):
         """See the `energy` method for details.
 
@@ -342,12 +355,14 @@ class ResultsManager:
         arr = self.results[key]
 
         if plot:
-            self._plot_standard(ax, arr, standard_error, color, label)
+            self._plot_standard(
+                ax, arr, standard_error, color, label, linestyle
+            )
 
         return arr
 
     def ridge_energy(
-        self, inherent_structure=False, energetic_threshold=True, diff=False
+        self, inherent_structure=0, energetic_threshold=True, diff=False
     ):
         """[summary]
 
