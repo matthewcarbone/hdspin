@@ -11,15 +11,8 @@ LOCAL_CC=/usr/local/bin/mpic++
 LOCAL_FLAGS=-std=c++17
 
 # Previous remote flags
-#REMOTE_FLAGS_1=-fopenmp -std=c++17
+# REMOTE_FLAGS_1=-fopenmp -std=c++17
 REMOTE_FLAGS_1=-std=c++17
-
-# rr:
-# 	mpic++ -fopenmp hdspin/main.cpp -std=c++11 -o main.out hdspin/gillespie.cpp hdspin/standard.cpp hdspin/utils/general_utils.cpp hdspin/utils/init_utils.cpp
-
-# Run with, e.g., mpirun -np 1 ./main.out test/file.txt 100 8 0.75 1.0 0 1 100
-# local:
-# 	/usr/local/bin/mpic++ -Xpreprocessor -fopenmp -lomp hdspin/main.cpp -std=c++11 -o main.out hdspin/gillespie.cpp hdspin/standard.cpp hdspin/utils/general_utils.cpp hdspin/utils/init_utils.cpp
 
 rr: 
 	$(CC) $(INC) $(REMOTE_FLAGS_1) main/main.cpp -o exe/main.out $(SRC) -O3
