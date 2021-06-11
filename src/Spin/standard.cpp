@@ -33,10 +33,16 @@ bool StandardSpinSystem::step_()
 
     // We assume in the outer loop that we're running loop dynamics ...
     int spin_to_flip = 0;
+
+    // We need to differentiate between the loop dynamics and the standard ones
+    // when initializing the previous spin. In the loop dynamics, the previous
+    // energy should only be recorded once at the beginning.
+    init_prev_();  // Initialize the current state
+
+    double intermediate_energy = prev.energy;
+
     while (spin_to_flip < rtp.N_spins)
     {
-        init_prev_();  // Initialize the current state
-
         // ... but if we're not, randomly sample the spin, overriding the
         // for loop
         if (rtp.loop_dynamics != 1)
@@ -55,7 +61,7 @@ bool StandardSpinSystem::step_()
 
         // Step 5, compute the difference between the energies, and find the
         // metropolis criterion
-        double dE = proposed_energy - prev.energy;
+        double dE = proposed_energy - intermediate_energy;
         double metropolis_prob = exp(-rtp.beta * dE);
 
         // Step 6, sample a random number between 0 and 1.
@@ -79,7 +85,10 @@ bool StandardSpinSystem::step_()
             accepted = true;
         }
 
+        // This is called multiple times in the loop dynamics, eventually
+        // ending with the actual value in the loop dynamics.
         init_curr_();
+        intermediate_energy = curr.energy;
 
         // Once again, if we're not running the loop over N dynamics, break
         // here.
