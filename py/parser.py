@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import argparse
 from argparse import HelpFormatter, ArgumentDefaultsHelpFormatter
 from operator import attrgetter

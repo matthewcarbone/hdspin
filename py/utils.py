@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 __author__ = "Matthew R. Carbone & Marco Baity-Jesi"
 __maintainer__ = "Matthew Carbone"
 __email__ = "x94carbone@gmail.com"

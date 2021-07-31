@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 __author__ = "Matthew R. Carbone & Marco Baity-Jesi"
 __maintainer__ = "Matthew Carbone"
 __email__ = "x94carbone@gmail.com"
@@ -19,17 +17,6 @@ import yaml
 
 from py import utils as u
 
-
-PURPLE = '\033[95m'
-CYAN = '\033[96m'
-DARKCYAN = '\033[36m'
-BLUE = '\033[94m'
-GREEN = '\033[92m'
-YELLOW = '\033[93m'
-RED = '\033[91m'
-BOLD = '\033[1m'
-UNDERLINE = '\033[4m'
-END = '\033[0m'
 
 MAX_LONG = 9223372036854775807
 
@@ -301,6 +288,10 @@ class Primer:
             0, np.log10(nMC), self.energy_gridpoints, dtype=int, endpoint=True
         ))
 
+        # Adds 0 to the energy grid so we can record the value of the energy
+        # at 0 itself.
+        energy_grid = np.array([0] + list(energy_grid))
+
         tw_max = nMC // (dw + 1.0)
 
         # Define the first grid.
@@ -417,8 +408,8 @@ class Executor:
             f"#SBATCH -N {N_nodes}\n",
             f"#SBATCH --mem={mem}G\n" if mem is not None else "",
             "\n",
-            f"#SBATCH --output=job_data/hdspin_%A_%a.out\n",
-            f"#SBATCH --error=job_data/hdspin_%A_%a.err\n",
+            "#SBATCH --output=job_data/hdspin_%A_%a.out\n",
+            "#SBATCH --error=job_data/hdspin_%A_%a.err\n",
             "\n"
         ]
 
@@ -474,7 +465,7 @@ class Executor:
         # Then we append
         if os.path.exists(script_name):
             with open(script_name, 'a') as f:
-                f.write(f"mpiexec -np 10 ./exe/main.out {args_str}\n")
+                f.write(f"mpiexec -np 6 ./exe/main.out {args_str}\n")
             print(f"Script {script_name} appended with new trial")
 
         # Else we write a new file
@@ -482,7 +473,7 @@ class Executor:
             with open(script_name, 'w') as f:
                 f.write("#!/bin/bash\n")
                 f.write("\n")
-                f.write(f"mpiexec -np 10 ./exe/main.out {args_str}\n")
+                f.write(f"mpiexec -np 6 ./exe/main.out {args_str}\n")
             print(f"Script {script_name} written to disk")
 
     def __init__(

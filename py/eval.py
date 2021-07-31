@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 """Contains all methods for evaluating the results of the hdspin calculations.
 """
 

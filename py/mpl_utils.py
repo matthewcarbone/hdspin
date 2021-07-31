@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 __author__ = "Matthew R. Carbone & Marco Baity-Jesi"
 __maintainer__ = "Matthew Carbone"
 __email__ = "x94carbone@gmail.com"
@@ -35,7 +33,7 @@ class AnalyticResults:
 
     def energy(
         self, ax, g, e, beta, color='gray', linestyle='--', label=None,
-        anchor=-1, zorder=3, offset=0.5
+        anchor=-1, zorder=3, offset=0.5, plot_from=0
     ):
         """Plots the correct slope of the energy, on a logarithmic x-scale.
 
@@ -54,6 +52,9 @@ class AnalyticResults:
         offset : float
             The y-offset of the line to be plotted.
         """
+
+        g = g[plot_from:]
+        e = e[plot_from:]
 
         if self.model == "EREM":
             slope = -1.0 / beta
@@ -219,7 +220,7 @@ class ResultsManager:
     def energy(
         self, ax=None, plot=False, standard_error=True, color='black',
         label=None, inherent_structure=False, single_trajectory=0,
-        linestyle="-"
+        linestyle="-", plot_from=0, divide_t_by=1
     ):
         """Plotting for the energy.
 
@@ -251,21 +252,25 @@ class ResultsManager:
             arr = self.results[ResultsManager.get_key(
                 "energy", inherent_structure=inherent_structure
             )]
+            arr[plot_from:, 0] = arr[plot_from:, 0] + 1
+            arr[plot_from:, 0] = arr[plot_from:, 0] / divide_t_by
 
             if plot:
                 self._plot_standard(
-                    ax, arr, standard_error, color, label,
+                    ax, arr[plot_from:, :], standard_error, color, label,
                     linestyle
                 )
         else:
             arr = self.results[ResultsManager.get_key(
                 "energy_eg_traj", inherent_structure=inherent_structure
             )]
+            arr[plot_from:, 0] = arr[plot_from:, 0] + 1
+            arr[plot_from:, 0] = arr[plot_from:, 0] / divide_t_by
 
             if plot:
                 for ii in range(single_trajectory):
                     ax.errorbar(
-                        arr[:, 0], arr[:, ii + 1], yerr=None,
+                        arr[plot_from:, 0], arr[plot_from:, ii + 1], yerr=None,
                         linestype=linestyle, **self.plot_kwargs
                     )
 
@@ -273,7 +278,7 @@ class ResultsManager:
 
     def psi_config(
         self, ax=None, plot=False, standard_error=True, color='black',
-        label=None, inherent_structure=False
+        label=None, inherent_structure=False, linestyle="-"
     ):
         """See the `energy` method for details."""
 
@@ -281,14 +286,16 @@ class ResultsManager:
             else self.results["psi_config"]
 
         if plot:
-            self._plot_standard(ax, arr, standard_error, color, label)
+            self._plot_standard(
+                ax, arr, standard_error, color, label, linestyle
+            )
 
         return arr
 
     def psi_basin(
         self, ax=None, plot=False, standard_error=True, color='black',
         label=None, inherent_structure=False, energetic_threshold=True,
-        unique_configs_per=False, linestyle="-"
+        unique_configs_per=False, linestyle="-", divide_y_axis_by=1.0
     ):
         """See the `energy` method for details."""
 
@@ -298,7 +305,8 @@ class ResultsManager:
         )
 
         try:
-            arr = self.results[key]
+            arr = self.results[key].copy()
+            arr[:, 1] /= divide_y_axis_by
         except KeyError:
             return None
 
