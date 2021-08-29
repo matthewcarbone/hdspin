@@ -95,6 +95,54 @@ class AnalyticResults:
         )
 
 
+class Results:
+
+    def get_key(
+        self,
+        name='gillespie',
+        landscape='erem',
+        logt=7,
+        N=20,
+        T=1.667
+    ):
+        return f"{name}__{landscape}__{logt}__{N}__{T}"
+
+    def __init__(
+        self,
+        directory,
+        capsize=2,
+        capthick=0.3,
+        elw=0.3,
+        marker='s',
+        ms=1.0,
+        lw=1.0
+    ):
+        self.directory = directory
+        self.results = dict()
+
+        for result in Path(self.directory).iterdir():
+            [name, landscape, logt, N, T, _] = str(result.stem).split("_")
+            T = float(T) / 1000.0
+            N = int(N)
+            logt = int(logt)
+            result = result / Path("final")
+            self.results[self.get_key(name, landscape, logt, N, T)] = \
+                ResultsManager(result)
+
+        # Set some parameters for uniform plotting.
+        self.plot_kwargs = {
+            'linewidth': lw,
+            'marker': marker,
+            'ms': ms,
+            'capthick': capthick,
+            'capsize': capsize,
+            'elinewidth': elw
+        }
+
+    def __call__(self, *args, **kwargs):
+        return self.results[self.get_key(*args, **kwargs)]
+
+
 class ResultsManager:
     """Manages results and plotting.
 
@@ -196,131 +244,72 @@ class ResultsManager:
 
         return None
 
-    def _plot_standard(
-        self, ax, arr, standard_error, color, label, linestyle
-    ):
-        """Plots an array (arr) on the provided axis.
+    def energy(self, inherent_structure=False, all_trajectories=False):
+        """Get's the energy.
 
         Parameters
         ----------
-        arr : np.array
-            A numpy array of the specific shape (N, 4). The first column is
-            the x axis, the second, the y axis, the third is the standard
-            deviation and fourth is standard error.
-        standard_error : bool
-            If True, plots the 4th column. If False, plots the 3rd.
-        """
-
-        ax.errorbar(
-            arr[:, 0], arr[:, 1],
-            yerr=arr[:, 3] if standard_error else arr[:, 2],
-            color=color, label=label, linestyle=linestyle, **self.plot_kwargs
-        )
-
-    def energy(
-        self, ax=None, plot=False, standard_error=True, color='black',
-        label=None, inherent_structure=False, single_trajectory=0,
-        linestyle="-", plot_from=0, divide_t_by=1
-    ):
-        """Plotting for the energy.
-
-        Parameters
-        ----------
-        ax
-            The matplotlib axis to use.
-        standard_error : bool
-            Whether or not to use the standard error vs standard deviation for
-            plotting errorbars. (The default is True).
-        color : str
-            The color of the plot. (The default is 'black').
-        label : str
-            The legend label for the plot. (The default is None).
         inherent_structure : bool
             If True, loads the inherent structure trajectories instead of the
             standard ones. (The default is False).
-        single_trajectory : int
-            If 0, will plot the average energy with errorbars. If > 0, will
-            plot that many trajectories with random colors. Note that this
-            ignores the standard_error, color and label arguments.
+        all_trajectories : bool
+            If true, returns all trajectories.
 
         Returns
         -------
-        np.array
+        dict
+            Dictionary of numpy arrays
         """
 
-        if single_trajectory == 0:
+        if not all_trajectories:
+
             arr = self.results[ResultsManager.get_key(
                 "energy", inherent_structure=inherent_structure
             )]
-            arr[plot_from:, 0] = arr[plot_from:, 0] + 1
-            arr[plot_from:, 0] = arr[plot_from:, 0] / divide_t_by
 
-            if plot:
-                self._plot_standard(
-                    ax, arr[plot_from:, :], standard_error, color, label,
-                    linestyle
-                )
-        else:
-            arr = self.results[ResultsManager.get_key(
-                "energy_eg_traj", inherent_structure=inherent_structure
-            )]
-            arr[plot_from:, 0] = arr[plot_from:, 0] + 1
-            arr[plot_from:, 0] = arr[plot_from:, 0] / divide_t_by
+            return {
+                'x': arr[:, 0], 'y': arr[:, 1], 'y_std': arr[:, 2],
+                'y_std_err': arr[:, 3]
+            }
 
-            if plot:
-                for ii in range(single_trajectory):
-                    ax.errorbar(
-                        arr[plot_from:, 0], arr[plot_from:, ii + 1], yerr=None,
-                        linestype=linestyle, **self.plot_kwargs
-                    )
+        arr = self.results[ResultsManager.get_key(
+            "energy_eg_traj", inherent_structure=inherent_structure
+        )]
 
-        return arr
+        return {'x': arr[:, 0], 'y': arr[:, 1:]}
 
-    def psi_config(
-        self, ax=None, plot=False, standard_error=True, color='black',
-        label=None, inherent_structure=False, linestyle="-"
-    ):
+    def psi_config(self, inherent_structure=False):
         """See the `energy` method for details."""
 
         arr = self.results["psi_config_IS"] if inherent_structure \
             else self.results["psi_config"]
 
-        if plot:
-            self._plot_standard(
-                ax, arr, standard_error, color, label, linestyle
-            )
-
-        return arr
+        return {
+            'x': arr[:, 0], 'y': arr[:, 1], 'y_std': arr[:, 2],
+            'y_std_err': arr[:, 3]
+        }
 
     def psi_basin(
-        self, ax=None, plot=False, standard_error=True, color='black',
-        label=None, inherent_structure=False, energetic_threshold=True,
-        unique_configs_per=False, linestyle="-", divide_y_axis_by=1.0
+        self, inherent_structure=False, energetic_threshold=True,
+        unique_configs=False
     ):
         """See the `energy` method for details."""
 
         key = ResultsManager.get_key(
             "psi_basin", inherent_structure, energetic_threshold,
-            unique_configs_per
+            unique_configs
         )
 
         try:
-            arr = self.results[key].copy()
-            arr[:, 1] /= divide_y_axis_by
+            arr = self.results[key]
+            return {
+                'x': arr[:, 0], 'y': arr[:, 1], 'y_std': arr[:, 2],
+                'y_std_err': arr[:, 3]
+            }
         except KeyError:
             return None
 
-        if plot:
-            self._plot_standard(
-                ax, arr, standard_error, color, label, linestyle
-            )
-
-        return arr
-
-    def aging_config(
-        self, ax=None, plot=False, standard_error=True, color='black',
-        label=None, res_type='standard', linestyle="-"
-    ):
+    def aging_config(self, res_type='standard'):
         """See the `energy` method for details.
 
         Parameters
@@ -336,18 +325,13 @@ class ResultsManager:
         elif res_type == "index":
             key += "_index"
         arr = self.results[key]
-
-        if plot:
-            self._plot_standard(
-                ax, arr, standard_error, color, label, linestyle
-            )
-
-        return arr
+        return {
+            'x': arr[:, 0], 'y': arr[:, 1], 'y_std': arr[:, 2],
+            'y_std_err': arr[:, 3]
+        }
 
     def aging_basin(
-        self, ax=None, plot=False, standard_error=True, color='black',
-        label=None, inherent_structure=False, energetic_threshold=True,
-        linestyle="-"
+        self, inherent_structure=False, energetic_threshold=True
     ):
         """See the `energy` method for details.
 
@@ -361,13 +345,10 @@ class ResultsManager:
             energetic_threshold=energetic_threshold
         )
         arr = self.results[key]
-
-        if plot:
-            self._plot_standard(
-                ax, arr, standard_error, color, label, linestyle
-            )
-
-        return arr
+        return {
+            'x': arr[:, 0], 'y': arr[:, 1], 'y_std': arr[:, 2],
+            'y_std_err': arr[:, 3]
+        }
 
     def ridge_energy(
         self, inherent_structure=0, energetic_threshold=True, diff=False
