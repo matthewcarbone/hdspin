@@ -5,6 +5,7 @@ SRC = $(wildcard src/*/*.cpp)
 
 CC=mpic++
 LOCAL_CC=/usr/local/bin/mpic++
+LINUX_LOCAL_CC=/usr/bin/mpic++
 
 # Previous local flags using -fopenmp
 # LOCAL_FLAGS=-Xpreprocessor -fopenmp -lomp -std=c++17
@@ -19,6 +20,9 @@ rr:
 
 local: 
 	$(LOCAL_CC) $(INC) $(LOCAL_FLAGS) main/main.cpp -o exe/main.out $(SRC) -O3
+
+local_linux:
+	$(LINUX_LOCAL_CC) $(INC) $(LOCAL_FLAGS) main/main.cpp -o exe/main.out $(SRC) -O3 
 
 debug:
 	$(CC) $(INC) $(LOCAL_FLAGS) main/debug.cpp -o exe/debug.out $(SRC)
