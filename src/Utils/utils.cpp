@@ -65,22 +65,7 @@ void _helper_flip_spin_(int *cfg, const int idx)
 }
 
 
-void _helper_calculate_neighboring_energies_(int *cfg,
-    const double *energy_arr, const int N, double *neighboring_energies)
-{
-    for (int ii=0; ii<N; ii++)
-    {
-        // Flip the ii'th spin
-        _helper_flip_spin_(cfg, ii);
 
-        // Collect the energy of the spin_config
-        neighboring_energies[ii] =
-            energy_arr[binary_vector_to_int(cfg, N)];
-
-        // Flip the ii'th spin back
-        _helper_flip_spin_(cfg, ii);
-    }
-}
 
 void load_long_long_grid_(std::vector<long long> &grid, const std::string loc)
 {

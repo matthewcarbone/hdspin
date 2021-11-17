@@ -49,6 +49,7 @@ int main(int argc, char *argv[])
     const std::string str_landscape = argv[8];  // 0 for EREM, 1 for REM
     const std::string str_dynamics = argv[9];  // 0 for standard, 1 for gillespie
     const int n_tracers = atoi(argv[10]);
+    const int memoryless = atoi(argv[11]);  // 1 for memoryless, 0 for standard
 
     int landscape = -1;
     if (str_landscape == "erem"){landscape = 0;}
@@ -90,7 +91,8 @@ int main(int argc, char *argv[])
     assert(loop_dynamics > -1);
 
     const RuntimeParameters params = get_runtime_params(log_N_timesteps,
-        N_spins, beta, beta_critical, landscape, loop_dynamics);
+        N_spins, beta, beta_critical, landscape, loop_dynamics,
+        memoryless);
 
     // Arguments pertaining to the job itself
     if (MPI_RANK == 0)
@@ -110,6 +112,7 @@ int main(int argc, char *argv[])
             params.energetic_threshold);
         printf("* Entropic attractor: c.a. %.05e\n",
             params.entropic_attractor);
+        printf("* Memoryless status: %i\n", params.memoryless);
 
         if ((landscape == 0) &&
             (beta >= 2.0 * beta_critical | beta <= beta_critical))

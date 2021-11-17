@@ -40,11 +40,12 @@ struct RuntimeParameters
     double energetic_threshold;
     double entropic_attractor;
     int loop_dynamics;
+    int memoryless;
 };
 
 
 RuntimeParameters get_runtime_params(const int, const int, const double,
-    const double, const int, const int);
+    const double, const int, const int, const int);
 
 
 #endif

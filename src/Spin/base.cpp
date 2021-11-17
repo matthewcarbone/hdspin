@@ -24,6 +24,29 @@ void SpinSystem::_initialize_spin_system()
     }
 }
 
+double SpinSystem::get_energy(const long long intrep)
+{
+    if (rtp.memoryless)
+    {
+        double res;
+        if (rtp.landscape == 0)
+        {
+            std::exponential_distribution<double> distribution(rtp.beta_critical);
+            res = -distribution(generator);
+        }
+        else
+        {
+            std::normal_distribution<double> distribution(0.0, sqrt(rtp.N_spins));
+            res = distribution(generator);
+        }
+        return res;
+    }
+    else
+    {
+        return emap[intrep];
+    }
+}
+
 void SpinSystem::_initialize_energy_mapping_()
 {
     // Initialize prior with
@@ -73,20 +96,14 @@ SpinSystem::SpinSystem(const RuntimeParameters rtp) : rtp(rtp)
 
     spin_config = new int[rtp.N_spins];
     _initialize_spin_system();
-    emap = new double[rtp.N_configs];
-    _initialize_energy_mapping_();
 
-    // long double lowest_energy = 1e15;
-    // long double highest_energy = -1e15;
-    // for (int ii=0; ii<rtp.N_configs; ii++)
-    // {
-    //     if (emap[ii] < lowest_energy){lowest_energy = emap[ii];}
-    //     if (emap[ii] > highest_energy){highest_energy = emap[ii];}
-    // }
-    // printf("Energy range: %.03Le -> %.03Le\n", lowest_energy, highest_energy);
-
-    ism = new long long[rtp.N_configs];
-    _initialize_inherent_structure_mapping_();
+    if (! rtp.memoryless)
+    {
+        emap = new double[rtp.N_configs];
+        _initialize_energy_mapping_();
+        ism = new long long[rtp.N_configs];
+        _initialize_inherent_structure_mapping_();
+    }
 }
 
 
@@ -94,23 +111,56 @@ void SpinSystem::init_prev_()
 {
     // Initialize the "previous" values
     prev.int_rep = get_int_rep();
-    prev.int_rep_IS = get_inherent_structure();
-    prev.energy = emap[prev.int_rep];
-    prev.energy_IS = emap[prev.int_rep_IS];
+    prev.energy = get_energy(prev.int_rep);
+    if (rtp.memoryless)
+    {
+        prev.energy_IS = 0.0;
+        prev.int_rep_IS = 0;
+    }
+    else
+    {
+        prev.energy_IS = get_energy(prev.int_rep_IS);
+        prev.int_rep_IS = get_inherent_structure();
+    }
 }
 
 void SpinSystem::init_curr_()
 {
     // Initialize the "current" values
     curr.int_rep = get_int_rep();
-    curr.int_rep_IS = get_inherent_structure();
-    curr.energy = emap[curr.int_rep];
-    curr.energy_IS = emap[curr.int_rep_IS];
+    curr.energy = get_energy(curr.int_rep);
+    if (rtp.memoryless)
+    {
+        curr.energy_IS = 0.0;
+        curr.int_rep_IS = 0;
+    }
+    else
+    {
+        curr.energy_IS = get_energy(curr.int_rep_IS);
+        curr.int_rep_IS = get_inherent_structure();
+    }
+}
+
+void SpinSystem::_helper_calculate_neighboring_energies_(int *cfg,
+    int N, double *neighboring_energies) const
+{
+    for (int ii=0; ii<N; ii++)
+    {
+        // Flip the ii'th spin
+        _helper_flip_spin_(cfg, ii);
+
+        // Collect the energy of the spin_config
+        neighboring_energies[ii] =
+            emap[binary_vector_to_int(cfg, N)];
+
+        // Flip the ii'th spin back
+        _helper_flip_spin_(cfg, ii);
+    }
 }
 
 void SpinSystem::_calculate_neighboring_energies()
 {
-    _helper_calculate_neighboring_energies_(spin_config, emap,
+    _helper_calculate_neighboring_energies_(spin_config,
         rtp.N_spins, neighboring_energies);
 }
 
@@ -134,7 +184,7 @@ long long SpinSystem::_help_get_inherent_structure() const
     while (true)
     {
         // Compute the neighboring energies on the copy
-        _helper_calculate_neighboring_energies_(config_copy, emap,
+        _helper_calculate_neighboring_energies_(config_copy,
             rtp.N_spins, ne);
 
         // If we have not reached the lowest local energy which can be reached
@@ -208,7 +258,11 @@ long long SpinSystem::get_inherent_structure() const
 SpinSystem::~SpinSystem()
 {
     delete[] spin_config;
-    delete[] emap;
-    delete[] ism;
-    delete[] neighboring_energies;
+
+    if (! rtp.memoryless)
+    {
+        delete[] emap;
+        delete[] ism;
+        delete[] neighboring_energies;
+    }
 }

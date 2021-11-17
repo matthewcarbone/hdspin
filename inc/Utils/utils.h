@@ -29,13 +29,6 @@ int min_element(const double *, const int);
 /* In-place flips the spin of the provided array at the location specified. */
 void _helper_flip_spin_(int *, const int);
 
-/* Computes the neighboring energies of a configuration. Takes as input the
-configuration, energy array and length of the configuration, and fills in the
-fourth argument, the neighboring_energies, with the energies of the neighbors
-acquired by flipping that respective spin. */
-void _helper_calculate_neighboring_energies_(int *, const double *,
-    const int, double *);
-
 void load_long_long_grid_(std::vector<long long> &, const std::string);
 
 double iterative_mean(double, double, long long);

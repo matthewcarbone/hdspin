@@ -127,6 +127,10 @@ class SingleRankParameters:
         assert isinstance(ii, int)
         assert ii > 0
 
+    def _set_memoryless(self, _tmp_data):
+        self.memoryless = _tmp_data['memoryless']
+        assert self.memoryless in [0, 1]
+
     def _set_log10_timesteps(self, _tmp_data):
         self.log10_timesteps = _tmp_data['log10_timesteps']
         SingleRankParameters._assert_positive_integer(self.log10_timesteps)
@@ -209,6 +213,7 @@ class SingleRankParameters:
         self._set_beta(_tmp_data)
         self._set_critical_beta(_tmp_data)
         self._set_aging_dw(_tmp_data)
+        self._set_memoryless(_tmp_data)
 
     def filename(self):
         """Returns the filename for the simulation by simply combining the
@@ -224,7 +229,8 @@ class SingleRankParameters:
 
         return f"{results_dir} {grids_dir} {final_dir} " \
             f"{self.log10_timesteps} {self.n_spins} {self.beta} " \
-            f"{self.beta_c} {self.landscape} {self.dynamics} {self.n_tracers}"
+            f"{self.beta_c} {self.landscape} {self.dynamics} " \
+            f"{self.n_tracers} {self.memoryless}"
 
     def save(self, path):
         """Saves a yaml file of these parameters to disk at the specified

@@ -50,6 +50,12 @@ protected:
     void _calculate_neighboring_energies();
     long long _help_get_inherent_structure() const;
 
+    /* Computes the neighboring energies of a configuration. Takes as input the
+    configuration, energy array and length of the configuration, and fills in the
+    fourth argument, the neighboring_energies, with the energies of the neighbors
+    acquired by flipping that respective spin. */
+    void _helper_calculate_neighboring_energies_(int *, int, double *) const;
+
 public:
     SpinSystem(const RuntimeParameters);
 
@@ -59,6 +65,7 @@ public:
     // Getters
     long long get_int_rep() const;
     double get_current_energy() const;
+    double get_energy(const long long);
     long long get_inherent_structure() const;
     std::vector<int> get_spin_config() const;
     Vals get_prev() const {return prev;}
