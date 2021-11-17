@@ -13,7 +13,7 @@ protected:
 
     // Initialize the MT random number generator and seed with random_device
     // This is seeded in the constructor
-    std::mt19937 generator;
+    mutable std::mt19937 generator;
 
     // Pointer to the configuration
     int *spin_config = 0;  // NULL
@@ -65,7 +65,7 @@ public:
     // Getters
     long long get_int_rep() const;
     double get_current_energy() const;
-    double get_energy(const long long);
+    double get_energy(const long long) const;
     long long get_inherent_structure() const;
     std::vector<int> get_spin_config() const;
     Vals get_prev() const {return prev;}

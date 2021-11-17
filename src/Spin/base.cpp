@@ -24,7 +24,7 @@ void SpinSystem::_initialize_spin_system()
     }
 }
 
-double SpinSystem::get_energy(const long long intrep)
+double SpinSystem::get_energy(const long long intrep) const
 {
     if (rtp.memoryless)
     {
@@ -46,6 +46,7 @@ double SpinSystem::get_energy(const long long intrep)
         return emap[intrep];
     }
 }
+
 
 void SpinSystem::_initialize_energy_mapping_()
 {
@@ -119,8 +120,8 @@ void SpinSystem::init_prev_()
     }
     else
     {
-        prev.energy_IS = get_energy(prev.int_rep_IS);
         prev.int_rep_IS = get_inherent_structure();
+        prev.energy_IS = get_energy(prev.int_rep_IS);
     }
 }
 
@@ -136,8 +137,8 @@ void SpinSystem::init_curr_()
     }
     else
     {
-        curr.energy_IS = get_energy(curr.int_rep_IS);
         curr.int_rep_IS = get_inherent_structure();
+        curr.energy_IS = get_energy(curr.int_rep_IS);
     }
 }
 
@@ -151,7 +152,7 @@ void SpinSystem::_helper_calculate_neighboring_energies_(int *cfg,
 
         // Collect the energy of the spin_config
         neighboring_energies[ii] =
-            emap[binary_vector_to_int(cfg, N)];
+            get_energy(binary_vector_to_int(cfg, N));
 
         // Flip the ii'th spin back
         _helper_flip_spin_(cfg, ii);
@@ -216,7 +217,7 @@ long long SpinSystem::get_int_rep() const
 
 double SpinSystem::get_current_energy() const
 {
-    return emap[get_int_rep()];
+    return get_energy(get_int_rep());
 }
 
 
