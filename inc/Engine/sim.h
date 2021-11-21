@@ -29,10 +29,24 @@ public:
     void execute();
 };
 
+class GillespieSimulationMemoryless : public Simulation
+{
+public:
+    GillespieSimulationMemoryless(const FileNames, const RuntimeParameters);
+    void execute();
+};
+
 class StandardSimulation : public Simulation
 {
 public:
     StandardSimulation(const FileNames, const RuntimeParameters);
+    void execute();
+};
+
+class StandardSimulationMemoryless : public Simulation
+{
+public:
+    StandardSimulationMemoryless(const FileNames, const RuntimeParameters);
     void execute();
 };
 

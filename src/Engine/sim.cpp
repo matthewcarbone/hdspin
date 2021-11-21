@@ -47,7 +47,7 @@ void GillespieSimulation::execute()
     AgingConfig obs_age_config(fnames);    
     AgingBasin obs_age_basin(fnames, rtp);
 
-    // boolearn arguments are inherent structure, energetic threshold, and
+    // boolean arguments are inherent structure, energetic threshold, and
     // compare IS proxy.
     RidgeEnergy obs_ridge_energy_E(fnames, rtp, 0, true);
     RidgeEnergy obs_ridge_energy_S(fnames, rtp, 0, false);

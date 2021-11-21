@@ -11,136 +11,186 @@
 #include "Spin/base.h"
 #include "Utils/utils.h"
 
+// Base Spin system -----------------------------------------------------------
 
-void SpinSystem::_initialize_spin_system()
+/**
+ * @brief Initializes the spin system.
+ * @details Initializes the spin_config object using the Bernoulli distribution
+ * generator.
+ */
+void BaseSpinSystem::_initialize_spin_system()
 {
     // Initialize the distribution
-    std::bernoulli_distribution distribution;
-    
+    std::bernoulli_distribution _bernoulli_distribution;
+
     // Fill the vector
     for (int ii=0; ii<rtp.N_spins; ii++)
     {
-        spin_config[ii] = distribution(generator);
+        spin_config[ii] = _bernoulli_distribution(generator);
     }
 }
 
-double SpinSystem::get_energy(const long long intrep) const
+long long BaseSpinSystem::_get_int_rep() const
 {
-    if (rtp.memoryless)
-    {
-        double res;
-        if (rtp.landscape == 0)
-        {
-            std::exponential_distribution<double> distribution(rtp.beta_critical);
-            res = -distribution(generator);
-        }
-        else
-        {
-            std::normal_distribution<double> distribution(0.0, sqrt(rtp.N_spins));
-            res = distribution(generator);
-        }
-        return res;
-    }
-    else
-    {
-        return emap[intrep];
-    }
+    return binary_vector_to_int(spin_config, rtp.N_spins);
+}
+
+double BaseSpinSystem::_get_random_energy()
+{
+    throw std::runtime_error("_get_energy method must be overridden in inherited classes");
+}
+
+void BaseSpinSystem::init_prev_()
+{
+    prev.int_rep = _get_int_rep();
+    prev.energy = _get_random_energy();
+    prev.energy_IS = 0.0;
+    prev.int_rep_IS = 0;
+}
+
+void BaseSpinSystem::init_curr_()
+{
+    curr.int_rep = _get_int_rep();
+    curr.energy = _get_random_energy();
+    curr.energy_IS = 0.0;
+    curr.int_rep_IS = 0;
+}
+
+BaseSpinSystem::BaseSpinSystem(const RuntimeParameters rtp) : rtp(rtp)
+{
+    unsigned int seed = std::random_device{}();
+    generator.seed(seed);
+    spin_config = new int[rtp.N_spins];
+    _initialize_spin_system();
+};
+
+BaseSpinSystem::~BaseSpinSystem(){delete[] spin_config;}
+
+
+
+
+// Exponential Distribution Spin system ---------------------------------------
+
+MemorylessExponentialSpinSystem::MemorylessExponentialSpinSystem(const RuntimeParameters rtp) : BaseSpinSystem(rtp)
+{
+    // Set the exponential distribution parameter
+    const double p = rtp.beta_critical;
+    distribution.param(std::exponential_distribution<double>::param_type(p));
 }
 
 
-void SpinSystem::_initialize_energy_mapping_()
+double MemorylessExponentialSpinSystem::_get_random_energy()
 {
-    // Initialize prior with
-    // double *energy_arr = new double[rtp.N_configs];
-
-    if (rtp.landscape == 0)
-    {
-        // C++ exponential random number generator has input of the form
-        // lambda * e^{-lambda * x} for x > 0. For us, the scale parameter is
-        // bc.
-        std::exponential_distribution<double> distribution(rtp.beta_critical);
-
-        // Initialize the exponential distribution
-        for (unsigned long long ii=0; ii<rtp.N_configs; ii++)
-        {
-            // Note for the EREM model the energies are all negative, hence why
-            // we take the negative sign here.
-            emap[ii] = -distribution(generator);
-        }
-    }
-
-    else if (rtp.landscape == 1)
-    {
-        std::normal_distribution<double> distribution(0.0, sqrt(rtp.N_spins));
-
-        for (unsigned long long ii=0; ii<rtp.N_configs; ii++)
-        {
-            emap[ii] = distribution(generator);
-        }
-    }
-
-    else{throw std::runtime_error("Unknown landscape");}
+    return -distribution(generator);
 }
 
 
-void SpinSystem::_initialize_inherent_structure_mapping_()
+
+// Normal Distribution Spin system --------------------------------------------
+
+MemorylessNormalSpinSystem::MemorylessNormalSpinSystem(const RuntimeParameters rtp) : BaseSpinSystem(rtp)
 {
+    // Set the normal distribution parameter
+    const double p = sqrt(rtp.N_spins);
+    distribution.param(std::normal_distribution<double>::param_type(0.0, p));
+}
+
+double MemorylessNormalSpinSystem::_get_random_energy()
+{
+    return distribution(generator);
+}
+
+
+// Auxiliary ------------------------------------------------------------------
+
+_WithMemory::_WithMemory() {};
+
+_WithMemory::~_WithMemory()
+{
+    delete[] emap;
+    delete[] ism;
+    delete[] neighboring_energies;
+}
+
+
+
+
+
+// Memoryless exp Spin system -------------------------------------------------
+
+
+ExponentialSpinSystem::ExponentialSpinSystem(const RuntimeParameters rtp) : MemorylessExponentialSpinSystem(rtp)
+{
+
+    // Initialize the energy mapping
+    emap = new double[rtp.N_configs];
+    for (unsigned long long ii; ii< rtp.N_configs; ii++)
+    {
+        emap[ii] = _get_random_energy();
+    }
+
+    // Initialize the inherent structure mapping
     // Store every entry as -1 (to indicate that none exists yet)
+    ism = new long long[rtp.N_configs];
     for (long long ii=0; ii<rtp.N_configs; ii++){ism[ii] = -1;}
 }
 
 
-SpinSystem::SpinSystem(const RuntimeParameters rtp) : rtp(rtp)
+ExponentialSpinSystem::ExponentialSpinSystem(const RuntimeParameters rtp) : MemorylessExponentialSpinSystem(rtp)
 {
-    unsigned int seed = std::random_device{}();
-    generator.seed(seed);
 
-    spin_config = new int[rtp.N_spins];
-    _initialize_spin_system();
-
-    if (! rtp.memoryless)
+    // Initialize the energy mapping
+    emap = new double[rtp.N_configs];
+    for (unsigned long long ii; ii< rtp.N_configs; ii++)
     {
-        emap = new double[rtp.N_configs];
-        _initialize_energy_mapping_();
-        ism = new long long[rtp.N_configs];
-        _initialize_inherent_structure_mapping_();
+        emap[ii] = _get_random_energy();
     }
+
+    // Initialize the inherent structure mapping
+    // Store every entry as -1 (to indicate that none exists yet)
+    ism = new long long[rtp.N_configs];
+    for (long long ii=0; ii<rtp.N_configs; ii++){ism[ii] = -1;}
 }
 
 
-void SpinSystem::init_prev_()
-{
-    // Initialize the "previous" values
-    prev.int_rep = get_int_rep();
-    prev.energy = get_energy(prev.int_rep);
-    if (rtp.memoryless)
-    {
-        prev.energy_IS = 0.0;
-        prev.int_rep_IS = 0;
-    }
-    else
-    {
-        prev.int_rep_IS = get_inherent_structure();
-        prev.energy_IS = get_energy(prev.int_rep_IS);
-    }
-}
 
-void SpinSystem::init_curr_()
-{
-    // Initialize the "current" values
-    curr.int_rep = get_int_rep();
-    curr.energy = get_energy(curr.int_rep);
-    if (rtp.memoryless)
-    {
-        curr.energy_IS = 0.0;
-        curr.int_rep_IS = 0;
-    }
-    else
-    {
-        curr.int_rep_IS = get_inherent_structure();
-        curr.energy_IS = get_energy(curr.int_rep_IS);
-    }
-}
+
+// void BaseSpinSystem::init_prev_()
+// {
+//     // Initialize the "previous" values
+//     prev.int_rep = _get_int_rep();
+//     prev.energy = get_energy(prev.int_rep);
+//     prev.energy_IS = 0.0;
+//     if (rtp.memoryless)
+//     {
+//         prev.energy_IS = 0.0;
+//         prev.int_rep_IS = 0;
+//     }
+//     else
+//     {
+//         prev.int_rep_IS = get_inherent_structure();
+//         prev.energy_IS = get_energy(prev.int_rep_IS);
+//     }
+// }
+
+// void BaseSpinSystem::init_curr_()
+// {
+//     // Initialize the "current" values
+//     curr.int_rep = get_int_rep();
+//     curr.energy = get_energy(curr.int_rep);
+//     if (rtp.memoryless)
+//     {
+//         curr.energy_IS = 0.0;
+//         curr.int_rep_IS = 0;
+//     }
+//     else
+//     {
+//         curr.int_rep_IS = get_inherent_structure();
+//         curr.energy_IS = get_energy(curr.int_rep_IS);
+//     }
+// }
+
+
 
 void SpinSystem::_helper_calculate_neighboring_energies_(int *cfg,
     int N, double *neighboring_energies) const
@@ -209,27 +259,12 @@ void SpinSystem::flip_spin_(const int idx)
 }
 
 
-long long SpinSystem::get_int_rep() const
-{
-    return binary_vector_to_int(spin_config, rtp.N_spins);
-}
+
 
 
 double SpinSystem::get_current_energy() const
 {
     return get_energy(get_int_rep());
-}
-
-
-std::vector<int> SpinSystem::get_spin_config() const
-{
-    std::vector<int> v;
-    for (int ii=0; ii<rtp.N_spins; ii++)
-    {
-        v.push_back(spin_config[ii]);
-    }
-
-    return v;
 }
 
 
@@ -256,6 +291,7 @@ long long SpinSystem::get_inherent_structure() const
     return config_IS_int;
 }
 
+
 SpinSystem::~SpinSystem()
 {
     delete[] spin_config;
@@ -267,3 +303,13 @@ SpinSystem::~SpinSystem()
         delete[] neighboring_energies;
     }
 }
+
+
+SpinSystemWithInherentStructure::SpinSystemWithInherentStructure(
+    const RuntimeParameters rtp) : SpinSystem(rtp) {};
+
+
+
+
+
+

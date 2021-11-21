@@ -26,26 +26,19 @@ struct FileNames
     std::string grids_directory;
 };
 
-FileNames get_filenames(const int, const std::string, const std::string);
-
 struct RuntimeParameters
 {
     int log_N_timesteps;
-    long long N_timesteps;
     int N_spins;
     long long N_configs;
+    long long N_timesteps;
     double beta;
     double beta_critical;
     int landscape;
+    int dynamics_flag;
     double energetic_threshold;
     double entropic_attractor;
-    int loop_dynamics;
     int memoryless;
 };
-
-
-RuntimeParameters get_runtime_params(const int, const int, const double,
-    const double, const int, const int, const int);
-
 
 #endif
