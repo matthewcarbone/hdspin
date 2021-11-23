@@ -10,6 +10,9 @@
 class StandardSpinSystem : public SpinSystem
 {
 private:
+    std::uniform_real_distribution<> uniform_0_1_distribution;
+    std::uniform_int_distribution<> spin_distribution;
+
     double time_in_config = 1.0;  // Minimum of 1 timestep in configuration
     double time_in_config_IS = 1.0;
 
@@ -20,7 +23,7 @@ public:
     // the standard step actually returns whether or not the new state was
     // accepted: if there was a rejection, return false, else, if the proposed
     // state was accepted, return true.
-    bool step_();
+    long double step_();
 };
 
 

@@ -106,14 +106,10 @@ void StandardSimulation::execute()
 {
     StandardSpinSystem sys(rtp);
     Vals prev, curr;
-    bool accepted;
 
     // Special case of the standard spin dynamics: if rtp.loop_dynamics == 2,
     // then the timestep is divided by rtp.N_spins.
-    
     long double waiting_time;
-    if (rtp.loop_dynamics == 2){waiting_time = 1.0 / rtp.N_spins;}
-    else{waiting_time = 1.0;}
 
     // Initialize all observables
     Energy obs_energy(fnames);
@@ -142,7 +138,7 @@ void StandardSimulation::execute()
         
         // Standard step returns a boolean flag which is true if the new
         // proposed configuration was accepted or not.
-        accepted = sys.step_();
+        waiting_time = sys.step_();
 
         // The waiting time is always 1.0 for a standard simulation. We take
         // the convention that the "prev" structure indexes the state of the

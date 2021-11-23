@@ -6,8 +6,10 @@
 
 struct Vals
 {
-    long long int_rep, int_rep_IS;
-    double energy, energy_IS;
+    long long int_rep;
+    long long int_rep_IS = -1;
+    double energy;
+    double energy_IS = 0.0;
 };
 
 struct FileNames

@@ -20,20 +20,17 @@ GillespieSpinSystem::GillespieSpinSystem(const RuntimeParameters rtp) :
     delta_E = new double[rtp.N_spins];
     exit_rates = new double[rtp.N_spins];
 
-    // If we're running the gillespie div-N dynamics. This overrides the
-    // default value in the header file of 1.
-    if (rtp.loop_dynamics == 2)
-    {
-        _waiting_time_multiplier = 1.0 / rtp.N_spins;
-    }
+    // Initialize the normalized exit rate object
+    for (int ii=0; ii<rtp.N_spins; ii++){normalized_exit_rates.push_back(0.0);}
 }
 
 
-double GillespieSpinSystem::_calculate_exit_rates()
+double GillespieSpinSystem::_calculate_exit_rates() const
 {
+    double current_energy = _get_current_energy();
     for (int ii=0; ii<rtp.N_spins; ii++)
     {
-        delta_E[ii] = neighboring_energies[ii] - get_current_energy();
+        delta_E[ii] = neighboring_energies[ii] - current_energy;
         exit_rates[ii] = exp(-rtp.beta * delta_E[ii]);
         if (exit_rates[ii] > 1.0){exit_rates[ii] = 1.0;}
     }
@@ -46,6 +43,7 @@ double GillespieSpinSystem::_calculate_exit_rates()
     for (int ii=0; ii<rtp.N_spins; ii++)
     {
         total_exit_rate += exit_rates[ii];
+
     }
     return total_exit_rate;
 }
@@ -56,12 +54,11 @@ long double GillespieSpinSystem::step_()
     const double total_exit_rate = _calculate_exit_rates();
 
     // Update the previous state with the current information before flipping
-    init_prev_();
+    _init_prev();
 
-    std::vector<double> normalized_exit_rates;
     for (int ii=0; ii<rtp.N_spins; ii++)
     {
-        normalized_exit_rates.push_back(exit_rates[ii] / total_exit_rate);
+        normalized_exit_rates[ii] = exit_rates[ii] / total_exit_rate;
     }
 
     // Now, we make a choice of the spin to flip
@@ -69,18 +66,20 @@ long double GillespieSpinSystem::step_()
         normalized_exit_rates.begin(), normalized_exit_rates.end());
     const int spin_to_flip = _dist(generator);
 
-    flip_spin_(spin_to_flip);
-    init_curr_();  // Initialize the current state
+    _flip_spin_(spin_to_flip);
 
-    n_accept += 1;
+    _init_curr();  // Initialize the current state
 
-    std::exponential_distribution<long double> tmp_exp_dist(total_exit_rate);
+    n_accept += 1;  // Every step is accepted using Gillespie
 
-    return tmp_exp_dist(generator) * _waiting_time_multiplier;
+    total_exit_rate_dist.param(std::exponential_distribution<long double>::param_type(total_exit_rate));
+
+    return total_exit_rate_dist(generator) * _waiting_time_multiplier;
 }
 
 GillespieSpinSystem::~GillespieSpinSystem()
 {
     delete[] delta_E;
     delete[] exit_rates;
+    delete[] neighboring_energies;
 }

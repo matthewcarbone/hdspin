@@ -10,18 +10,17 @@
 class GillespieSpinSystem : public SpinSystem
 {
 private:
+
     // Pointer to the delta E and exit rates
     double *delta_E = 0;
     double *exit_rates = 0;
 
-    // Gillespie dynamics-only multiplier for sampling from the total
-    // exit rate. This is 1 by default but is set to try and find the
-    // equivalent Gillespie simulation for the "loop" standard dynamics.
-    double _waiting_time_multiplier = 1.0;
+    std::vector<double> normalized_exit_rates;
+    std::exponential_distribution<long double> total_exit_rate_dist;
 
     // Fills the exit_rates and delta_E arrays and returns the total exit
     // rate.
-    double _calculate_exit_rates();
+    double _calculate_exit_rates() const;
 
 public:
     GillespieSpinSystem(const RuntimeParameters);
