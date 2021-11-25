@@ -6,12 +6,24 @@
 #include "Utils/structures.h"
 
 RidgeEnergy::RidgeEnergy(const FileNames fnames, const RuntimeParameters rtp,
-    const int inherent_structure, const bool energetic_threshold) :
+    const int inherent_structure, const bool energetic_threshold, const bool log_all) :
     Base(fnames), inherent_structure(inherent_structure),
-    energetic_threshold(energetic_threshold), rtp(rtp)
+    energetic_threshold(energetic_threshold), rtp(rtp), log_all(log_all)
 {
     if (energetic_threshold){threshold = rtp.energetic_threshold;}
     else{threshold = rtp.entropic_attractor;}
+    if (log_all)
+    {
+        assert(inherent_structure == 0);
+        if (energetic_threshold)
+        {
+            outfile = fopen(fnames.ridge_E_all.c_str(), "w");
+        }
+        else
+        {
+            outfile = fopen(fnames.ridge_S_all.c_str(), "w");
+        }
+    }
 }
 
 
@@ -19,30 +31,38 @@ void RidgeEnergy::_log_ridge_(const double current_energy)
 {
     // Logs the ridge energy
 
-    if (current_energy == last_energy)
+    if (! log_all)
     {
-        same.mu1 = iterative_mean(same.mu0, current_ridge, same.counter);
-        same.S1 = iterative_S(same.mu0, same.mu1, current_ridge, same.S0);
-        same.mu0 = same.mu1;
-        same.S0 = same.S1;
-        same.current_min = std::min(same.current_min, current_ridge);
-        same.current_max = std::max(same.current_max, current_ridge);
-        same.counter += 1;
+        if (current_energy == last_energy)
+        {
+            same.mu1 = iterative_mean(same.mu0, current_ridge, same.counter);
+            same.S1 = iterative_S(same.mu0, same.mu1, current_ridge, same.S0);
+            same.mu0 = same.mu1;
+            same.S0 = same.S1;
+            same.current_min = std::min(same.current_min, current_ridge);
+            same.current_max = std::max(same.current_max, current_ridge);
+            same.counter += 1;
+        }
+        else
+        {
+            diff.mu1 = iterative_mean(diff.mu0, current_ridge, diff.counter);
+            diff.S1 = iterative_S(diff.mu0, diff.mu1, current_ridge, diff.S0);
+            diff.mu0 = diff.mu1;
+            diff.S0 = diff.S1;
+            diff.current_min = std::min(diff.current_min, current_ridge);
+            diff.current_max = std::max(diff.current_max, current_ridge);
+            diff.counter += 1;
+        }
     }
     else
     {
-        diff.mu1 = iterative_mean(diff.mu0, current_ridge, diff.counter);
-        diff.S1 = iterative_S(diff.mu0, diff.mu1, current_ridge, diff.S0);
-        diff.mu0 = diff.mu1;
-        diff.S0 = diff.S1;
-        diff.current_min = std::min(diff.current_min, current_ridge);
-        diff.current_max = std::max(diff.current_max, current_ridge);
-        diff.counter += 1;
+        fprintf(outfile, "%.05e %i %0.5e\n", current_ridge, steps_above, time_above);
     }
+
 }
 
 
-void RidgeEnergy::step_(const Vals prev, const Vals curr)
+void RidgeEnergy::step_(const Vals prev, const Vals curr, const double waiting_time)
 {
 
     double _prev_energy, _curr_energy, _prev_energy_compare,
@@ -91,12 +111,18 @@ void RidgeEnergy::step_(const Vals prev, const Vals curr)
     else if ((_prev_energy >= threshold) && (_curr_energy >= threshold))
     {
         current_ridge = std::max(_curr_energy, current_ridge);
+        steps_above += 1;
+        time_above += waiting_time;
     }
 
     // Just dropped back below the threshold: log the current ridge energy
     else if ((_prev_energy >= threshold) && (_curr_energy < threshold))
     {
+        steps_above += 1;
+        time_above += waiting_time;
         if (exited_first_basin){_log_ridge_(_curr_energy_compare);}
+        steps_above = 0;
+        time_above = 0.0;
     }
 
 }
@@ -104,43 +130,45 @@ void RidgeEnergy::step_(const Vals prev, const Vals curr)
 
 RidgeEnergy::~RidgeEnergy()
 {
-    // Outfile closed in Base destructor
-    if (energetic_threshold && (inherent_structure == 0))
+    if (! log_all)
     {
-        outfile = fopen(fnames.ridge_E.c_str(), "w");    
-    }
-    else if (!energetic_threshold && (inherent_structure == 0))
-    {
-        outfile = fopen(fnames.ridge_S.c_str(), "w");    
-    }
-    else if (energetic_threshold && (inherent_structure == 1))
-    {
-        outfile = fopen(fnames.ridge_E_IS.c_str(), "w");    
-    }
-    else if (!energetic_threshold && (inherent_structure == 1))
-    {
-        outfile = fopen(fnames.ridge_S_IS.c_str(), "w");    
-    }
-    else if (energetic_threshold && (inherent_structure == 2))
-    {
-        outfile = fopen(fnames.ridge_E_proxy_IS.c_str(), "w");    
-    }
-    else if (!energetic_threshold && (inherent_structure == 2))
-    {
-        outfile = fopen(fnames.ridge_S_proxy_IS.c_str(), "w");    
-    }
-    else
-    {
-        std::cout << "WARNING: data may not have been saved in ridge energy!"
-        << std::endl;
-    }
+        // Outfile closed in Base destructor
+        if (energetic_threshold && (inherent_structure == 0))
+        {
+            outfile = fopen(fnames.ridge_E.c_str(), "w");
+        }
+        else if (!energetic_threshold && (inherent_structure == 0))
+        {
+            outfile = fopen(fnames.ridge_S.c_str(), "w");
+        }
+        else if (energetic_threshold && (inherent_structure == 1))
+        {
+            outfile = fopen(fnames.ridge_E_IS.c_str(), "w");
+        }
+        else if (!energetic_threshold && (inherent_structure == 1))
+        {
+            outfile = fopen(fnames.ridge_S_IS.c_str(), "w");
+        }
+        else if (energetic_threshold && (inherent_structure == 2))
+        {
+            outfile = fopen(fnames.ridge_E_proxy_IS.c_str(), "w");
+        }
+        else if (!energetic_threshold && (inherent_structure == 2))
+        {
+            outfile = fopen(fnames.ridge_S_proxy_IS.c_str(), "w");
+        }
+        else
+        {
+            std::cout << "WARNING: data may not have been saved in ridge energy!" << std::endl;
+        }
 
-    fprintf(outfile, "%i %.05e %.05e %.05e %.05e %lli\n",
-        int(exited_first_basin), same.mu1,
-        var_from_S(same.S1, same.counter - 1), same.current_max,
-        same.current_min, same.counter - 1); 
-    fprintf(outfile, "%i %.05e %.05e %.05e %.05e %lli\n",
-        int(exited_first_basin), diff.mu1,
-        var_from_S(diff.S1, diff.counter - 1), diff.current_max,
-        diff.current_min, diff.counter - 1);
+        fprintf(outfile, "%i %.05e %.05e %.05e %.05e %lli\n",
+            int(exited_first_basin), same.mu1,
+            var_from_S(same.S1, same.counter - 1), same.current_max,
+            same.current_min, same.counter - 1);
+        fprintf(outfile, "%i %.05e %.05e %.05e %.05e %lli\n",
+            int(exited_first_basin), diff.mu1,
+            var_from_S(diff.S1, diff.counter - 1), diff.current_max,
+            diff.current_min, diff.counter - 1);
+    }
 }

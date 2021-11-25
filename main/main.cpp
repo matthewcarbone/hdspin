@@ -95,9 +95,11 @@ FileNames get_filenames(const int ii)
 
     fnames.ridge_E = "data/" + ii_str + "_ridge_E.txt";
     fnames.ridge_S = "data/" + ii_str + "_ridge_S.txt";
+    fnames.ridge_E_all = "data/" + ii_str + "_ridge_E_all.txt";
+    fnames.ridge_S_all = "data/" + ii_str + "_ridge_S_all.txt";
+
     fnames.ridge_E_IS = "data/" + ii_str + "_ridge_E_IS.txt";
     fnames.ridge_S_IS = "data/" + ii_str + "_ridge_S_IS.txt";
-
     fnames.ridge_E_proxy_IS = "data/" + ii_str + "_ridge_E_proxy_IS.txt";
     fnames.ridge_S_proxy_IS = "data/" + ii_str + "_ridge_S_proxy_IS.txt";
 

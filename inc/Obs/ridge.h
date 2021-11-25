@@ -29,6 +29,8 @@ private:
     // True or false for E/S threshold usage.
     bool energetic_threshold;
 
+    bool log_all;
+
     double threshold;
 
     RuntimeParameters rtp;
@@ -41,6 +43,12 @@ private:
     double last_energy = 0.0;
     double current_ridge = 0.0;
 
+    // Steps above the ridge energy
+    int steps_above = 0;
+
+    // Time above the ridge energy
+    double time_above = 0.0;
+
     // We must handle the case when the tracer STARTS above the threshold. In
     // this situation, we should not log the first time it drops below.
     bool exited_first_basin = false;
@@ -51,12 +59,12 @@ public:
 
     // Constructor: reads in the grid from the specified grid directory
     RidgeEnergy(const FileNames, const RuntimeParameters, const int,
-        const bool);
+        const bool, const bool);
 
     // Step the grid by performing the following steps:
     // 1) Stepping the pointer
     // 2) Saving the configuration/energy information to disk
-    void step_(const Vals, const Vals);
+    void step_(const Vals, const Vals, const double);
 
     ~RidgeEnergy();
 };
