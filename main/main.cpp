@@ -73,6 +73,33 @@ RuntimeParameters get_runtime_parameters(char *argv[])
     return rtp;
 }
 
+void log_rtp(const RuntimeParameters rtp)
+{
+    printf("log_N_timesteps = %i\n", rtp.log_N_timesteps);
+    printf("N_timesteps = %lli\n", rtp.N_timesteps);
+    printf("N_spins = %i\n", rtp.N_spins);
+    printf("N_configs = %lli\n", rtp.N_configs);
+    printf("beta = %.05f\n", rtp.beta);
+    printf("beta_critical = %.05f\n", rtp.beta_critical);
+    std::string _landscape;
+    if (rtp.landscape == 0){_landscape = "EREM";}
+    else{_landscape = "REM";}
+    printf("landscape = %i (%s)\n", rtp.landscape, _landscape.c_str());
+    std::string _dynamics;
+    if (rtp.dynamics_flag == 0){_dynamics = "standard";}
+    else if (rtp.dynamics_flag == 1){_dynamics = "gillespie";}
+    else if (rtp.dynamics_flag == 2){_dynamics = "standard/N";}
+    else{_dynamics = "gillespie/N";}
+    printf("dynamics = %i (%s)\n", rtp.dynamics_flag, _dynamics.c_str());
+    std::string _memoryless;
+    if (rtp.memoryless == 0){_memoryless = "retaining memory";}
+    else{_memoryless = "memoryless simulation";}
+    printf("memoryless = %i (%s)\n", rtp.memoryless, _memoryless.c_str());
+    printf("max E ridges = %i\n", rtp.max_ridges);
+    printf("energetic threshold = %.05f\n", rtp.energetic_threshold);
+    printf("entropic attractor = %.05f\n", rtp.entropic_attractor);
+}
+
 
 FileNames get_filenames(const int ii)
 {
@@ -149,6 +176,10 @@ int main(int argc, char *argv[])
     printf("RANK %i/%i ID's %i -> %i\n", MPI_RANK, MPI_WORLD_SIZE, start, end);
 
     // So everything prints cleanly
+    fflush(stdout);
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    if (MPI_RANK == 0){log_rtp(rtp);}
     fflush(stdout);
     MPI_Barrier(MPI_COMM_WORLD);
 
