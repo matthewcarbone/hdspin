@@ -99,6 +99,13 @@ void GillespieSimulation::execute()
         obs_ridge_energy_E_logall.step_(prev, curr, waiting_time);
         obs_ridge_energy_S_logall.step_(prev, curr, waiting_time);
 
+        int ridge_energies_logged = obs_ridge_energy_E_logall.get_ridge_energies_logged();
+
+        if ((rtp.max_ridges > 0) && (ridge_energies_logged > rtp.max_ridges))
+        {
+            break;
+        }
+
         // Check for possible (although unlikely) overflow
         assert(simulation_clock > 0.0);
 
@@ -188,6 +195,13 @@ void StandardSimulation::execute()
 
         obs_ridge_energy_E_logall.step_(prev, curr, waiting_time);
         obs_ridge_energy_S_logall.step_(prev, curr, waiting_time);
+
+        int ridge_energies_logged = obs_ridge_energy_E_logall.get_ridge_energies_logged();
+
+        if ((rtp.max_ridges > 0) && (ridge_energies_logged > rtp.max_ridges))
+        {
+            break;
+        }
 
         if (simulation_clock > rtp.N_timesteps){break;}
 

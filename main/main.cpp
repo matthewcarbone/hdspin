@@ -42,6 +42,7 @@ RuntimeParameters get_runtime_parameters(char *argv[])
     // standard = 0
     // memoryless = 1
     rtp.memoryless = atoi(argv[7]);
+    rtp.max_ridges = atoi(argv[8]);
 
     // Get the energy barrier information
     double et, ea;
@@ -138,7 +139,7 @@ int main(int argc, char *argv[])
     MPI_Barrier(MPI_COMM_WORLD);
 
     RuntimeParameters rtp = get_runtime_parameters(argv);
-    const int n_tracers = atoi(argv[8]);
+    const int n_tracers = atoi(argv[9]);
 
     // Get the information for this MPI rank
     const int resume_at = 0;

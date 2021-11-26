@@ -49,6 +49,9 @@ private:
     // Time above the ridge energy
     double time_above = 0.0;
 
+    // The number of ridge energies logged
+    int ridge_energies_logged = 0;
+
     // We must handle the case when the tracer STARTS above the threshold. In
     // this situation, we should not log the first time it drops below.
     bool exited_first_basin = false;
@@ -65,6 +68,7 @@ public:
     // 1) Stepping the pointer
     // 2) Saving the configuration/energy information to disk
     void step_(const Vals, const Vals, const double);
+    int get_ridge_energies_logged() const {return ridge_energies_logged;}
 
     ~RidgeEnergy();
 };
