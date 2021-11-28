@@ -110,14 +110,21 @@ void SpinSystem::_helper_calculate_neighboring_energies(int *cfg,
 {
     for (int ii=0; ii<N; ii++)
     {
-        // Flip the ii'th spin
-        _helper_flip_spin_(cfg, ii);
+        if (rtp.memoryless == 0)
+        {
+            // Flip the ii'th spin
+            _helper_flip_spin_(cfg, ii);
 
-        // Collect the energy of the spin_config
-        ne[ii] = _get_energy(binary_vector_to_int(cfg, N));
+            // Collect the energy of the spin_config
+            ne[ii] = _get_energy(binary_vector_to_int(cfg, N));
 
-        // Flip the ii'th spin back
-        _helper_flip_spin_(cfg, ii);
+            // Flip the ii'th spin back
+            _helper_flip_spin_(cfg, ii);
+        }
+        else
+        {
+            ne[ii] = _get_random_energy();
+        }
     }
 }
 

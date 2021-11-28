@@ -67,7 +67,7 @@ long double GillespieSpinSystem::step_()
     const int spin_to_flip = _dist(generator);
 
     _flip_spin_(spin_to_flip);
-    if (rtp.memoryless == 1){spin_config_energy = _get_random_energy();}
+    if (rtp.memoryless == 1){spin_config_energy = neighboring_energies[spin_to_flip];}
 
     _init_curr();  // Initialize the current state
 
