@@ -13,8 +13,52 @@ import numpy as np
 from pathlib import Path
 from statsmodels.stats.weightstats import DescrStatsW
 
-from py import utils as u
-from py.utils import get_general_filename
+
+def get_general_filename(
+    base_fname, inherent_structure, energetic_threshold,
+    extra_text=None, extension=".txt"
+):
+    """
+
+    Parameters
+    ----------
+    base_fname : str
+        The base filename, such as "_psi_basin".
+    inherent_structure : bool
+    energetic_threshold : bool, optional
+        If None, will ignore appending any string corresponding to if this
+        is the energetic threshold or not.
+    extra_text : str, optional
+    extension : str, optional
+        The etension to append at the end of the final string (the default
+        is ".txt").
+
+    Returns
+    -------
+    str
+        The full file name.
+    """
+
+    f = base_fname
+
+    if energetic_threshold is not None:
+        if energetic_threshold:
+            f += "_E"
+        else:
+            f += "_S"
+
+    if int(inherent_structure) == 1:
+        f += "_IS"
+    elif int(inherent_structure) == 2:
+        f += "_proxy_IS"
+
+    if extra_text is not None:
+        assert isinstance(extra_text, str)
+        f += extra_text
+
+    f += extension
+
+    return f
 
 
 def process_file(file_name):
@@ -91,7 +135,7 @@ class Evaluator:
             particular trial.
         """
 
-        results_directory = Path(root) / Path("results")
+        results_directory = Path(root) / Path("data")
         files = glob2.glob(str(results_directory / "*_energy.txt"))
         res = np.array(read_files_via_numpy(files))
 
@@ -150,7 +194,7 @@ class Evaluator:
         inherent_structure : bool
         """
 
-        results_directory = Path(root) / Path("results")
+        results_directory = Path(root) / Path("data")
         if inherent_structure:
             files = glob2.glob(str(results_directory / f"*_psi_config_IS.txt"))
         else:
@@ -229,7 +273,7 @@ class Evaluator:
         # Load the data. Note it's really important to sort the file lists each
         # time so that the line up properly in the eq == pi1 == pi2 element
         # wise boolean comparison.
-        results_directory = Path(root) / Path("results")
+        results_directory = Path(root) / Path("data")
         files1 = glob2.glob(str(results_directory / f"*_pi1_config.txt"))
         files1.sort()
         pi1 = np.array(read_files_via_numpy(files1))
@@ -282,7 +326,7 @@ class Evaluator:
         energetic_threshold : bool
         """
 
-        results_directory = Path(root) / Path("results")
+        results_directory = Path(root) / Path("data")
 
         fname = get_general_filename(
             "*_psi_basin", inherent_structure, energetic_threshold,
@@ -461,7 +505,7 @@ class Evaluator:
         Column 8: IS in basin or not
         """
 
-        results_directory = Path(root) / Path("results")
+        results_directory = Path(root) / Path("data")
         files1 = glob2.glob(str(results_directory / f"*_pi1_basin.txt"))
         files1.sort()
         pi1 = np.array(read_files_via_numpy(files1))
@@ -560,7 +604,7 @@ class Evaluator:
             5: The total number of points that have contributed to the average.
         """
 
-        results_directory = Path(root) / Path("results")
+        results_directory = Path(root) / Path("data")
         fname = get_general_filename(
             "*_ridge", inherent_structure, energetic_threshold,
             extra_text=None, extension=".txt"
@@ -592,30 +636,54 @@ class Evaluator:
             f"E={energetic_threshold}) done"
         )
 
+    @staticmethod
+    def ridge_energy_all(root, energetic_threshold):
+        """
+        """
+
+        results_directory = Path(root) / Path("data")
+        char = "E" if energetic_threshold else "S"
+        fname = f"*_ridge_{char}_all.txt"
+        files = glob2.glob(str(results_directory / fname))
+        files = read_files_via_numpy(files)
+        files = [np.atleast_2d(np.array(f)) for f in files if len(f) > 0]
+        res = np.concatenate(files, axis=0)
+        final_path = str(Path(root) / Path(f"final/ridge_energy_{char}_all.txt"))
+        np.savetxt(final_path, res)
+        print(f"\tRidge Energy {char} (all) done")
+
     def __init__(self, specified_directory=None):
-        cache = u.get_cache()
-        _all_trial_dirs = u.listdir_fp(cache)
-        all_trial_dirs = [d for d in _all_trial_dirs if os.path.isdir(d)]
-        if specified_directory is not None:
-            all_trial_dirs = [
-                d for d in all_trial_dirs if specified_directory in d
-            ]
-        print(f"Evaluating {len(all_trial_dirs)} directories...")
-        for full_dir_path in all_trial_dirs:
-            print(f"Evaluating {Path(full_dir_path).stem}")
-            Evaluator.energy(full_dir_path)
-            Evaluator.psi_config(full_dir_path, inherent_structure=False)
-            Evaluator.psi_config(full_dir_path, inherent_structure=True)
-            Evaluator.aging_config(full_dir_path)
-            Evaluator.psi_basin(full_dir_path, True, True)
-            Evaluator.psi_basin(full_dir_path, False, False)
-            Evaluator.psi_basin(full_dir_path, False, True)
-            Evaluator.psi_basin(full_dir_path, True, False)
-            Evaluator.aging_basin(full_dir_path)
-            Evaluator.ridge_energy(full_dir_path, 0, True)
-            Evaluator.ridge_energy(full_dir_path, 0, False)
-            Evaluator.ridge_energy(full_dir_path, 1, True)
-            Evaluator.ridge_energy(full_dir_path, 1, False)
-            Evaluator.ridge_energy(full_dir_path, 2, True)
-            Evaluator.ridge_energy(full_dir_path, 2, False)
+        # cache = u.get_cache()
+        # _all_trial_dirs = u.listdir_fp(cache)
+        # all_trial_dirs = [d for d in _all_trial_dirs if os.path.isdir(d)]
+        # if specified_directory is not None:
+        #     all_trial_dirs = [
+        #         d for d in all_trial_dirs if specified_directory in d
+        #     ]
+        # print(f"Evaluating {len(all_trial_dirs)} directories...")
+        # for full_dir_path in all_trial_dirs:
+
+        full_dir_path = os.getcwd()
+        print(f"Evaluating {full_dir_path}")
+        Evaluator.energy(full_dir_path)
+        Evaluator.psi_config(full_dir_path, inherent_structure=False)
+        Evaluator.psi_config(full_dir_path, inherent_structure=True)
+        Evaluator.aging_config(full_dir_path)
+        Evaluator.psi_basin(full_dir_path, True, True)
+        Evaluator.psi_basin(full_dir_path, False, False)
+        Evaluator.psi_basin(full_dir_path, False, True)
+        Evaluator.psi_basin(full_dir_path, True, False)
+        Evaluator.aging_basin(full_dir_path)
+        Evaluator.ridge_energy(full_dir_path, 0, True)
+        Evaluator.ridge_energy(full_dir_path, 0, False)
+        # Evaluator.ridge_energy(full_dir_path, 1, True)
+        # Evaluator.ridge_energy(full_dir_path, 1, False)
+        # Evaluator.ridge_energy(full_dir_path, 2, True)
+        # Evaluator.ridge_energy(full_dir_path, 2, False)
+        Evaluator.ridge_energy_all(full_dir_path, True)
+        Evaluator.ridge_energy_all(full_dir_path, False)
         print("All done")
+
+
+if __name__ == '__main__':
+    Evaluator()

@@ -197,12 +197,12 @@ int main(int argc, char *argv[])
         const FileNames fnames = get_filenames(ii);
 
         // Run dynamics START -------------------------------------------------
-        if (rtp.dynamics_flag  == 1)
+        if (rtp.dynamics_flag % 2 == 1)
         {
             GillespieSimulation gillespie_sim(fnames, rtp);
             gillespie_sim.execute();
         }
-        else if (rtp.dynamics_flag  == 0)
+        else if (rtp.dynamics_flag % 2 == 0)
         {
             StandardSimulation standard_sim(fnames, rtp);
             standard_sim.execute();
