@@ -25,6 +25,10 @@ protected:
     // Pointer to the configuration
     int *spin_config = 0;  // NULL
 
+    // Only used for memoryless calculations. This keeps track of a dummy
+    // energy which would correspond to the spin state.
+    double spin_config_energy;
+
     // Pointer to the energy mapping
     double *emap = 0;
 

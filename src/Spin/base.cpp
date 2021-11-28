@@ -51,6 +51,11 @@ SpinSystem::SpinSystem(const RuntimeParameters rtp) : rtp(rtp)
         // Store every entry as -1 (to indicate that none exists yet)
         ism = new long long[rtp.N_configs];
         for (long long ii=0; ii<rtp.N_configs; ii++){ism[ii] = -1;}
+        spin_config_energy = -999999.0;
+    }
+    else
+    {
+        spin_config_energy = _get_random_energy();
     }
 
     if (rtp.dynamics_flag > 1){_waiting_time_multiplier = 1.0 / rtp.N_spins;}
@@ -91,7 +96,7 @@ double SpinSystem::_get_random_energy() const
  */
 double SpinSystem::_get_energy(const long long int_rep) const
 {
-    if (rtp.memoryless == 1){return _get_random_energy();}
+    if (rtp.memoryless == 1){return spin_config_energy;}
     return emap[int_rep];
 }
 
