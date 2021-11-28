@@ -7,6 +7,7 @@ __email__ = "x94carbone@gmail.com"
 __status__ = "Prototype"
 
 import os
+import sys
 
 import glob2
 import numpy as np
@@ -652,7 +653,7 @@ class Evaluator:
         np.savetxt(final_path, res)
         print(f"\tRidge Energy {char} (all) done")
 
-    def __init__(self, specified_directory=None):
+    def __init__(self, specified_directory=None, memoryless=False):
         # cache = u.get_cache()
         # _all_trial_dirs = u.listdir_fp(cache)
         # all_trial_dirs = [d for d in _all_trial_dirs if os.path.isdir(d)]
@@ -667,12 +668,16 @@ class Evaluator:
         print(f"Evaluating {full_dir_path}")
         Evaluator.energy(full_dir_path)
         Evaluator.psi_config(full_dir_path, inherent_structure=False)
-        Evaluator.psi_config(full_dir_path, inherent_structure=True)
+
+        if not memoryless:
+            Evaluator.psi_config(full_dir_path, inherent_structure=True)
+            Evaluator.psi_basin(full_dir_path, True, True)
+            Evaluator.psi_basin(full_dir_path, True, False)
+
         Evaluator.aging_config(full_dir_path)
-        Evaluator.psi_basin(full_dir_path, True, True)
         Evaluator.psi_basin(full_dir_path, False, False)
         Evaluator.psi_basin(full_dir_path, False, True)
-        Evaluator.psi_basin(full_dir_path, True, False)
+
         Evaluator.aging_basin(full_dir_path)
         Evaluator.ridge_energy(full_dir_path, 0, True)
         Evaluator.ridge_energy(full_dir_path, 0, False)
@@ -686,4 +691,5 @@ class Evaluator:
 
 
 if __name__ == '__main__':
-    Evaluator()
+    memoryless = bool(sys.argv[1])
+    Evaluator(memoryless=memoryless)

@@ -50,11 +50,11 @@ double GillespieSpinSystem::_calculate_exit_rates() const
 
 long double GillespieSpinSystem::step_()
 {
-    _calculate_neighboring_energies();
-    const double total_exit_rate = _calculate_exit_rates();
-
     // Update the previous state with the current information before flipping
     _init_prev();
+
+    _calculate_neighboring_energies();
+    const double total_exit_rate = _calculate_exit_rates();
 
     for (int ii=0; ii<rtp.N_spins; ii++)
     {

@@ -23,26 +23,28 @@ RuntimeParameters get_runtime_parameters(char *argv[])
     rtp.N_spins = atoi(argv[2]);
     rtp.N_configs = ipow(2, rtp.N_spins);
     rtp.beta = atof(argv[3]);
-    rtp.beta_critical = atof(argv[4]);
 
     // 0 for EREM, 1 for REM
-    rtp.landscape = atoi(argv[5]);
+    rtp.landscape = atoi(argv[4]);
     assert(rtp.landscape > -1);
     assert(rtp.landscape < 2);
+
+    if (rtp.landscape == 0){rtp.beta_critical = 1.0;}
+    else{rtp.beta_critical = 1.177410022515475;}  // This is ~sqrt(2 ln 2)
 
     // Dynamics flag:
     // standard = 0
     // gillespie = 1
     // standard divN = 2
     // gillespie divN = 3
-    rtp.dynamics_flag = atoi(argv[6]);
+    rtp.dynamics_flag = atoi(argv[5]);
     assert(rtp.dynamics_flag > -1);
     assert(rtp.dynamics_flag < 4);
 
     // standard = 0
     // memoryless = 1
-    rtp.memoryless = atoi(argv[7]);
-    rtp.max_ridges = atoi(argv[8]);
+    rtp.memoryless = atoi(argv[6]);
+    rtp.max_ridges = atoi(argv[7]);
 
     // Get the energy barrier information
     double et, ea;
@@ -166,7 +168,7 @@ int main(int argc, char *argv[])
     MPI_Barrier(MPI_COMM_WORLD);
 
     RuntimeParameters rtp = get_runtime_parameters(argv);
-    const int n_tracers = atoi(argv[9]);
+    const int n_tracers = atoi(argv[8]);
 
     // Get the information for this MPI rank
     const int resume_at = 0;
