@@ -1,4 +1,5 @@
 #include <algorithm>    // std::min
+#include <cassert>
 
 #include "Obs/base.h"
 #include "Obs/ridge.h"
