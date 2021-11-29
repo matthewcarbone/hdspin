@@ -59,6 +59,8 @@ void RidgeEnergy::_log_ridge_(const double current_energy)
         fprintf(outfile, "%.05e %i %0.5e\n", current_ridge, steps_above, time_above);
     }
 
+    ridge_energies_logged += 1;
+
 }
 
 
