@@ -57,7 +57,14 @@ void RidgeEnergy::_log_ridge_(const double current_energy)
     }
     else
     {
-        fprintf(outfile, "%.05e %i %0.5e\n", current_ridge, steps_above, time_above);
+        if (current_energy == last_energy)
+        {
+            fprintf(outfile, "%.05e %i %0.5e 1\n", current_ridge, steps_above, time_above);
+        }
+        else
+        {
+            fprintf(outfile, "%.05e %i %0.5e 0\n", current_ridge, steps_above, time_above);
+        }
     }
 
     ridge_energies_logged += 1;
