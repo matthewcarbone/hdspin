@@ -1,6 +1,3 @@
-#include <algorithm>    // std::min
-#include <cassert>
-
 #include "Obs/ridge.h"
 #include "Utils/utils.h"
 #include "Utils/structures.h"
@@ -14,10 +11,10 @@ void RidgeBase::_log_ridge(const double current_energy)
 
     if (_logged > rtp.max_ridges){return;}
 
-    const int diff_status = int(current_energy == last_energy);
+    const int diff_status = int(current_energy == _last_energy);
 
     fprintf(outfile, "%.05e %i %0.5e %i\n",
-        current_ridge, steps_above, time_above, diff_status);
+        _current_ridge, _steps_above, _time_above, diff_status);
 
     _logged += 1;
 }
@@ -43,8 +40,8 @@ void RidgeBase::step_(const Vals prev, const Vals curr, const double waiting_tim
         // This is true even when inherent_structure == 2, which takes the
         // _prev_energy (for comparing to the threshold) to be the standard
         // trajectory, but sets the last energy according to the IS.
-        last_energy = _prev_energy_compare;
-        current_ridge = _curr_energy;
+        _last_energy = _prev_energy_compare;
+        _current_ridge = _curr_energy;
         _exited_first_basin = true;
     }
 
@@ -52,19 +49,20 @@ void RidgeBase::step_(const Vals prev, const Vals curr, const double waiting_tim
     // maximum energy reached above the threshold.
     else if ((_prev_energy >= _threshold) && (_curr_energy >= _threshold))
     {
-        current_ridge = std::max(_curr_energy, current_ridge);
-        steps_above += 1;
-        time_above += waiting_time;
+        _current_ridge =
+            _curr_energy > _current_ridge ? _curr_energy : _current_ridge;
+        _steps_above += 1;
+        _time_above += waiting_time;
     }
 
     // Just dropped back below the threshold: log the current ridge energy
     else if ((_prev_energy >= _threshold) && (_curr_energy < _threshold))
     {
-        steps_above += 1;
-        time_above += waiting_time;
+        _steps_above += 1;
+        _time_above += waiting_time;
         if (_exited_first_basin){_log_ridge(_curr_energy_compare);}
-        steps_above = 0;
-        time_above = 0.0;
+        _steps_above = 0;
+        _time_above = 0.0;
     }
 
 }

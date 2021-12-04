@@ -13,14 +13,14 @@ protected:
     FILE* outfile;
 
     // Last energies that were under the threshold
-    double last_energy = 0.0;
-    double current_ridge = 0.0;
+    double _last_energy = 0.0;
+    double _current_ridge = 0.0;
 
     // Steps above the ridge energy
-    int steps_above = 0;
+    int _steps_above = 0;
 
     // Time above the ridge energy
-    double time_above = 0.0;
+    double _time_above = 0.0;
 
     // The number of ridge energies logged
     int _logged = 0;
@@ -49,13 +49,13 @@ public:
 
 
 
-class RidgeEnergy : RidgeBase
+class RidgeEnergy : public RidgeBase
 {
 public:
     RidgeEnergy(const FileNames, const RuntimeParameters);
 };
 
-class RidgeAttractor : RidgeBase
+class RidgeAttractor : public RidgeBase
 {
 public:
     RidgeAttractor(const FileNames, const RuntimeParameters);
