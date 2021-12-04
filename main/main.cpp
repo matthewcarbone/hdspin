@@ -12,43 +12,63 @@
 #include "Utils/structures.h"
 #include "Utils/utils.h"
 
+// Requires nlohmann::json
+// See here: https://github.com/nlohmann/json
+// Download the json.hpp file and put it in your path, it's that easy
+#include <json.hpp>
+using json = nlohmann::json;
 
-RuntimeParameters get_runtime_parameters(char *argv[])
+
+RuntimeParameters get_runtime_parameters()
 {
+
+    std::ifstream ifs("input.json");
+    json inp = json::parse(ifs);
+
     RuntimeParameters rtp;
 
-    // Parse all the inputs
-    rtp.log_N_timesteps = atoi(argv[1]);
+    // GEneral
+    rtp.log_N_timesteps = int(inp["log_N_timesteps"]);
     rtp.N_timesteps = ipow(10, rtp.log_N_timesteps);
-    rtp.N_spins = atoi(argv[2]);
-    rtp.N_configs = ipow(2, rtp.N_spins);
-    rtp.beta = atof(argv[3]);
+    rtp.N_spins = int(inp["N_spins"]);
+    rtp.beta = float(inp["beta"]);
 
-    // 0 for EREM, 1 for REM
-    rtp.landscape = atoi(argv[4]);
-    assert(rtp.landscape > -1);
-    assert(rtp.landscape < 2);
+    // Landscape
+    rtp.landscape = inp["landscape"];
+    if (rtp.landscape != "EREM" && rtp.landscape != "EREM")
+    {
+        throw std::runtime_error("Invalid landscape");
+    }
 
+    // Beta critical
     if (rtp.landscape == 0){rtp.beta_critical = 1.0;}
     else{rtp.beta_critical = 1.177410022515475;}  // This is ~sqrt(2 ln 2)
 
-    // Dynamics flag:
-    // standard = 0
-    // gillespie = 1
-    // standard divN = 2
-    // gillespie divN = 3
-    rtp.dynamics_flag = atoi(argv[5]);
-    assert(rtp.dynamics_flag > -1);
-    assert(rtp.dynamics_flag < 4);
+    // Dynamics
+    std::string _dynamics = inp["dynamics"];
+    if (_dynamics == "standard"){rtp.dynamics_flag = 0;}
+    else if (_dynamics == "gillespie"){rtp.dynamics_flag = 1;}
+    else{throw std::runtime_error("Invalid dynamics");}
 
-    // standard = 0
-    // memoryless = 1
-    rtp.memoryless = atoi(argv[6]);
-    rtp.max_ridges = atoi(argv[7]);
+    // Divide-by-N status
+    rtp.divN = int(inp["divN"]);
+    if (rtp.divN > 1 || rtp.divN < 0){throw std::runtime_error("Invalid divN");}
+
+    // Memory status
+    rtp.memory = int(inp["memory"]);
+    if (rtp.memory < -1){throw std::runtime_error("Invalid memory");}
+
+    if (rtp.memory != 0){rtp.N_configs = ipow(2, rtp.N_spins);}
+    else{rtp.N_configs = -1;}  // Don't use in the memoryless case
+
+    // Maximum number of ridges before recording stops
+    rtp.max_ridges = int(inp["max_ridges"]);
+    if (rtp.max_ridges < -1){throw std::runtime_error("Invalid max_ridges");}
 
     // Get the energy barrier information
     double et, ea;
-    if (rtp.landscape == 0) // EREM
+    rtp.valid_entropic_attractor = true;
+    if (rtp.landscape == "EREM") // EREM
     {
         et = -1.0 / rtp.beta_critical * log(rtp.N_spins);
         ea = 1.0 / (rtp.beta - rtp.beta_critical)
@@ -57,20 +77,19 @@ RuntimeParameters get_runtime_parameters(char *argv[])
         if (rtp.beta >= 2.0 * rtp.beta_critical | rtp.beta <= rtp.beta_critical)
         {
             ea = 1e16;  // Set purposefully invalid value instead of nan or inf
+            rtp.valid_entropic_attractor = false;
         }
     }
-    else if (rtp.landscape == 1) // REM
+    else // REM
     {
         et = -sqrt(2.0 * rtp.N_spins * log(rtp.N_spins));
         ea = -rtp.N_spins * rtp.beta / 2.0;
     }
-    else
-    {
-        throw std::runtime_error("Unknown landscape flag");
-    }
 
     rtp.energetic_threshold = et;
     rtp.entropic_attractor = ea;
+
+    rtp.n_tracers = inp["n_tracers"];
 
     return rtp;
 }
@@ -83,23 +102,25 @@ void log_rtp(const RuntimeParameters rtp)
     printf("N_configs = %lli\n", rtp.N_configs);
     printf("beta = %.05f\n", rtp.beta);
     printf("beta_critical = %.05f\n", rtp.beta_critical);
-    std::string _landscape;
-    if (rtp.landscape == 0){_landscape = "EREM";}
-    else{_landscape = "REM";}
-    printf("landscape = %i (%s)\n", rtp.landscape, _landscape.c_str());
+
+    printf("landscape = %s\n", rtp.landscape.c_str());
     std::string _dynamics;
+
     if (rtp.dynamics_flag == 0){_dynamics = "standard";}
     else if (rtp.dynamics_flag == 1){_dynamics = "gillespie";}
-    else if (rtp.dynamics_flag == 2){_dynamics = "standard/N";}
-    else{_dynamics = "gillespie/N";}
     printf("dynamics = %i (%s)\n", rtp.dynamics_flag, _dynamics.c_str());
-    std::string _memoryless;
-    if (rtp.memoryless == 0){_memoryless = "retaining memory";}
-    else{_memoryless = "memoryless simulation";}
-    printf("memoryless = %i (%s)\n", rtp.memoryless, _memoryless.c_str());
+
+    printf("divN = %i\n", rtp.divN);
+
+    std::string _mem;
+    if (rtp.memory == 0){_mem = "memoryless simulation";}
+    else if (rtp.memory == -1){_mem = "full initialization of memory";}
+    else{_mem = "specific memory value set";}
+    printf("memory = %i (%s)\n", rtp.memory, _mem.c_str());
     printf("max E ridges = %i\n", rtp.max_ridges);
     printf("energetic threshold = %.05f\n", rtp.energetic_threshold);
     printf("entropic attractor = %.05f\n", rtp.entropic_attractor);
+    printf("valid_entropic_attractor = %i\n", rtp.valid_entropic_attractor);
 }
 
 
@@ -167,23 +188,25 @@ int main(int argc, char *argv[])
     fflush(stdout);
     MPI_Barrier(MPI_COMM_WORLD);
 
-    RuntimeParameters rtp = get_runtime_parameters(argv);
-    const int n_tracers = atoi(argv[8]);
+    RuntimeParameters rtp = get_runtime_parameters();
+
+    const int n_tracers = rtp.n_tracers;
 
     // Get the information for this MPI rank
     const int resume_at = 0;
     const int start = resume_at + MPI_RANK * n_tracers;
     const int end = resume_at + (MPI_RANK + 1) * n_tracers;
 
-    printf("RANK %i/%i ID's %i -> %i\n", MPI_RANK, MPI_WORLD_SIZE, start, end);
-
     // So everything prints cleanly
+    printf("RANK %i/%i ID's %i -> %i\n", MPI_RANK, MPI_WORLD_SIZE, start, end);
     fflush(stdout);
     MPI_Barrier(MPI_COMM_WORLD);
 
     if (MPI_RANK == 0){log_rtp(rtp);}
     fflush(stdout);
     MPI_Barrier(MPI_COMM_WORLD);
+
+    exit(0);
 
     // Define some helpers to be used to track progress.
     const int total_steps = end - start;
