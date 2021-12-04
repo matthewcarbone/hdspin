@@ -1,42 +1,66 @@
 #ifndef OBS_PSI_H
 #define OBS_PSI_H
 
-#include "Obs/base.h"
+#include <vector>
+
 #include "Utils/structures.h"
 
-class PsiConfig : public Base
+class PsiConfigBase
 {
-private:
+protected:
 
-    bool inherent_structure;
+    FileNames fnames;
+    FILE *outfile;
 
     // Runtime parameters
     RuntimeParameters rtp;
 
     // The (roughly) maximum timestep on the counter. It's padded at the end,
     // and is taken care of during post processing.
-    long long max_counter;
+    long long _max_counter;
 
-    std::vector<long long> counter;
+    std::vector<long long> _counter;
 
     // Keep track internally of the waiting time for both the standard
     // trajectory and the inherent structure
-    long double waiting_time = 0.0;
+    long double _waiting_time = 0.0;
 
     // Helper methods
-    void _help_step_();
+    void _help_step();
 
 public:
 
-    PsiConfig(const FileNames, const RuntimeParameters, const bool);
-    void step_(const long double, const Vals, const Vals);
+    PsiConfigBase(const FileNames, const RuntimeParameters);
+};
+
+
+
+class PsiConfig : public PsiConfigBase
+{
+public:
+    PsiConfig(const FileNames, const RuntimeParameters);
+    void step(const long double, const Vals, const Vals);
     ~PsiConfig();
 };
 
 
-class PsiBasin : public Base
+class PsiConfigInherentStructure : public PsiConfigBase
 {
-private:
+public:
+    PsiConfigInherentStructure(const FileNames, const RuntimeParameters);
+    void step(const long double, const Vals, const Vals);
+    ~PsiConfigInherentStructure();
+};
+
+
+
+
+class PsiBasinBase
+{
+protected:
+
+    FileNames fnames;
+    FILE *outfile;
 
     bool inherent_structure, energetic_barrier;
 
@@ -44,24 +68,62 @@ private:
     RuntimeParameters rtp;
 
     // The threshold energy in question
-    double threshold;
+    double _threshold;
+    bool _threshold_valid = true;
 
-    std::vector<long long> counter;
+    std::vector<long long> _counter;
 
     // Number of unique configs per basin
-    std::vector<long long> counter_unique_configs_per_basin;
-    std::vector<long long> tmp_unique_configs_in_basin;
+    std::vector<long long> _counter_unique_configs_per_basin;
+    std::vector<long long> _tmp_unique_configs_in_basin;
 
-    long double waiting_time = 0.0;
+    long double _waiting_time = 0.0;
 
     // The (roughly) maximum timestep on the counter. It's padded at the end,
     // and is taken care of during post processing.
-    long long max_counter;
+    long long _max_counter;
+
+    void _help_step(const double, const double, const long long,
+        const long double);
+    void _dump_outfile();
 
 public:
-    PsiBasin(const FileNames, const RuntimeParameters, const bool, const bool);
-    void step_(const long double, const Vals, const Vals);
-    ~PsiBasin();
+    PsiBasinBase(const FileNames, const RuntimeParameters);
+    void step(const long double, const Vals, const Vals);
+};
+
+
+class PsiBasinThreshold : public PsiBasinBase
+{
+public:
+    PsiBasinThreshold(const FileNames, const RuntimeParameters);
+    ~PsiBasinThreshold();
+};
+
+
+class PsiBasinAttractor : public PsiBasinBase
+{
+public:
+    PsiBasinAttractor(const FileNames, const RuntimeParameters);
+    ~PsiBasinAttractor();
+};
+
+
+class PsiBasinThresholdInherentStructure : public PsiBasinBase
+{
+public:
+    PsiBasinThresholdInherentStructure(const FileNames, const RuntimeParameters);
+    void step(const long double, const Vals, const Vals);
+    ~PsiBasinThresholdInherentStructure();
+};
+
+
+class PsiBasinAttractorInherentStructure : public PsiBasinBase
+{
+public:
+    PsiBasinAttractorInherentStructure(const FileNames, const RuntimeParameters);
+    void step(const long double, const Vals, const Vals);
+    ~PsiBasinAttractorInherentStructure();
 };
 
 
