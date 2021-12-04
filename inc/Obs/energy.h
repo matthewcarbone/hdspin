@@ -1,12 +1,16 @@
 #ifndef OBS_ENERGY_H
 #define OBS_ENERGY_H
 
-#include "Obs/base.h"
+#include <vector>
+
 #include "Utils/structures.h"
 
-class Energy : public Base
+class Energy
 {
 private:
+
+    FileNames fnames;
+    FILE *outfile;
 
     // The maximum time on the grid
     long long max_time;
@@ -29,6 +33,8 @@ public:
     // 1) Stepping the pointer
     // 2) Saving the configuration/energy information to disk
     void step_(const long double, const Vals);
+
+    ~Energy();
 };
 
 
