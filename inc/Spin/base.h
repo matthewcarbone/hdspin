@@ -4,12 +4,11 @@
 #include <random>
 
 #include "Utils/structures.h"
+#include "Utils/lru.h"
 
 
-class SpinSystem
+class EnergyMapping
 {
-
-// Accessible only from within the class or it children
 protected:
     RuntimeParameters rtp;
 
@@ -22,29 +21,55 @@ protected:
     mutable std::exponential_distribution<double> exponential_distribution;
     mutable std::normal_distribution<double> normal_distribution;
 
-    // Pointer to the configuration
-    int *spin_config = 0;  // NULL
+    // Pointer to the energy mapping, only initialized if rtp.memory == -1
+    double *_emap = 0;
+    bool _emap_allocated = false;  // Useful flag for the destructor later
 
-    // Only used for memoryless calculations. This keeps track of a dummy
-    // energy which would correspond to the spin state.
-    double spin_config_energy;
+    // In the case where we're using adjusted memory dynamics
+    // This is just the default constructor, it doesn't really do anything
+    // One must set the capacity using `set_capacity(int)`
+    mutable LRUCache lru;
 
-    // Pointer to the energy mapping
-    double *emap = 0;
+public:
+    double sample_energy() const;
+    double get_config_energy(const long long) const;
+    EnergyMapping(const RuntimeParameters);
+    ~EnergyMapping();
+};
+
+
+class SpinSystem
+{
+
+// Accessible only from within the class or it children
+protected:
+    RuntimeParameters rtp;
+    EnergyMapping emap;
+
+    // Initialize the MT random number generator and seed with random_device
+    // This is seeded in the constructor
+    mutable std::mt19937 generator;
+
+    // Pointer to the configuration in the case where we have memory
+    int *_spin_config = 0;  // NULL
+    bool _spin_config_allocated = false;
+
+    // Use an index for this instead in the case when we do not have memory
+    long long _memoryless_system_config;
+    double _memoryless_system_energy;
 
     // Pointer to the inherent structure mapping
-    long long *ism = 0;
+    long long *_ism = 0;
+    bool _ism_allocated = false;
 
     // Pointer to the neighboring energies, used in the inherent structure
     // computation
-    double *neighboring_energies = 0;
+    double *_neighboring_energies = 0;
+    bool _neighboring_energies_allocated = true;
 
     // Initialize some objects for storing the previous and current values of
     // things:
     Vals prev, curr;
-
-    // Number of accepted steps (non-rejections)
-    long long n_accept = 0;
 
     // Multiplier for sampling from the waiting time and total
     // exit rate. This is 1 by default but is set to try and find the
@@ -53,10 +78,6 @@ protected:
 
     // Getter for the current spin representation, energies, etc.
     void _flip_spin_(const int);
-    long long _get_int_rep() const;
-    double _get_random_energy() const;
-    double _get_energy(const long long) const;
-    double _get_current_energy() const;
     void _helper_calculate_neighboring_energies(int *, int, double *) const;
     void _calculate_neighboring_energies() const;
     long long _help_get_inherent_structure() const;
@@ -69,10 +90,9 @@ protected:
 
 // Accessible outside of the class instance
 public:
-    SpinSystem(const RuntimeParameters);
+    SpinSystem(const RuntimeParameters, EnergyMapping);
     Vals get_prev() const {return prev;}
     Vals get_curr() const {return curr;}
-    int get_n_accept() const {return n_accept;}
     ~SpinSystem();
 };
 
