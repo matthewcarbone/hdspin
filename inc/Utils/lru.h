@@ -92,7 +92,10 @@ private:
     std::unordered_map<long long, Node*> pageMap;
 
 public:
-    LRUCache(int capacity)
+
+    LRUCache(){};  // Default constructor
+
+    void set_capacity(int capacity)
     {
         this->capacity = capacity;
         size = 0;
@@ -100,17 +103,28 @@ public:
         pageMap = std::unordered_map<long long, Node*>();
     }
 
-    double get(long long key)
+    bool key_exists(long long key) const
     {
-        // If the key does not exist, return some number. It is extremely
-        // unlikely that randomly, we will get exactly zero, so it is safe to
-        // use it as the special value for a key not found.
-        if(pageMap.find(key)==pageMap.end()) {return 0.0;}
+        return !(pageMap.find(key) == pageMap.end());
+    }
+
+    // Gets without checking for key existence
+    double get_fast(long long key)
+    {
         double val = pageMap[key]->value;
 
         // move the page to front
         pageList->move_page_to_head(pageMap[key]);
         return val;
+    }
+
+    double get(long long key)
+    {
+        // If the key does not exist, return some number. It is extremely
+        // unlikely that randomly, we will get exactly zero, so it is safe to
+        // use it as the special value for a key not found.
+        if(!key_exists(key)){return 0.0;}
+        return get_fast(key);
     }
 
     void put(long long key, double value)

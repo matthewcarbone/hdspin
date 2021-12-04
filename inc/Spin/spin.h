@@ -1,5 +1,5 @@
-#ifndef SPIN_BASE_H
-#define SPIN_BASE_H
+#ifndef SPIN_H
+#define SPIN_H
 
 #include <random>
 
@@ -77,7 +77,9 @@ protected:
     double _waiting_time_multiplier = 1.0;
 
     // Getter for the current spin representation, energies, etc.
-    void _flip_spin_(const int);
+    void _flip_spin(const int);
+    long long _get_current_int_rep() const;
+    double _get_current_energy() const;
     void _helper_calculate_neighboring_energies(int *, int, double *) const;
     void _calculate_neighboring_energies() const;
     long long _help_get_inherent_structure() const;
@@ -95,5 +97,52 @@ public:
     Vals get_curr() const {return curr;}
     ~SpinSystem();
 };
+
+
+class GillespieSpinSystem : public SpinSystem
+{
+private:
+
+    // Pointer to the delta E and exit rates
+    double *_delta_E = 0;
+    double *_exit_rates = 0;
+
+    std::vector<double> _normalized_exit_rates;
+    std::exponential_distribution<long double> total_exit_rate_dist;
+
+    // Fills the exit_rates and delta_E arrays and returns the total exit
+    // rate.
+    double _calculate_exit_rates() const;
+
+public:
+    GillespieSpinSystem(const RuntimeParameters, EnergyMapping);
+
+    // Step computes the neighboring energies, delta E values and exit rates,
+    // then based on that information, steps the spin configuration and
+    // returns the waiting time. Note that a Gillespie step is always accepted.
+    long double step_();
+
+    ~GillespieSpinSystem();
+};
+
+
+class StandardSpinSystem : public SpinSystem
+{
+private:
+    std::uniform_real_distribution<> uniform_0_1_distribution;
+    std::uniform_int_distribution<> spin_distribution;
+
+public:
+    StandardSpinSystem(const RuntimeParameters, EnergyMapping);
+
+    // Step executes a possible alteration in the state, but not always. Thus,
+    // the standard step actually returns whether or not the new state was
+    // accepted: if there was a rejection, return false, else, if the proposed
+    // state was accepted, return true.
+    long double step_();
+};
+
+
+
 
 #endif

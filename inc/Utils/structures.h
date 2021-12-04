@@ -7,9 +7,9 @@
 struct Vals
 {
     long long int_rep;
-    long long int_rep_IS = -1;
+    long long int_rep_IS;
     double energy;
-    double energy_IS = 0.0;
+    double energy_IS;
 };
 
 struct FileNames
@@ -37,12 +37,15 @@ struct RuntimeParameters
     long long N_timesteps;
     double beta;
     double beta_critical;
-    int landscape;
+    std::string landscape;
     int dynamics_flag;
+    int divN;
     double energetic_threshold;
     double entropic_attractor;
-    int memoryless;
+    int memory;
     int max_ridges;
+    bool valid_entropic_attractor;
+    int n_tracers;
 };
 
 #endif
