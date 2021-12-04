@@ -10,6 +10,7 @@ class Energy
 private:
 
     FileNames fnames;
+    RuntimeParameters rtp;
     FILE *outfile;
 
     // The maximum time on the grid
@@ -27,7 +28,7 @@ private:
 public:
 
     // Constructor: reads in the grid from the specified grid directory
-    Energy(const FileNames);
+    Energy(const FileNames, const RuntimeParameters);
 
     // Step the grid by performing the following steps:
     // 1) Stepping the pointer

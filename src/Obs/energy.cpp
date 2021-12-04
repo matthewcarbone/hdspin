@@ -1,7 +1,7 @@
 #include "Obs/energy.h"
 #include "Utils/utils.h"
 
-Energy::Energy(const FileNames fnames)
+Energy::Energy(const FileNames fnames, const RuntimeParameters rtp) : rtp(rtp)
 {
     const std::string grid_location = fnames.grids_directory + "/energy.txt";
     load_long_long_grid_(grid, grid_location);
@@ -20,8 +20,17 @@ void Energy::step_(const long double simulation_clock, const Vals v)
     // Write to the outfile
     while (grid[pointer] < simulation_clock)
     {   
-        fprintf(outfile, "%lli %lli %.05f %lli %.05f\n", grid[pointer],
-            v.int_rep, v.energy, v.int_rep_IS, v.energy_IS);
+        if (rtp.memory != 0)
+        {
+            fprintf(outfile, "%lli %lli %.05f %lli %.05f\n", grid[pointer],
+                v.int_rep, v.energy, v.int_rep_IS, v.energy_IS);
+        }
+        else
+        {
+            fprintf(outfile, "%lli %lli %.05f\n", grid[pointer], v.int_rep,
+                v.energy);
+        }
+
         pointer += 1;
         if (pointer > length - 1){return;}
     }
