@@ -9,7 +9,7 @@ RidgeBase::RidgeBase(const FileNames fnames,
 void RidgeBase::_log_ridge(const double current_energy)
 {
 
-    if (_logged > rtp.max_ridges){return;}
+    if (_logged >= rtp.max_ridges){return;}
 
     const int diff_status = int(current_energy == _last_energy);
 
@@ -20,7 +20,7 @@ void RidgeBase::_log_ridge(const double current_energy)
 }
 
 
-void RidgeBase::step_(const Vals prev, const Vals curr, const double waiting_time)
+void RidgeBase::step(const Vals prev, const Vals curr, const double waiting_time)
 {
 
     if (!_threshold_valid){return;}

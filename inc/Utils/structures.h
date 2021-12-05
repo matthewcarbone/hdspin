@@ -15,16 +15,12 @@ struct Vals
 struct FileNames
 {
     // Energy
-    std::string energy;
+    std::string energy, energy_IS;
     std::string psi_config, psi_config_IS;
     std::string psi_basin_E, psi_basin_S, psi_basin_E_IS, psi_basin_S_IS;
-    std::string aging_config_1;
-    std::string aging_config_2;
-    std::string aging_basin_1;
-    std::string aging_basin_2;
-    std::string ridge_E, ridge_S, ridge_E_IS, ridge_S_IS;
-    std::string ridge_E_proxy_IS, ridge_S_proxy_IS;
-    std::string ridge_E_all, ridge_S_all;
+    std::string aging_config, aging_config_IS;
+    std::string aging_basin_E, aging_basin_E_IS, aging_basin_S, aging_basin_S_IS;
+    std::string ridge_E_all, ridge_S_all, ridge_E_IS_all, ridge_S_IS_all;
     std::string ii_str;
     std::string grids_directory;
 };
@@ -38,7 +34,7 @@ struct RuntimeParameters
     double beta;
     double beta_critical;
     std::string landscape;
-    int dynamics_flag;
+    std::string dynamics;
     int divN;
     double energetic_threshold;
     double entropic_attractor;

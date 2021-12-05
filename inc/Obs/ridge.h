@@ -42,7 +42,7 @@ public:
     // Step the grid by performing the following steps:
     // 1) Stepping the pointer
     // 2) Saving the configuration/energy information to disk
-    void step_(const Vals, const Vals, const double);
+    void step(const Vals, const Vals, const double);
 
     ~RidgeBase();
 };

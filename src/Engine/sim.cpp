@@ -7,8 +7,7 @@
 #include <assert.h>
 
 #include "Utils/structures.h"
-#include "Spin/gillespie.h"
-#include "Spin/standard.h"
+#include "Spin/spin.h"
 #include "Engine/sim.h"
 
 // Observable includes
@@ -30,123 +29,117 @@ StandardSimulation::StandardSimulation(const FileNames fnames,
 
 void GillespieSimulation::execute()
 {
-    GillespieSpinSystem sys(rtp);
+
+    EnergyMapping emap(rtp);
+    GillespieSpinSystem sys(rtp, emap);
+
     Vals prev, curr;
     long double waiting_time;
 
-    Energy obs_energy(fnames);
+    Energy obs_energy(fnames, rtp);
+    EnergyInherentStructure obs_energy_IS(fnames, rtp);
 
-    PsiConfig obs_psi_config(fnames, rtp, false);
-    PsiConfig obs_psi_config_IS(fnames, rtp, true);
+    PsiConfig obs_psi_config(fnames, rtp);
+    PsiConfigInherentStructure obs_psi_config_IS(fnames, rtp);
 
-    PsiBasin obs_psi_basin_E(fnames, rtp, true, false);
-    PsiBasin obs_psi_basin_S(fnames, rtp, false, false);
-    PsiBasin obs_psi_basin_E_IS(fnames, rtp, true, true);
-    PsiBasin obs_psi_basin_S_IS(fnames, rtp, false, true);
+    PsiBasinThreshold obs_psi_basin_E(fnames, rtp);
+    PsiBasinAttractor obs_psi_basin_S(fnames, rtp);
+    PsiBasinThresholdInherentStructure obs_psi_basin_E_IS(fnames, rtp);
+    PsiBasinAttractorInherentStructure obs_psi_basin_S_IS(fnames, rtp);
 
-    AgingConfig obs_age_config(fnames);    
-    AgingBasin obs_age_basin(fnames, rtp);
+    AgingConfig obs_age_config(fnames, rtp);
+    AgingConfigInherentStructure obs_age_config_IS(fnames, rtp);
+    AgingBasinThreshold obs_age_basin_E(fnames, rtp);
+    AgingBasinThresholdInherentStructure obs_age_basin_E_IS(fnames, rtp);
+    AgingBasinAttractor obs_age_basin_S(fnames, rtp);
+    AgingBasinAttractorInherentStructure obs_age_basin_S_IS(fnames, rtp);
 
     // boolean arguments are inherent structure, energetic threshold, and
     // compare IS proxy.
-    RidgeEnergy obs_ridge_energy_E(fnames, rtp, 0, true, false);
-    RidgeEnergy obs_ridge_energy_S(fnames, rtp, 0, false, false);
-
-    RidgeEnergy obs_ridge_energy_E_logall(fnames, rtp, 0, true, true);
-    RidgeEnergy obs_ridge_energy_S_logall(fnames, rtp, 0, false, true);
-
-    // RidgeEnergy obs_ridge_energy_E_IS(fnames, rtp, 1, true, false);
-    // RidgeEnergy obs_ridge_energy_S_IS(fnames, rtp, 1, false, false);
-    // RidgeEnergy obs_ridge_energy_E_proxy_IS(fnames, rtp, 2, true, false);
-    // RidgeEnergy obs_ridge_energy_S_proxy_IS(fnames, rtp, 2, false, false);
-
+    RidgeEnergy obs_ridge_E(fnames, rtp);
+    RidgeAttractor obs_ridge_S(fnames, rtp);
 
     // Simulation clock is 0 before entering the while loop
     while (true)
     {
-        waiting_time = sys.step_();
+        waiting_time = sys.step();
+
         simulation_clock += waiting_time;
 
         prev = sys.get_prev();
         curr = sys.get_curr();
 
         // Step observables - energy
-        obs_energy.step_(simulation_clock, prev);
+        obs_energy.step(simulation_clock, prev);
+        obs_energy_IS.step(simulation_clock, prev);
 
         // ... - psi config
-        obs_psi_config.step_(waiting_time, prev, curr);
-        obs_psi_config_IS.step_(waiting_time, prev, curr);
+        obs_psi_config.step(waiting_time, prev, curr);
+        obs_psi_config_IS.step(waiting_time, prev, curr);
 
         // ... - psi basin
-        obs_psi_basin_E.step_(waiting_time, prev, curr);
-        obs_psi_basin_S.step_(waiting_time, prev, curr);
-        obs_psi_basin_E_IS.step_(waiting_time, prev, curr);
-        obs_psi_basin_S_IS.step_(waiting_time, prev, curr);
+        obs_psi_basin_E.step(waiting_time, prev, curr);
+        obs_psi_basin_S.step(waiting_time, prev, curr);
+        obs_psi_basin_E_IS.step(waiting_time, prev, curr);
+        obs_psi_basin_S_IS.step(waiting_time, prev, curr);
 
         // ... - pi config
-        obs_age_config.step_(simulation_clock, sys.get_n_accept(), prev);
+        obs_age_config.step(simulation_clock, prev);
+        obs_age_config_IS.step(simulation_clock, prev);
         
         // ... - pi basin
-        obs_age_basin.step_(simulation_clock, prev, curr);
+        obs_age_basin_E.step(simulation_clock, prev, curr);
+        obs_age_basin_S.step(simulation_clock, prev, curr);
+        obs_age_basin_E_IS.step(simulation_clock, prev, curr);
+        obs_age_basin_S_IS.step(simulation_clock, prev, curr);
 
         // ... - ridge energies
-        obs_ridge_energy_E.step_(prev, curr, waiting_time);
-        obs_ridge_energy_S.step_(prev, curr, waiting_time);
-        // obs_ridge_energy_E_IS.step_(prev, curr);
-        // obs_ridge_energy_S_IS.step_(prev, curr);
-        // obs_ridge_energy_E_proxy_IS.step_(prev, curr);
-        // obs_ridge_energy_S_proxy_IS.step_(prev, curr);
-        obs_ridge_energy_E_logall.step_(prev, curr, waiting_time);
-        obs_ridge_energy_S_logall.step_(prev, curr, waiting_time);
-
-        int ridge_energies_logged = obs_ridge_energy_E_logall.get_ridge_energies_logged();
-
-        if ((rtp.max_ridges > 0) && (ridge_energies_logged > rtp.max_ridges))
-        {
-            break;
-        }
+        obs_ridge_E.step(prev, curr, waiting_time);
+        obs_ridge_S.step(prev, curr, waiting_time);
 
         // Check for possible (although unlikely) overflow
         assert(simulation_clock > 0.0);
 
-        if (simulation_clock > rtp.N_timesteps){break;}
-
+        if (simulation_clock > rtp.N_timesteps)
+        {
+            break;
+        }
     }
 }
 
 
 void StandardSimulation::execute()
 {
-    StandardSpinSystem sys(rtp);
+    EnergyMapping emap(rtp);
+    StandardSpinSystem sys(rtp, emap);
     Vals prev, curr;
 
     // Special case of the standard spin dynamics: if rtp.loop_dynamics == 2,
     // then the timestep is divided by rtp.N_spins.
     long double waiting_time;
 
-    // Initialize all observables
-    Energy obs_energy(fnames);
+    Energy obs_energy(fnames, rtp);
+    EnergyInherentStructure obs_energy_IS(fnames, rtp);
 
-    PsiConfig obs_psi_config(fnames, rtp, false);
-    PsiConfig obs_psi_config_IS(fnames, rtp, true);
+    PsiConfig obs_psi_config(fnames, rtp);
+    PsiConfigInherentStructure obs_psi_config_IS(fnames, rtp);
 
-    PsiBasin obs_psi_basin_E(fnames, rtp, true, false);
-    PsiBasin obs_psi_basin_S(fnames, rtp, false, false);
-    PsiBasin obs_psi_basin_E_IS(fnames, rtp, true, true);
-    PsiBasin obs_psi_basin_S_IS(fnames, rtp, false, true);
+    PsiBasinThreshold obs_psi_basin_E(fnames, rtp);
+    PsiBasinAttractor obs_psi_basin_S(fnames, rtp);
+    PsiBasinThresholdInherentStructure obs_psi_basin_E_IS(fnames, rtp);
+    PsiBasinAttractorInherentStructure obs_psi_basin_S_IS(fnames, rtp);
 
-    AgingConfig obs_age_config(fnames);
-    AgingBasin obs_age_basin(fnames, rtp);
+    AgingConfig obs_age_config(fnames, rtp);
+    AgingConfigInherentStructure obs_age_config_IS(fnames, rtp);
+    AgingBasinThreshold obs_age_basin_E(fnames, rtp);
+    AgingBasinThresholdInherentStructure obs_age_basin_E_IS(fnames, rtp);
+    AgingBasinAttractor obs_age_basin_S(fnames, rtp);
+    AgingBasinAttractorInherentStructure obs_age_basin_S_IS(fnames, rtp);
 
-    RidgeEnergy obs_ridge_energy_E(fnames, rtp, 0, true, false);
-    RidgeEnergy obs_ridge_energy_S(fnames, rtp, 0, false, false);
-    // RidgeEnergy obs_ridge_energy_E_IS(fnames, rtp, 1, true);
-    // RidgeEnergy obs_ridge_energy_S_IS(fnames, rtp, 1, false);
-    // RidgeEnergy obs_ridge_energy_E_proxy_IS(fnames, rtp, 2, true);
-    // RidgeEnergy obs_ridge_energy_S_proxy_IS(fnames, rtp, 2, false);
-
-    RidgeEnergy obs_ridge_energy_E_logall(fnames, rtp, 0, true, true);
-    RidgeEnergy obs_ridge_energy_S_logall(fnames, rtp, 0, false, true);
+    // boolean arguments are inherent structure, energetic threshold, and
+    // compare IS proxy.
+    RidgeEnergy obs_ridge_E(fnames, rtp);
+    RidgeAttractor obs_ridge_S(fnames, rtp);
 
     // Simulation clock is 0 before entering the while loop
     while (true)
@@ -154,7 +147,7 @@ void StandardSimulation::execute()
         
         // Standard step returns a boolean flag which is true if the new
         // proposed configuration was accepted or not.
-        waiting_time = sys.step_();
+        waiting_time = sys.step();
 
         // The waiting time is always 1.0 for a standard simulation. We take
         // the convention that the "prev" structure indexes the state of the
@@ -167,41 +160,32 @@ void StandardSimulation::execute()
         curr = sys.get_curr();
 
         // Step observables - energy
-        obs_energy.step_(simulation_clock, prev);
+        obs_energy.step(simulation_clock, prev);
+        obs_energy_IS.step(simulation_clock, prev);
 
         // ... - psi config
-        obs_psi_config.step_(waiting_time, prev, curr);
-        obs_psi_config_IS.step_(waiting_time, prev, curr);
+        obs_psi_config.step(waiting_time, prev, curr);
+        obs_psi_config_IS.step(waiting_time, prev, curr);
 
         // ... - psi basin
-        obs_psi_basin_E.step_(waiting_time, prev, curr);
-        obs_psi_basin_S.step_(waiting_time, prev, curr);
-        obs_psi_basin_E_IS.step_(waiting_time, prev, curr);
-        obs_psi_basin_S_IS.step_(waiting_time, prev, curr);
+        obs_psi_basin_E.step(waiting_time, prev, curr);
+        obs_psi_basin_S.step(waiting_time, prev, curr);
+        obs_psi_basin_E_IS.step(waiting_time, prev, curr);
+        obs_psi_basin_S_IS.step(waiting_time, prev, curr);
 
         // ... - pi config
-        obs_age_config.step_(simulation_clock, sys.get_n_accept(), prev);
-        
+        obs_age_config.step(simulation_clock, prev);
+        obs_age_config_IS.step(simulation_clock, prev);
+
         // ... - pi basin
-        obs_age_basin.step_(simulation_clock, prev, curr);
+        obs_age_basin_E.step(simulation_clock, prev, curr);
+        obs_age_basin_S.step(simulation_clock, prev, curr);
+        obs_age_basin_E_IS.step(simulation_clock, prev, curr);
+        obs_age_basin_S_IS.step(simulation_clock, prev, curr);
 
         // ... - ridge energies
-        obs_ridge_energy_E.step_(prev, curr, waiting_time);
-        obs_ridge_energy_S.step_(prev, curr, waiting_time);
-        // obs_ridge_energy_E_IS.step_(prev, curr);
-        // obs_ridge_energy_S_IS.step_(prev, curr);
-        // obs_ridge_energy_E_proxy_IS.step_(prev, curr);
-        // obs_ridge_energy_S_proxy_IS.step_(prev, curr);
-
-        obs_ridge_energy_E_logall.step_(prev, curr, waiting_time);
-        obs_ridge_energy_S_logall.step_(prev, curr, waiting_time);
-
-        int ridge_energies_logged = obs_ridge_energy_E_logall.get_ridge_energies_logged();
-
-        if ((rtp.max_ridges > 0) && (ridge_energies_logged > rtp.max_ridges))
-        {
-            break;
-        }
+        obs_ridge_E.step(prev, curr, waiting_time);
+        obs_ridge_S.step(prev, curr, waiting_time);
 
         if (simulation_clock > rtp.N_timesteps){break;}
 

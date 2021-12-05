@@ -44,14 +44,14 @@ class SpinSystem
 // Accessible only from within the class or it children
 protected:
     RuntimeParameters rtp;
-    EnergyMapping emap;
+    EnergyMapping* emap_ptr;
 
     // Initialize the MT random number generator and seed with random_device
     // This is seeded in the constructor
     mutable std::mt19937 generator;
 
     // Pointer to the configuration in the case where we have memory
-    int *_spin_config = 0;  // NULL
+    int* _spin_config = 0;  // NULL
     bool _spin_config_allocated = false;
 
     // Use an index for this instead in the case when we do not have memory
@@ -59,13 +59,13 @@ protected:
     double _memoryless_system_energy;
 
     // Pointer to the inherent structure mapping
-    long long *_ism = 0;
+    long long* _ism = 0;
     bool _ism_allocated = false;
 
     // Pointer to the neighboring energies, used in the inherent structure
     // computation
-    double *_neighboring_energies = 0;
-    bool _neighboring_energies_allocated = true;
+    double* _neighboring_energies = 0;
+    bool _neighboring_energies_allocated = false;
 
     // Initialize some objects for storing the previous and current values of
     // things:
@@ -80,8 +80,7 @@ protected:
     void _flip_spin(const int);
     long long _get_current_int_rep() const;
     double _get_current_energy() const;
-    void _helper_calculate_neighboring_energies(int *, int, double *) const;
-    void _calculate_neighboring_energies() const;
+    void _helper_fill_neighboring_energies(int *, int, double *) const;
     long long _help_get_inherent_structure() const;
     long long _get_inherent_structure() const;
 
@@ -92,7 +91,7 @@ protected:
 
 // Accessible outside of the class instance
 public:
-    SpinSystem(const RuntimeParameters, EnergyMapping);
+    SpinSystem(const RuntimeParameters, EnergyMapping&);
     Vals get_prev() const {return prev;}
     Vals get_curr() const {return curr;}
     ~SpinSystem();
@@ -115,12 +114,12 @@ private:
     double _calculate_exit_rates() const;
 
 public:
-    GillespieSpinSystem(const RuntimeParameters, EnergyMapping);
+    GillespieSpinSystem(const RuntimeParameters, EnergyMapping&);
 
     // Step computes the neighboring energies, delta E values and exit rates,
     // then based on that information, steps the spin configuration and
     // returns the waiting time. Note that a Gillespie step is always accepted.
-    long double step_();
+    long double step();
 
     ~GillespieSpinSystem();
 };
@@ -133,13 +132,13 @@ private:
     std::uniform_int_distribution<> spin_distribution;
 
 public:
-    StandardSpinSystem(const RuntimeParameters, EnergyMapping);
+    StandardSpinSystem(const RuntimeParameters, EnergyMapping&);
 
     // Step executes a possible alteration in the state, but not always. Thus,
     // the standard step actually returns whether or not the new state was
     // accepted: if there was a rejection, return false, else, if the proposed
     // state was accepted, return true.
-    long double step_();
+    long double step();
 };
 
 

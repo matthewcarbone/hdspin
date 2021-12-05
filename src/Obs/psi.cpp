@@ -22,7 +22,8 @@ long long _get_key(const long double local_waiting_time)
 }
 
 
-PsiConfigBase::PsiConfigBase(const FileNames fnames, const RuntimeParameters rtp)
+PsiConfigBase::PsiConfigBase(const FileNames fnames,
+    const RuntimeParameters rtp) : fnames(fnames), rtp(rtp)
 {
     _max_counter = (long long) log2l(ipow(10, rtp.log_N_timesteps));
 
@@ -66,7 +67,7 @@ PsiConfig::~PsiConfig()
     outfile = fopen(fnames.psi_config.c_str(), "w");
     for (int ii=0; ii<_max_counter; ii++)
     {
-        fprintf(outfile, "%i %lli\n", ii, _counter[ii]);
+        fprintf(outfile, "%lli\n", _counter[ii]);
     }
     fclose(outfile);
 }
@@ -103,7 +104,8 @@ PsiConfigInherentStructure::~PsiConfigInherentStructure()
 
 // Psi Basin ------------------------------------------------------------------
 
-PsiBasinBase::PsiBasinBase(const FileNames fnames, const RuntimeParameters rtp)
+PsiBasinBase::PsiBasinBase(const FileNames fnames,
+    const RuntimeParameters rtp) : fnames(fnames), rtp(rtp)
 {
     _max_counter = (long long) log2l(ipow(10, rtp.log_N_timesteps));
 

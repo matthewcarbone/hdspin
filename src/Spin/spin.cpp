@@ -18,7 +18,6 @@ double EnergyMapping::sample_energy() const
 
 double EnergyMapping::get_config_energy(const long long int_rep) const
 {
-
     // First case, we're saving all results cached in an array
     if (rtp.memory == -1){return _emap[int_rep];}
 
@@ -86,9 +85,11 @@ EnergyMapping::~EnergyMapping()
 
 // Base Spin system -----------------------------------------------------------
 
-SpinSystem::SpinSystem(const RuntimeParameters rtp, EnergyMapping emap)
-    : rtp(rtp), emap(emap)
+SpinSystem::SpinSystem(const RuntimeParameters rtp, EnergyMapping& emap)
+    : rtp(rtp)
 {
+    emap_ptr = &emap;
+
     unsigned int seed = std::random_device{}();
     generator.seed(seed);
 
@@ -111,12 +112,12 @@ SpinSystem::SpinSystem(const RuntimeParameters rtp, EnergyMapping emap)
         // Allocate the inherent structure mapping
         _ism = new long long[rtp.N_configs];
         _ism_allocated = true;
-        for (long long ii=0; ii<rtp.N_configs; ii++){_ism[ii] = -1;}
+        for (int ii=0; ii<rtp.N_configs; ii++){_ism[ii] = -1;}
     }
     else
     {
         _memoryless_system_config = 1;
-        _memoryless_system_energy = emap.sample_energy();
+        _memoryless_system_energy = emap_ptr->sample_energy();
     }
 
     if (rtp.divN == 1){_waiting_time_multiplier = 1.0 / rtp.N_spins;}
@@ -159,14 +160,14 @@ double SpinSystem::_get_current_energy() const
     }
     else
     {
-        return emap.get_config_energy(
+        return emap_ptr->get_config_energy(
             binary_vector_to_int(_spin_config, rtp.N_spins));
     }
 }
 
 
 
-void SpinSystem::_helper_calculate_neighboring_energies(int *cfg,
+void SpinSystem::_helper_fill_neighboring_energies(int *cfg,
     int N, double *ne) const
 {
     for (int ii=0; ii<N; ii++)
@@ -175,21 +176,19 @@ void SpinSystem::_helper_calculate_neighboring_energies(int *cfg,
         {
             // Flip the ii'th spin
             _helper_flip_spin_(cfg, ii);
+            int int_rep = binary_vector_to_int(cfg, N);
 
             // Collect the energy of the spin_config
-            ne[ii] = emap.get_config_energy(binary_vector_to_int(cfg, N));
+            ne[ii] = emap_ptr->get_config_energy(int_rep);
 
             // Flip the ii'th spin back
             _helper_flip_spin_(cfg, ii);
         }
-        else{ne[ii] = emap.sample_energy();}
+        else
+        {
+            ne[ii] = emap_ptr->sample_energy();
+        }
     }
-}
-
-void SpinSystem::_calculate_neighboring_energies() const
-{
-    _helper_calculate_neighboring_energies(_spin_config,
-        rtp.N_spins, _neighboring_energies);
 }
 
 /* Finds the lowest energy configuration via greedy search from a config
@@ -212,12 +211,12 @@ long long SpinSystem::_help_get_inherent_structure() const
     while (true)
     {
         // Compute the neighboring energies on the copy
-        _helper_calculate_neighboring_energies(config_copy, rtp.N_spins, ne);
+        _helper_fill_neighboring_energies(config_copy, rtp.N_spins, ne);
 
         // If we have not reached the lowest local energy which can be reached
         // by flipping a spin
         min_el = min_element(ne, rtp.N_spins);
-        tmp_energy = emap.get_config_energy(
+        tmp_energy = emap_ptr->get_config_energy(
             binary_vector_to_int(config_copy, rtp.N_spins));
 
         if (ne[min_el] < tmp_energy)
@@ -272,7 +271,7 @@ void SpinSystem::_init_prev()
     if (rtp.memory != 0)
     {
         prev.int_rep_IS = _get_inherent_structure();
-        prev.energy_IS = emap.get_config_energy(prev.int_rep_IS);
+        prev.energy_IS = emap_ptr->get_config_energy(prev.int_rep_IS);
     }
 }
 
@@ -283,7 +282,7 @@ void SpinSystem::_init_curr()
     if (rtp.memory != 0)
     {
         curr.int_rep_IS = _get_inherent_structure();
-        curr.energy_IS = emap.get_config_energy(curr.int_rep_IS);
+        curr.energy_IS = emap_ptr->get_config_energy(curr.int_rep_IS);
     }
 }
 
@@ -299,11 +298,13 @@ SpinSystem::~SpinSystem()
 
 
 GillespieSpinSystem::GillespieSpinSystem(const RuntimeParameters rtp,
-    EnergyMapping emap) : SpinSystem(rtp, emap)
+    EnergyMapping& emap) : SpinSystem(rtp, emap)
 {
     // Initialize the other pointers to gillespie-only required arrays
     _delta_E = new double[rtp.N_spins];
     _exit_rates = new double[rtp.N_spins];
+    _neighboring_energies = new double[rtp.N_spins];
+    _neighboring_energies_allocated = true;
 
     // Initialize the normalized exit rate object
     for (int ii=0; ii<rtp.N_spins; ii++){_normalized_exit_rates.push_back(0.0);}
@@ -334,13 +335,21 @@ double GillespieSpinSystem::_calculate_exit_rates() const
     return total_exit_rate;
 }
 
-long double GillespieSpinSystem::step_()
+long double GillespieSpinSystem::step()
 {
     // Update the previous state with the current information before flipping
     _init_prev();
 
+    // Make a copy of the config if the memory != 0
+    int config_copy[rtp.N_spins];
+    if (rtp.memory != 0)
+    {
+        memcpy(config_copy, _spin_config, rtp.N_spins*sizeof(int));
+    }
+
     // This just gets a list of random numbers if memoryless
-    _calculate_neighboring_energies();
+    _helper_fill_neighboring_energies(config_copy,
+        rtp.N_spins, _neighboring_energies);
 
     const double total_exit_rate = _calculate_exit_rates();
 
@@ -387,7 +396,7 @@ GillespieSpinSystem::~GillespieSpinSystem()
 // Standard Spin system -------------------------------------------------------
 
 StandardSpinSystem::StandardSpinSystem(const RuntimeParameters rtp,
-    EnergyMapping emap) : SpinSystem(rtp, emap)
+    EnergyMapping& emap) : SpinSystem(rtp, emap)
 {
     uniform_0_1_distribution.param(
         std::uniform_real_distribution<>::param_type(0.0, 1.0));
@@ -396,7 +405,7 @@ StandardSpinSystem::StandardSpinSystem(const RuntimeParameters rtp,
 };
 
 
-long double StandardSpinSystem::step_()
+long double StandardSpinSystem::step()
 {
 
     _init_prev();  // Initialize the current state
@@ -437,7 +446,7 @@ long double StandardSpinSystem::step_()
     else
     {
         // There's no memory, so we just sample a random energy
-        const double proposed_energy = emap.sample_energy();
+        const double proposed_energy = emap_ptr->sample_energy();
         const double dE = proposed_energy - intermediate_energy;
         const double metropolis_prob = exp(-rtp.beta * dE);
         const double sampled = uniform_0_1_distribution(generator);

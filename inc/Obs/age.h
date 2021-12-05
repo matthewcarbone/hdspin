@@ -9,62 +9,119 @@
 class Aging
 {
 protected:
+
+    FileNames fnames;
+    RuntimeParameters rtp;
+
     // The pi 1 and 2 grids
     std::vector<long long> grid_pi1;
     std::vector<long long> grid_pi2;
-    int length_pi1, length_pi2;
-    long long max_time_pi1, max_time_pi2;
+    int length;
+
+    // Results
+    std::vector<long long> results1;
+    std::vector<long long> results2;
 
     // Define the pointers
     int pointer1 = 0;
     int pointer2 = 0;
 
     // The outstream for this tracker
-    FILE *outfile_pi1;
-    FILE *outfile_pi2;
+    FILE* outfile;
+
+    // Helpers
+    void _help_step_1(const long double, const long long);
+    void _help_step_2(const long double, const long long);
+
+    void _dump_outfile();
+
 public:
-    Aging(const FileNames);
-    ~Aging();
+    Aging(const FileNames, const RuntimeParameters);
 };
 
 
 class AgingConfig : public Aging
 {
-private:
-    // Helpers
-    void _help_step_1_(const long double, const long long, const Vals);
-    void _help_step_2_(const long double, const long long, const Vals);
-
 public:
-    AgingConfig(const FileNames);
-    void step_(const long double, const long long, const Vals);
+    AgingConfig(const FileNames, const RuntimeParameters);
+    void step(const long double, const Vals);
+    ~AgingConfig();
 };
+
+
+class AgingConfigInherentStructure : public Aging
+{
+public:
+    AgingConfigInherentStructure(const FileNames, const RuntimeParameters);
+    void step(const long double, const Vals);
+    ~AgingConfigInherentStructure();
+};
+
+
 
 
 class AgingBasin : public Aging
 {
-private:
+protected:
+
+    std::vector<long long> vec_basin_index_1;
+    std::vector<long long> vec_basin_index_2;
+    std::vector<int> vec_prev_state_in_basin_1;
+    std::vector<int> vec_prev_state_in_basin_2;
+
+    double _threshold;
+
     RuntimeParameters rtp;
     // The basin indexes reference the last basin that a tracer was in, or the
     // basin the tracer is currently in. Whether or not a tracer is currently
     // in a basin or not can be determined by comparing the energies to the
     // thresholds in the RuntimeParameters, rtp.
-    long long bi1_E = 0;  // First basin index
-    long long bi1_E_IS = 0;  // First basin index for the inherent structure
-    long long bi2_E = 0;  // Second basin index
-    long long bi2_E_IS = 0;  // Second basin index for the inherent structure
-    long long bi1_S = 0;
-    long long bi1_S_IS = 0;
-    long long bi2_S = 0;
-    long long bi2_S_IS = 0;
+    long long basin_index_1 = 0;  // First basin index
+    long long basin_index_2 = 0;  // Second basin index
 
     // Helpers
-    void _help_step_1_(const long double, const Vals, const Vals);
-    void _help_step_2_(const long double, const Vals, const Vals);
+    void _help_step_1_(const long double, const double);
+    void _help_step_2_(const long double, const double);
+    void _help_step(const long double, const double, const double);
+
+    void _dump_outfile();
 
 public:
     AgingBasin(const FileNames, const RuntimeParameters);
-    void step_(const long double, const Vals, const Vals);
+    void step(const long double, const Vals, const Vals);
+};
+
+
+class AgingBasinThreshold : public AgingBasin
+{
+public:
+    AgingBasinThreshold(const FileNames, const RuntimeParameters);
+    ~AgingBasinThreshold();
+};
+
+class AgingBasinAttractor : public AgingBasin
+{
+public:
+    AgingBasinAttractor(const FileNames, const RuntimeParameters);
+    void step(const long double, const Vals, const Vals);
+    ~AgingBasinAttractor();
+};
+
+class AgingBasinThresholdInherentStructure : public AgingBasin
+{
+public:
+    AgingBasinThresholdInherentStructure(const FileNames, const RuntimeParameters);
+    void step(const long double, const Vals, const Vals);
+    ~AgingBasinThresholdInherentStructure();
+};
+
+
+class AgingBasinAttractorInherentStructure : public AgingBasin
+{
+public:
+    AgingBasinAttractorInherentStructure(const FileNames, const RuntimeParameters);
+    void step(const long double, const Vals, const Vals);
+    ~AgingBasinAttractorInherentStructure();
 };
 
 

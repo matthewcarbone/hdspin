@@ -37,7 +37,7 @@ RuntimeParameters get_runtime_parameters()
 
     // Landscape
     rtp.landscape = inp["landscape"];
-    if (rtp.landscape != "EREM" && rtp.landscape != "EREM")
+    if (rtp.landscape != "EREM" && rtp.landscape != "REM")
     {
         throw std::runtime_error("Invalid landscape");
     }
@@ -47,10 +47,11 @@ RuntimeParameters get_runtime_parameters()
     else{rtp.beta_critical = 1.177410022515475;}  // This is ~sqrt(2 ln 2)
 
     // Dynamics
-    std::string _dynamics = inp["dynamics"];
-    if (_dynamics == "standard"){rtp.dynamics_flag = 0;}
-    else if (_dynamics == "gillespie"){rtp.dynamics_flag = 1;}
-    else{throw std::runtime_error("Invalid dynamics");}
+    rtp.dynamics = inp["dynamics"];
+    if (rtp.dynamics != "standard" && rtp.dynamics != "gillespie")
+    {
+        throw std::runtime_error("Invalid dynamics");
+    }
 
     // Divide-by-N status
     rtp.divN = int(inp["divN"]);
@@ -106,11 +107,7 @@ void log_rtp(const RuntimeParameters rtp)
     printf("beta_critical = %.05f\n", rtp.beta_critical);
 
     printf("landscape = %s\n", rtp.landscape.c_str());
-    std::string _dynamics;
-
-    if (rtp.dynamics_flag == 0){_dynamics = "standard";}
-    else if (rtp.dynamics_flag == 1){_dynamics = "gillespie";}
-    printf("dynamics = %i (%s)\n", rtp.dynamics_flag, _dynamics.c_str());
+    printf("dynamics = %s\n", rtp.dynamics.c_str());
 
     printf("divN = %i\n", rtp.divN);
 
@@ -229,7 +226,6 @@ void make_pi_grids(const int log10_timesteps, const double dw,
 
     fclose(outfile1);
     fclose(outfile2);
-
 }
 
 
@@ -305,19 +301,19 @@ int main(int argc, char *argv[])
         const FileNames fnames = get_filenames(ii);
 
         // Run dynamics START -------------------------------------------------
-        if (rtp.dynamics_flag % 2 == 1)
+        if (rtp.dynamics == "gillespie")
         {
             GillespieSimulation gillespie_sim(fnames, rtp);
             gillespie_sim.execute();
         }
-        else if (rtp.dynamics_flag % 2 == 0)
+        else if (rtp.dynamics == "standard")
         {
             StandardSimulation standard_sim(fnames, rtp);
             standard_sim.execute();
         }
         else
         {
-            printf("Unsupported dynamics flag");
+            printf("Unsupported dynamics");
             MPI_Abort(MPI_COMM_WORLD, 1);
         }
         // Run dynamics END ---------------------------------------------------
