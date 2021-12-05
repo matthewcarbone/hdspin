@@ -285,7 +285,10 @@ int main(int argc, char *argv[])
         make_directories();
         make_energy_grid_logspace(rtp.log_N_timesteps, 100);
         make_pi_grids(rtp.log_N_timesteps, 0.5, 100);
+        printf("----------------------------------------------------------\n");
     }
+    fflush(stdout);
+    MPI_Barrier(MPI_COMM_WORLD);
 
     // Define some helpers to be used to track progress.
     const int total_steps = end - start;
