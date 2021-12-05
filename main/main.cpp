@@ -6,6 +6,8 @@
 #include <cstring>
 #include <sstream>
 #include <assert.h>
+#include <vector>
+#include <set>
 #include <mpi.h>
 
 #include "Engine/sim.h"
@@ -41,7 +43,7 @@ RuntimeParameters get_runtime_parameters()
     }
 
     // Beta critical
-    if (rtp.landscape == 0){rtp.beta_critical = 1.0;}
+    if (rtp.landscape == "EREM"){rtp.beta_critical = 1.0;}
     else{rtp.beta_critical = 1.177410022515475;}  // This is ~sqrt(2 ln 2)
 
     // Dynamics
@@ -128,8 +130,12 @@ FileNames get_filenames(const int ii)
 {
     std::string ii_str = std::to_string(ii);
     ii_str.insert(ii_str.begin(), 8 - ii_str.length(), '0');
+
     FileNames fnames;
+
     fnames.energy = "data/" + ii_str + "_energy.txt";
+    fnames.energy_IS = "data/" + ii_str + "_energy_IS.txt";
+
     fnames.psi_config = "data/" + ii_str + "_psi_config.txt";
     fnames.psi_config_IS = "data/" + ii_str + "_psi_config_IS.txt";
 
@@ -138,26 +144,94 @@ FileNames get_filenames(const int ii)
     fnames.psi_basin_E_IS = "data/" + ii_str + "_psi_basin_E_IS.txt";
     fnames.psi_basin_S_IS = "data/" + ii_str + "_psi_basin_S_IS.txt";
 
-    fnames.aging_config_1 = "data/" + ii_str + "_pi1_config.txt";
-    fnames.aging_config_2 = "data/" + ii_str + "_pi2_config.txt";
+    fnames.aging_config = "data/" + ii_str + "_aging_config.txt";
+    fnames.aging_config_IS = "data/" + ii_str + "_aging_config_IS.txt";
 
-    fnames.aging_basin_1 = "data/" + ii_str + "_pi1_basin.txt";
-    fnames.aging_basin_2 = "data/" + ii_str + "_pi2_basin.txt";
+    fnames.aging_basin_E = "data/" + ii_str + "_aging_basin_E.txt";
+    fnames.aging_basin_E_IS = "data/" + ii_str + "_aging_basin_E_IS.txt";
+    fnames.aging_basin_S = "data/" + ii_str + "_aging_basin_S.txt";
+    fnames.aging_basin_S_IS = "data/" + ii_str + "_aging_basin_S_IS.txt";
 
-    fnames.ridge_E = "data/" + ii_str + "_ridge_E.txt";
-    fnames.ridge_S = "data/" + ii_str + "_ridge_S.txt";
-    fnames.ridge_E_all = "data/" + ii_str + "_ridge_E_all.txt";
-    fnames.ridge_S_all = "data/" + ii_str + "_ridge_S_all.txt";
-
-    fnames.ridge_E_IS = "data/" + ii_str + "_ridge_E_IS.txt";
-    fnames.ridge_S_IS = "data/" + ii_str + "_ridge_S_IS.txt";
-    fnames.ridge_E_proxy_IS = "data/" + ii_str + "_ridge_E_proxy_IS.txt";
-    fnames.ridge_S_proxy_IS = "data/" + ii_str + "_ridge_S_proxy_IS.txt";
+    fnames.ridge_E_all = "data/" + ii_str + "_ridge_E.txt";
+    fnames.ridge_S_all = "data/" + ii_str + "_ridge_S.txt";
+    fnames.ridge_E_IS_all = "data/" + ii_str + "_ridge_E_IS.txt";
+    fnames.ridge_S_IS_all = "data/" + ii_str + "_ridge_S_IS.txt";
 
     fnames.ii_str = ii_str;
     fnames.grids_directory = "grids";
     return fnames;
 }
+
+
+void make_directories()
+{
+    system("mkdir data");
+    system("mkdir grids");
+}
+
+void make_energy_grid_logspace(const int log10_timesteps,
+    const int n_gridpoints)
+{
+    std::vector <long long> v;
+    v.push_back(0.0);
+    const double delta = ((double) log10_timesteps) / ((double) n_gridpoints);
+    for (int ii=0; ii<n_gridpoints + 1; ii++)
+    {
+        int val = int(pow(10, ((double) ii * delta)));
+        v.push_back(val);
+    }
+
+    v.erase(unique(v.begin(), v.end()), v.end());
+
+    const std::string fname = "grids/energy.txt";
+    FILE* outfile = fopen(fname.c_str(), "w");
+    for (int ii=0; ii<v.size(); ii++)
+    {
+        fprintf(outfile, "%lli\n", v[ii]);
+    }
+    fclose(outfile);
+}
+
+void make_pi_grids(const int log10_timesteps, const double dw,
+    const int n_gridpoints)
+{
+    std::vector <long long> v1;
+    std::vector <long long> v2;
+    const int nMC = int(pow(10, log10_timesteps));
+    const int tw_max = int(nMC / (dw + 1.0));
+    const double delta = ((double) log10(tw_max)) / ((double) n_gridpoints);
+
+    int _v1;
+    for (int ii=0; ii<n_gridpoints + 1; ii++)
+    {
+        _v1 = int(pow(10, ((double) ii * delta)));
+        v1.push_back(_v1);
+    }
+    v1.erase(unique(v1.begin(), v1.end()), v1.end());
+
+    int _v2;
+    for (int ii=0; ii<v1.size(); ii++)
+    {
+        _v2 = int(v1[ii] * (dw + 1.0));
+        v2.push_back(_v2);
+    }
+
+    const std::string fname1 = "grids/pi1.txt";
+    const std::string fname2 = "grids/pi2.txt";
+    FILE* outfile1 = fopen(fname1.c_str(), "w");
+    FILE* outfile2 = fopen(fname2.c_str(), "w");
+
+    for (int ii=0; ii<v1.size(); ii++)
+    {
+        fprintf(outfile1, "%lli\n", v1[ii]);
+        fprintf(outfile2, "%lli\n", v2[ii]);
+    }
+
+    fclose(outfile1);
+    fclose(outfile2);
+
+}
+
 
 
 
@@ -202,11 +276,20 @@ int main(int argc, char *argv[])
     fflush(stdout);
     MPI_Barrier(MPI_COMM_WORLD);
 
-    if (MPI_RANK == 0){log_rtp(rtp);}
+    if (MPI_RANK == 0)
+    {
+        printf("----------------------------------------------------------\n");
+        log_rtp(rtp);
+    }
     fflush(stdout);
     MPI_Barrier(MPI_COMM_WORLD);
 
-    exit(0);
+    if (MPI_RANK == 0)
+    {
+        make_directories();
+        make_energy_grid_logspace(rtp.log_N_timesteps, 100);
+        make_pi_grids(rtp.log_N_timesteps, 0.5, 100);
+    }
 
     // Define some helpers to be used to track progress.
     const int total_steps = end - start;
