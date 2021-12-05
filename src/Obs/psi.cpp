@@ -96,7 +96,7 @@ PsiConfigInherentStructure::~PsiConfigInherentStructure()
     outfile = fopen(fnames.psi_config_IS.c_str(), "w");
     for (int ii=0; ii<_max_counter; ii++)
     {
-        fprintf(outfile, "%i %lli\n", ii, _counter[ii]);
+        fprintf(outfile, "%lli\n", _counter[ii]);
     }
     fclose(outfile);
 }
@@ -165,8 +165,8 @@ void PsiBasinBase::_dump_outfile()
 {
     for (int ii=0; ii<_max_counter; ii++)
     {
-        fprintf(outfile, "%i %lli %lli\n",
-            ii, _counter[ii], _counter_unique_configs_per_basin[ii]);
+        fprintf(outfile, "%lli %lli\n",
+            _counter[ii], _counter_unique_configs_per_basin[ii]);
     }
     fclose(outfile);
 }

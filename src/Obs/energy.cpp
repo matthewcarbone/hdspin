@@ -21,8 +21,7 @@ void EnergyBase::_help_step(const long double simulation_clock,
     // Write to the outfile
     while (grid[pointer] < simulation_clock)
     {   
-        fprintf(outfile, "%lli %lli %.05f\n", grid[pointer],
-            int_rep, energy);
+        fprintf(outfile, "%lli %.05f\n", int_rep, energy);
 
         pointer += 1;
         if (pointer > length - 1){return;}
