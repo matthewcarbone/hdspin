@@ -3,13 +3,11 @@
 #include "Utils/structures.h"
 
 RidgeBase::RidgeBase(const FileNames fnames,
-    const RuntimeParameters rtp) : rtp(rtp) {}
+    const RuntimeParameters rtp) : rtp(rtp), fnames(fnames) {}
 
 
 void RidgeBase::_log_ridge(const double current_energy)
 {
-
-    if (_logged >= rtp.max_ridges){return;}
 
     const int diff_status = int(current_energy == _last_energy);
 
@@ -24,11 +22,12 @@ void RidgeBase::step(const Vals prev, const Vals curr, const double waiting_time
 {
 
     if (!_threshold_valid){return;}
+    if (_logged >= rtp.max_ridges){return;}
 
-    const double _prev_energy = prev.energy_IS;
-    const double _curr_energy = curr.energy_IS;
-    const double _prev_energy_compare = prev.energy_IS;
-    const double _curr_energy_compare = curr.energy_IS;
+    const double _prev_energy = prev.energy;
+    const double _curr_energy = curr.energy;
+    const double _prev_energy_compare = prev.energy;
+    const double _curr_energy_compare = curr.energy;
 
     // Just exited a basin, track the previous energy
     if ((_prev_energy < _threshold) && (_curr_energy >= _threshold))
