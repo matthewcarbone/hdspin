@@ -34,8 +34,7 @@ public:
     // Step the grid by performing the following steps:
     // 1) Stepping the pointer
     // 2) Saving the configuration/energy information to disk
-    void _help_step(const long double, const long long int_rep,
-        const double energy);
+    void _help_step(const long double, const double energy);
 };
 
 

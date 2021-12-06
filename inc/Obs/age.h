@@ -71,7 +71,6 @@ protected:
 
     double _threshold;
 
-    RuntimeParameters rtp;
     // The basin indexes reference the last basin that a tracer was in, or the
     // basin the tracer is currently in. Whether or not a tracer is currently
     // in a basin or not can be determined by comparing the energies to the

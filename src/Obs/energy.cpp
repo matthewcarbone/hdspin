@@ -11,7 +11,7 @@ EnergyBase::EnergyBase(const FileNames fnames,
 }
 
 void EnergyBase::_help_step(const long double simulation_clock,
-    const long long int_rep, const double energy)
+    const double energy)
 {
     // No updates necessary
     if (simulation_clock <= grid[pointer]){return;}
@@ -21,7 +21,7 @@ void EnergyBase::_help_step(const long double simulation_clock,
     // Write to the outfile
     while (grid[pointer] < simulation_clock)
     {   
-        fprintf(outfile, "%lli %.05f\n", int_rep, energy);
+        fprintf(outfile, "%.05f\n", energy);
 
         pointer += 1;
         if (pointer > length - 1){return;}
@@ -43,7 +43,7 @@ Energy::~Energy()
 
 void Energy::step(const long double simulation_clock, const Vals v)
 {
-    _help_step(simulation_clock, v.int_rep, v.energy);
+    _help_step(simulation_clock, v.energy);
 }
 
 
@@ -64,6 +64,6 @@ void EnergyInherentStructure::step(
 {
     if (rtp.memory != 0)
     {
-        _help_step(simulation_clock, v.int_rep_IS, v.energy_IS);
+        _help_step(simulation_clock, v.energy_IS);
     }
 }
