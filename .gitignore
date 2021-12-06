@@ -10,3 +10,5 @@ job_data/
 old/
 archive/
 config.yaml
+debug/
+scripts/
