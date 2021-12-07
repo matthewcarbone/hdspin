@@ -26,20 +26,14 @@ void RidgeBase::step(const Vals prev, const Vals curr, const double waiting_time
 
     const double _prev_energy = prev.energy;
     const double _curr_energy = curr.energy;
-    const double _prev_energy_compare = prev.energy;
-    const double _curr_energy_compare = curr.energy;
 
     // Just exited a basin, track the previous energy
     if ((_prev_energy < _threshold) && (_curr_energy >= _threshold))
     {
-        // Initialize the last energy before the basin was exited via one of
-        // two ways. If inherent_structure == 0, we set the last energy to that
-        // of the previous in the standard trajectory. If inherent_structure
-        // != 0, then the last energy should be that of the inherent structure.
-        // This is true even when inherent_structure == 2, which takes the
-        // _prev_energy (for comparing to the threshold) to be the standard
-        // trajectory, but sets the last energy according to the IS.
-        _last_energy = _prev_energy_compare;
+        // The energy before exiting the basin is defined as the inherent
+        // structure energy if we are using a system with memory. Else, we just
+        // use the energy itself
+        _last_energy = (rtp.memory != 0) ? prev.energy_IS : prev.energy;
         _current_ridge = _curr_energy;
         _exited_first_basin = true;
     }
@@ -59,7 +53,12 @@ void RidgeBase::step(const Vals prev, const Vals curr, const double waiting_time
     {
         _steps_above += 1;
         _time_above += waiting_time;
-        if (_exited_first_basin){_log_ridge(_curr_energy_compare);}
+        if (_exited_first_basin)
+        {
+            const double _curr_energy_compare =
+                (rtp.memory != 0) ? curr.energy_IS : curr.energy;
+            _log_ridge(_curr_energy_compare);
+        }
         _steps_above = 0;
         _time_above = 0.0;
     }
