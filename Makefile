@@ -16,7 +16,7 @@ LOCAL_FLAGS=-std=c++17
 REMOTE_FLAGS_1=-std=c++17
 
 rr: 
-	$(CC) $(INC) $(REMOTE_FLAGS_1) main/main.cpp -o exe/main.out $(SRC) -O3
+	$(CC) $(INC) -I/home/mcarbone/LOCAL $(REMOTE_FLAGS_1) main/main.cpp -o exe/main.out $(SRC) -O3
 
 local: 
 	$(LOCAL_CC) $(INC) $(LOCAL_FLAGS) main/main.cpp -o exe/main.out $(SRC) -O3
