@@ -1,12 +1,9 @@
 #!/usr/bin/env python3
 
 
-import os
 from pathlib import Path
-import sys
 import warnings
 
-import glob2
 import numpy as np
 from scipy.stats import sem
 
