@@ -67,7 +67,7 @@ void RidgeBase::step(const Vals prev, const Vals curr, const double waiting_time
 
 RidgeBase::~RidgeBase()
 {
-    fclose(outfile);
+    if (_threshold_valid){fclose(outfile);}
 }
 
 
@@ -82,8 +82,11 @@ RidgeEnergy::RidgeEnergy(const FileNames fnames,
 RidgeAttractor::RidgeAttractor(const FileNames fnames,
     const RuntimeParameters rtp) : RidgeBase(fnames, rtp)
 {
-    outfile = fopen(fnames.ridge_S_all.c_str(), "w");
-    _threshold = rtp.entropic_attractor;
     _threshold_valid = rtp.valid_entropic_attractor;
+    _threshold = rtp.entropic_attractor;
+    if (_threshold_valid)
+    {
+        outfile = fopen(fnames.ridge_S_all.c_str(), "w");
+    }
 }
 

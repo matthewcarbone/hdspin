@@ -194,6 +194,7 @@ PsiBasinAttractor::PsiBasinAttractor(const FileNames fnames,
     const RuntimeParameters rtp) : PsiBasinBase(fnames, rtp)
 {
     _threshold = rtp.entropic_attractor;
+    _threshold_valid = rtp.valid_entropic_attractor;
 }
 
 
