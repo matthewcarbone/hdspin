@@ -121,6 +121,15 @@ SpinSystem::SpinSystem(const RuntimeParameters rtp, EnergyMapping& emap)
     }
 
     if (rtp.divN == 1){_waiting_time_multiplier = 1.0 / rtp.N_spins;}
+
+    _neighboring_energies = new double[rtp.N_spins];
+    _neighboring_energies_allocated = true;
+
+    // _spin_config if in the memoryless calculation will just be a null
+    // pointer; nothing is done in the helper to the config if we're doing
+    // memoryless, so this should work fine
+    _helper_fill_neighboring_energies(_spin_config, rtp.N_spins,
+        _neighboring_energies);
 };
 
 /**
@@ -303,8 +312,6 @@ GillespieSpinSystem::GillespieSpinSystem(const RuntimeParameters rtp,
     // Initialize the other pointers to gillespie-only required arrays
     _delta_E = new double[rtp.N_spins];
     _exit_rates = new double[rtp.N_spins];
-    _neighboring_energies = new double[rtp.N_spins];
-    _neighboring_energies_allocated = true;
 
     // Initialize the normalized exit rate object
     for (int ii=0; ii<rtp.N_spins; ii++){_normalized_exit_rates.push_back(0.0);}
@@ -411,10 +418,10 @@ long double StandardSpinSystem::step()
     _init_prev();  // Initialize the current state
 
     const double intermediate_energy = prev.energy;
+    const int spin_to_flip = spin_distribution(generator);
 
     if (rtp.memory != 0)
     {
-        const int spin_to_flip = spin_distribution(generator);
         _flip_spin(spin_to_flip);
 
         // Step 4, get the proposed energy (energy of the new configuration)
@@ -446,7 +453,7 @@ long double StandardSpinSystem::step()
     else
     {
         // There's no memory, so we just sample a random energy
-        const double proposed_energy = emap_ptr->sample_energy();
+        const double proposed_energy = _neighboring_energies[spin_to_flip];
         const double dE = proposed_energy - intermediate_energy;
         const double metropolis_prob = exp(-rtp.beta * dE);
         const double sampled = uniform_0_1_distribution(generator);
@@ -454,6 +461,10 @@ long double StandardSpinSystem::step()
         {
             _memoryless_system_energy = proposed_energy;
             _memoryless_system_config += 1;
+
+            // Accepting a move leads to a new state and new neighbors
+            _helper_fill_neighboring_energies(_spin_config, rtp.N_spins,
+                _neighboring_energies);
         }
     }
 

@@ -67,6 +67,7 @@ protected:
     double* _neighboring_energies = 0;
     bool _neighboring_energies_allocated = false;
 
+
     // Initialize some objects for storing the previous and current values of
     // things:
     Vals prev, curr;
