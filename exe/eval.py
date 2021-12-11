@@ -177,8 +177,10 @@ if __name__ == '__main__':
     fnames = get_all_results_filenames()
     energy(fnames, "_energy.txt", "final/energy.txt")
     energy(fnames, "_energy_IS.txt", "final/energy_IS.txt")
-    ridges(fnames, "ridge_E.txt", "final/ridge_E.txt")
-    ridges(fnames, "ridge_S.txt", "final/ridge_S.txt")
+
+    # Do the ridges using bash, it's way faster
+    # ridges(fnames, "ridge_E.txt", "final/ridge_E.txt")
+    # ridges(fnames, "ridge_S.txt", "final/ridge_S.txt")
     psi_config(fnames, "_psi_config.txt", "final/psi_config.txt")
     psi_config(fnames, "_psi_config_IS.txt", "final/psi_config_IS.txt")
     aging_config(fnames, "_aging_config.txt", "final/aging_config.txt")
