@@ -176,6 +176,7 @@ if __name__ == '__main__':
     Path("final").mkdir(exist_ok=True, parents=False)
     fnames = get_all_results_filenames()
     energy(fnames, "_energy.txt", "final/energy.txt")
+    energy(fnames, "_energy_avg_neighbors.txt", "final/energy_avg_neighbors.txt")
     energy(fnames, "_energy_IS.txt", "final/energy_IS.txt")
 
     # Do the ridges using bash, it's way faster

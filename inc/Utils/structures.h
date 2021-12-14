@@ -15,7 +15,7 @@ struct Vals
 struct FileNames
 {
     // Energy
-    std::string energy, energy_IS;
+    std::string energy, energy_IS, energy_avg_neighbors;
     std::string psi_config, psi_config_IS;
     std::string psi_basin_E, psi_basin_S, psi_basin_E_IS, psi_basin_S_IS;
     std::string aging_config, aging_config_IS;

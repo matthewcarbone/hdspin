@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "Utils/structures.h"
+#include "Spin/spin.h"
 
 class EnergyBase
 {
@@ -12,7 +13,6 @@ protected:
     FileNames fnames;
     RuntimeParameters rtp;
     FILE *outfile;
-    FILE *outfile_IS;
 
     // The maximum time on the grid
     long long max_time;
@@ -44,6 +44,15 @@ public:
     Energy(const FileNames, const RuntimeParameters);
     void step(const long double, const Vals);
     ~Energy();
+};
+
+
+class EnergyAvgNeighbors : public EnergyBase
+{
+public:
+    EnergyAvgNeighbors(const FileNames, const RuntimeParameters);
+    void step(const long double, const SpinSystem&);
+    ~EnergyAvgNeighbors();
 };
 
 

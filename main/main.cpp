@@ -131,6 +131,7 @@ FileNames get_filenames(const int ii)
     FileNames fnames;
 
     fnames.energy = "data/" + ii_str + "_energy.txt";
+    fnames.energy_avg_neighbors = "data/" + ii_str + "_energy_avg_neighbors.txt";
     fnames.energy_IS = "data/" + ii_str + "_energy_IS.txt";
 
     fnames.psi_config = "data/" + ii_str + "_psi_config.txt";

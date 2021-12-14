@@ -95,6 +95,7 @@ public:
     SpinSystem(const RuntimeParameters, EnergyMapping&);
     Vals get_prev() const {return prev;}
     Vals get_curr() const {return curr;}
+    double get_average_neighboring_energy() const;
     ~SpinSystem();
 };
 

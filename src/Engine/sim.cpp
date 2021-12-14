@@ -37,6 +37,7 @@ void GillespieSimulation::execute()
     long double waiting_time;
 
     Energy obs_energy(fnames, rtp);
+    EnergyAvgNeighbors obs_energy_avg_neighbors(fnames, rtp);
     EnergyInherentStructure obs_energy_IS(fnames, rtp);
 
     PsiConfig obs_psi_config(fnames, rtp);
@@ -71,6 +72,7 @@ void GillespieSimulation::execute()
 
         // Step observables - energy
         obs_energy.step(simulation_clock, prev);
+        obs_energy_avg_neighbors.step(simulation_clock, sys);
         obs_energy_IS.step(simulation_clock, prev);
 
         // ... - psi config
@@ -119,6 +121,7 @@ void StandardSimulation::execute()
     long double waiting_time;
 
     Energy obs_energy(fnames, rtp);
+    EnergyAvgNeighbors obs_energy_avg_neighbors(fnames, rtp);
     EnergyInherentStructure obs_energy_IS(fnames, rtp);
 
     PsiConfig obs_psi_config(fnames, rtp);
@@ -161,6 +164,7 @@ void StandardSimulation::execute()
 
         // Step observables - energy
         obs_energy.step(simulation_clock, prev);
+        obs_energy_avg_neighbors.step(simulation_clock, sys);
         obs_energy_IS.step(simulation_clock, prev);
 
         // ... - psi config

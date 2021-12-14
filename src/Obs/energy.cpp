@@ -47,6 +47,37 @@ void Energy::step(const long double simulation_clock, const Vals v)
 }
 
 
+EnergyAvgNeighbors::EnergyAvgNeighbors(const FileNames fnames,
+    const RuntimeParameters rtp) : EnergyBase(fnames, rtp)
+{
+    outfile = fopen(fnames.energy_avg_neighbors.c_str(), "w");
+}
+
+EnergyAvgNeighbors::~EnergyAvgNeighbors()
+{
+    fclose(outfile);
+}
+
+void EnergyAvgNeighbors::step(
+    const long double simulation_clock, const SpinSystem& sys)
+{
+    // No updates necessary
+    if (simulation_clock <= grid[pointer]){return;}
+
+    if (pointer > length - 1){return;}
+
+    const double energy = sys.get_average_neighboring_energy();
+
+    // Write to the outfile
+    while (grid[pointer] < simulation_clock)
+    {
+        fprintf(outfile, "%.05f\n", energy);
+
+        pointer += 1;
+        if (pointer > length - 1){return;}
+    }
+}
+
 
 EnergyInherentStructure::EnergyInherentStructure(const FileNames fnames,
     const RuntimeParameters rtp) : EnergyBase(fnames, rtp)

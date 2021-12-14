@@ -295,6 +295,23 @@ void SpinSystem::_init_curr()
     }
 }
 
+
+double SpinSystem::get_average_neighboring_energy() const
+{
+    // Make a copy of the config if the memory != 0
+    int config_copy[rtp.N_spins];
+    double ne[rtp.N_spins];
+    if (rtp.memory != 0)
+    {
+        memcpy(config_copy, _spin_config, rtp.N_spins*sizeof(int));
+    }
+    _helper_fill_neighboring_energies(config_copy, rtp.N_spins, ne);
+    double tmp_e = 0.0;
+    for (int ii=0; ii<rtp.N_spins; ii++){tmp_e += ne[ii];}
+    return tmp_e / ((double) rtp.N_spins);
+}
+
+
 SpinSystem::~SpinSystem()
 {
     if (_spin_config_allocated){delete[] _spin_config;}
