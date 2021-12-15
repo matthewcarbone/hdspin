@@ -39,6 +39,7 @@ struct RuntimeParameters
     double energetic_threshold;
     double entropic_attractor;
     int memory;
+    int memoryless_retain_last_energy;
     int max_ridges;
     bool valid_entropic_attractor;
     int n_tracers;

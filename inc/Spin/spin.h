@@ -65,6 +65,7 @@ protected:
     // Pointer to the neighboring energies, used in the inherent structure
     // computation
     double* _neighboring_energies = 0;
+    double _previous_energy;
     bool _neighboring_energies_allocated = false;
 
 

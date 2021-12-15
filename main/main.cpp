@@ -92,7 +92,9 @@ RuntimeParameters get_runtime_parameters()
     rtp.energetic_threshold = et;
     rtp.entropic_attractor = ea;
 
-    rtp.n_tracers = inp["n_tracers"];
+    rtp.n_tracers = int(inp["n_tracers"]);
+
+    rtp.memoryless_retain_last_energy = int(inp["memoryless_retain_last_energy"]);
 
     return rtp;
 }
@@ -120,6 +122,7 @@ void log_rtp(const RuntimeParameters rtp)
     printf("energetic threshold = %.05f\n", rtp.energetic_threshold);
     printf("entropic attractor = %.05f\n", rtp.entropic_attractor);
     printf("valid_entropic_attractor = %i\n", rtp.valid_entropic_attractor);
+    printf("if memoryless, retaining last energy = %i\n", rtp.memoryless_retain_last_energy);
 }
 
 

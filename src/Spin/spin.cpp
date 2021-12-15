@@ -130,6 +130,10 @@ SpinSystem::SpinSystem(const RuntimeParameters rtp, EnergyMapping& emap)
     // memoryless, so this should work fine
     _helper_fill_neighboring_energies(_spin_config, rtp.N_spins,
         _neighboring_energies);
+
+    // Initialize the previous energy to something random, from one of
+    // the neighbors. It doesn't really matter at t=0 anyway
+    _previous_energy = _neighboring_energies[0];
 };
 
 /**
@@ -306,6 +310,12 @@ double SpinSystem::get_average_neighboring_energy() const
         memcpy(config_copy, _spin_config, rtp.N_spins*sizeof(int));
     }
     _helper_fill_neighboring_energies(config_copy, rtp.N_spins, ne);
+
+    if ((rtp.memoryless_retain_last_energy == 1) and (rtp.memory == 0))
+    {
+        ne[0] = _previous_energy;
+    }
+
     double tmp_e = 0.0;
     for (int ii=0; ii<rtp.N_spins; ii++){tmp_e += ne[ii];}
     return tmp_e / ((double) rtp.N_spins);
@@ -361,6 +371,9 @@ double GillespieSpinSystem::_calculate_exit_rates() const
 
 long double GillespieSpinSystem::step()
 {
+
+    const double current_energy = _get_current_energy();
+
     // Update the previous state with the current information before flipping
     _init_prev();
 
@@ -374,6 +387,13 @@ long double GillespieSpinSystem::step()
     // This just gets a list of random numbers if memoryless
     _helper_fill_neighboring_energies(config_copy,
         rtp.N_spins, _neighboring_energies);
+
+    // IF whatever flag is true, set one of the new neighboring energies
+    // equal to the old one
+    if ((rtp.memoryless_retain_last_energy == 1) and (rtp.memory == 0))
+    {
+        _neighboring_energies[0] = _previous_energy;
+    }
 
     const double total_exit_rate = _calculate_exit_rates();
 
@@ -406,6 +426,8 @@ long double GillespieSpinSystem::step()
     total_exit_rate_dist.param(
         std::exponential_distribution<long double>::param_type(total_exit_rate));
 
+    _previous_energy = current_energy;
+
     // Return the waiting time
     return total_exit_rate_dist(generator) * _waiting_time_multiplier;
 }
@@ -431,6 +453,8 @@ StandardSpinSystem::StandardSpinSystem(const RuntimeParameters rtp,
 
 long double StandardSpinSystem::step()
 {
+
+    const double current_energy = _get_current_energy();
 
     _init_prev();  // Initialize the current state
 
@@ -482,8 +506,15 @@ long double StandardSpinSystem::step()
             // Accepting a move leads to a new state and new neighbors
             _helper_fill_neighboring_energies(_spin_config, rtp.N_spins,
                 _neighboring_energies);
+
+            if (rtp.memoryless_retain_last_energy == 1)
+            {
+                _neighboring_energies[0] = _previous_energy;
+            }
         }
     }
+
+    _previous_energy = current_energy;
 
     // This is called multiple times in the loop dynamics, eventually
     // ending with the actual value in the loop dynamics.
