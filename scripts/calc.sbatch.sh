@@ -9,6 +9,7 @@
 #SBATCH --job-name=calc
 #SBATCH --output=job_data/calc_%A.out
 #SBATCH --error=job_data/calc_%A.err
+#SBATCH --exclude=compute-0-6
 
 exe_path=/home/mcarbone/hdspin/exe
 
