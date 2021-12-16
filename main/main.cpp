@@ -37,7 +37,7 @@ RuntimeParameters get_runtime_parameters()
 
     // Landscape
     rtp.landscape = inp["landscape"];
-    if (rtp.landscape != "EREM" && rtp.landscape != "REM")
+    if (rtp.landscape != "EREM" && rtp.landscape != "REM" && rtp.landscape != "REM-num")
     {
         throw std::runtime_error("Invalid landscape");
     }
@@ -85,7 +85,34 @@ RuntimeParameters get_runtime_parameters()
     }
     else // REM
     {
-        et = -sqrt(2.0 * rtp.N_spins * log(rtp.N_spins));
+
+        // Find the threshold energy for the REM model numerically. This is
+        // more accurate at N < inf than using the analytic version
+        if (rtp.landscape == "REM-num")
+        {
+            std::mt19937 gen;
+            std::normal_distribution<double> dist;
+
+            const double p = sqrt(rtp.N_spins);
+            dist.param(std::normal_distribution<double>::param_type(0.0, p));
+            const double nreps = 10000;
+            std::vector<double> vec(rtp.N_spins, 0.0);
+            double min_val;
+            double tmp = 0.0;
+            for (int rep=0; rep<nreps; rep++)
+            {
+                for (int nn=0; nn<rtp.N_spins; nn++)
+                {
+                    vec[nn] = dist(gen);
+                }
+                min_val = *std::min_element(vec.begin(), vec.end());
+                tmp += min_val;
+            }
+            et = tmp / ((double) nreps);
+        }
+
+        // Else just find it analytically
+        else{et = -sqrt(2.0 * rtp.N_spins * log(rtp.N_spins));}
         ea = -rtp.N_spins * rtp.beta / 2.0;
     }
 
