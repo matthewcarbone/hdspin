@@ -9,6 +9,7 @@
 #SBATCH --job-name=eval
 #SBATCH --output=job_data/eval_%A.out
 #SBATCH --error=job_data/eval_%A.err
+#SBATCH --exclude=compute-0-6
 
 exe_path=/home/mcarbone/hdspin/exe
 source activate py37mpi
