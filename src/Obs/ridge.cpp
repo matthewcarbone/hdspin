@@ -10,9 +10,13 @@ void RidgeBase::_log_ridge(const double current_energy)
 {
 
     const int diff_status = int(current_energy == _last_energy);
+    const int n_unique_configs_above = _unique_configs_above.size();
 
-    fprintf(outfile, "%.05e %i %0.5e %i\n",
-        _current_ridge, _steps_above, _time_above, diff_status);
+    fprintf(
+        outfile, "%.05e %i %0.5e %i %i\n",
+        _current_ridge, _steps_above, _time_above, n_unique_configs_above,
+        diff_status
+    );
 
     _logged += 1;
 }
@@ -35,6 +39,7 @@ void RidgeBase::step(const Vals prev, const Vals curr, const double waiting_time
         // use the energy itself
         _last_energy = (rtp.memory != 0) ? prev.energy_IS : prev.energy;
         _current_ridge = _curr_energy;
+        _unique_configs_above.insert(curr.int_rep);
         _exited_first_basin = true;
     }
 
@@ -45,6 +50,7 @@ void RidgeBase::step(const Vals prev, const Vals curr, const double waiting_time
         _current_ridge =
             _curr_energy > _current_ridge ? _curr_energy : _current_ridge;
         _steps_above += 1;
+        _unique_configs_above.insert(curr.int_rep);
         _time_above += waiting_time;
     }
 
@@ -61,6 +67,7 @@ void RidgeBase::step(const Vals prev, const Vals curr, const double waiting_time
         }
         _steps_above = 0;
         _time_above = 0.0;
+        _unique_configs_above.clear();
     }
 
 }

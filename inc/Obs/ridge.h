@@ -1,6 +1,8 @@
 #ifndef OBS_RIDGE_H
 #define OBS_RIDGE_H
 
+#include <unordered_set>
+
 #include "Utils/structures.h"
 
 class RidgeBase
@@ -18,6 +20,7 @@ protected:
 
     // Steps above the ridge energy
     int _steps_above = 0;
+    std::unordered_set<int> _unique_configs_above;
 
     // Time above the ridge energy
     double _time_above = 0.0;
