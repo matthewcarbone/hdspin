@@ -29,11 +29,10 @@ RuntimeParameters get_runtime_parameters()
 
     RuntimeParameters rtp;
 
-    // GEneral
+    // General
     rtp.log_N_timesteps = int(inp["log_N_timesteps"]);
     rtp.N_timesteps = ipow(10, rtp.log_N_timesteps);
     rtp.N_spins = int(inp["N_spins"]);
-    rtp.beta = float(inp["beta"]);
 
     // Landscape
     rtp.landscape = inp["landscape"];
@@ -45,6 +44,9 @@ RuntimeParameters get_runtime_parameters()
     // Beta critical
     if (rtp.landscape == "EREM"){rtp.beta_critical = 1.0;}
     else{rtp.beta_critical = 1.177410022515475;}  // This is ~sqrt(2 ln 2)
+
+    // The provided beta is actually beta/betac
+    rtp.beta = float(inp["beta"]) * rtp.beta_critical;
 
     // Dynamics
     rtp.dynamics = inp["dynamics"];

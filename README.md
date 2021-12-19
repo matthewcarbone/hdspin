@@ -36,7 +36,9 @@ The above tells the code to do the following (this should clarify what each key 
 
 * Run for `10^7` time steps (can be any positive number)
 * Use a spin system of `20` spins
-* Use inverse temperature `1.667`. Note beta critical is hard coded.
+* Use inverse temperature `beta/beta_c = 1.667`. The provided value of beta is always actually in units of the critical beta.
+    * `beta_c = 1` for EREM
+    * `beta_c = sqrt(2 ln 2) ~ 1.177`
 * Use the Random Energy Model landscape (Gaussian energy landscape) but with calculating the REM threshold energy numerically with 10k (not an input parameter, this is hard-coded) samples to compute it on average. Options are `REM`, `REM-num` and `EREM`.
 * Use Gillespie dynamics. Options are `standard` and `gillespie`
 * Do not use divN dynamics. Timesteps are standard. If `true`, will divide the waiting time by N.
