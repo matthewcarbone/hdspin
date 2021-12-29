@@ -1,9 +1,3 @@
-/* Core local spin system algorithm.
- *
- * Matthew Carbone, Columbia University 2020
- *
- */
-
 #include <assert.h>
 
 #include "Utils/structures.h"
@@ -15,6 +9,7 @@
 #include "Obs/psi.h"
 #include "Obs/age.h"
 #include "Obs/ridge.h"
+#include "Obs/configs.h"
 
 
 Simulation::Simulation(const FileNames fnames,
@@ -39,6 +34,7 @@ void GillespieSimulation::execute()
     Energy obs_energy(fnames, rtp);
     EnergyAvgNeighbors obs_energy_avg_neighbors(fnames, rtp);
     EnergyInherentStructure obs_energy_IS(fnames, rtp);
+    Configs obs_config(fnames, rtp);
 
     PsiConfig obs_psi_config(fnames, rtp);
     PsiConfigInherentStructure obs_psi_config_IS(fnames, rtp);
@@ -74,6 +70,7 @@ void GillespieSimulation::execute()
         obs_energy.step(simulation_clock, prev);
         obs_energy_avg_neighbors.step(simulation_clock, sys);
         obs_energy_IS.step(simulation_clock, prev);
+        obs_config.step(simulation_clock, prev);
 
         // ... - psi config
         obs_psi_config.step(waiting_time, prev, curr);
@@ -96,8 +93,8 @@ void GillespieSimulation::execute()
         obs_age_basin_S_IS.step(simulation_clock, prev, curr);
 
         // ... - ridge energies
-        obs_ridge_E.step(prev, curr, waiting_time);
-        obs_ridge_S.step(prev, curr, waiting_time);
+        obs_ridge_E.step(prev, curr, waiting_time, simulation_clock);
+        obs_ridge_S.step(prev, curr, waiting_time, simulation_clock);
 
         // Check for possible (although unlikely) overflow
         assert(simulation_clock > 0.0);
@@ -123,6 +120,7 @@ void StandardSimulation::execute()
     Energy obs_energy(fnames, rtp);
     EnergyAvgNeighbors obs_energy_avg_neighbors(fnames, rtp);
     EnergyInherentStructure obs_energy_IS(fnames, rtp);
+    Configs obs_config(fnames, rtp);
 
     PsiConfig obs_psi_config(fnames, rtp);
     PsiConfigInherentStructure obs_psi_config_IS(fnames, rtp);
@@ -166,6 +164,7 @@ void StandardSimulation::execute()
         obs_energy.step(simulation_clock, prev);
         obs_energy_avg_neighbors.step(simulation_clock, sys);
         obs_energy_IS.step(simulation_clock, prev);
+        obs_config.step(simulation_clock, prev);
 
         // ... - psi config
         obs_psi_config.step(waiting_time, prev, curr);
@@ -188,8 +187,8 @@ void StandardSimulation::execute()
         obs_age_basin_S_IS.step(simulation_clock, prev, curr);
 
         // ... - ridge energies
-        obs_ridge_E.step(prev, curr, waiting_time);
-        obs_ridge_S.step(prev, curr, waiting_time);
+        obs_ridge_E.step(prev, curr, waiting_time, simulation_clock);
+        obs_ridge_S.step(prev, curr, waiting_time, simulation_clock);
 
         if (simulation_clock > rtp.N_timesteps){break;}
 

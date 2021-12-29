@@ -35,7 +35,7 @@ protected:
     double _threshold;
     bool _threshold_valid = true;
 
-    void _log_ridge(const double);
+    void _log_ridge(const double, const double);
 
 public:
 
@@ -45,7 +45,7 @@ public:
     // Step the grid by performing the following steps:
     // 1) Stepping the pointer
     // 2) Saving the configuration/energy information to disk
-    void step(const Vals, const Vals, const double);
+    void step(const Vals, const Vals, const double, const double);
 
     ~RidgeBase();
 };

@@ -6,23 +6,25 @@ RidgeBase::RidgeBase(const FileNames fnames,
     const RuntimeParameters rtp) : rtp(rtp), fnames(fnames) {}
 
 
-void RidgeBase::_log_ridge(const double current_energy)
+void RidgeBase::_log_ridge(const double current_energy,
+    const double simulation_clock)
 {
 
     const int diff_status = int(current_energy == _last_energy);
     const int n_unique_configs_above = _unique_configs_above.size();
 
     fprintf(
-        outfile, "%.05e %i %0.5e %i %i\n",
+        outfile, "%.05e %i %.05e %i %i %0.05e\n",
         _current_ridge, _steps_above, _time_above, n_unique_configs_above,
-        diff_status
+        diff_status, simulation_clock
     );
 
     _logged += 1;
 }
 
 
-void RidgeBase::step(const Vals prev, const Vals curr, const double waiting_time)
+void RidgeBase::step(const Vals prev, const Vals curr,
+    const double waiting_time, const double simulation_clock)
 {
 
     if (!_threshold_valid){return;}
@@ -63,7 +65,7 @@ void RidgeBase::step(const Vals prev, const Vals curr, const double waiting_time
         {
             const double _curr_energy_compare =
                 (rtp.memory != 0) ? curr.energy_IS : curr.energy;
-            _log_ridge(_curr_energy_compare);
+            _log_ridge(_curr_energy_compare, simulation_clock);
         }
         _steps_above = 0;
         _time_above = 0.0;
