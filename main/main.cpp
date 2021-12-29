@@ -187,6 +187,8 @@ FileNames get_filenames(const int ii)
     fnames.ridge_E_IS_all = "data/" + ii_str + "_ridge_E_IS.txt";
     fnames.ridge_S_IS_all = "data/" + ii_str + "_ridge_S_IS.txt";
 
+    fnames.unique_configs = "data/" + ii_str + "_unique_configs.txt";
+
     fnames.ii_str = ii_str;
     fnames.grids_directory = "grids";
     return fnames;

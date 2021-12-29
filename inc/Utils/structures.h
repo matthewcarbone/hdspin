@@ -21,6 +21,7 @@ struct FileNames
     std::string aging_config, aging_config_IS;
     std::string aging_basin_E, aging_basin_E_IS, aging_basin_S, aging_basin_S_IS;
     std::string ridge_E_all, ridge_S_all, ridge_E_IS_all, ridge_S_IS_all;
+    std::string unique_configs;
     std::string ii_str;
     std::string grids_directory;
 };
