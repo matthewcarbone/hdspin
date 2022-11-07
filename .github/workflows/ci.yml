@@ -44,6 +44,9 @@ jobs:
     - name: Check directory
       run: ls src/cpp/extern
 
+    - name: Check directory
+      run: ls src/cpp/extern/pybind11
+
     - name: Build and install
       run: pip install --verbose ".[test]"
 
