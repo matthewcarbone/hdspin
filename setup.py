@@ -4,7 +4,7 @@ from setuptools import setup
 ext_modules = [
     Pybind11Extension(
         "hdspin/simulation_engine",
-        ["cpp/simulation_engine.cpp"],
+        ["src/cpp/simulation_engine.cpp"],
         include_pybind11=False,
     ),
 ]
