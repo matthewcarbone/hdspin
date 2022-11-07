@@ -32,6 +32,13 @@ jobs:
     - name: Add requirements
       run: python -m pip install --upgrade wheel setuptools
 
+    - name: Check directory
+      run: |
+        ls
+        ls src
+        ls src/cpp
+        ls src/cpp/extern
+
     - name: Build and install
       run: pip install --verbose ".[test]"
 
