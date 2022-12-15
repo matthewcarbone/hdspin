@@ -63,7 +63,7 @@ where = ["src"]  # list of folders that contain the packages (["."] by default)
 include = ["hdspin*"]  # package names should match these glob patterns (["*"] by default)
 
 [tool.black]
-line-length = 80
+line-length = 79
 include = '\.pyi?$'
 exclude = '''
 /(
