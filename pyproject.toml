@@ -8,12 +8,13 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "hdspin"
 authors = [
-    {"name" = "Matthew R. Carbone", "email" = "mcarbone@bnl.gov"}
+    {"name" = "Matthew R. Carbone", "email" = "mcarbone@bnl.gov"},
+    {"name" = "Marco Baity-Jesi", "email" = "marco.baityjesi@eawag.ch"}
 ]
 maintainers = [
     {"name" = "Matthew R. Carbone", "email" = "mcarbone@bnl.gov"}
 ]
-description = "A sandbox for spin systems in physics"
+description = "A sandbox for model glassy systems"
 readme = "README.rst"
 requires-python = ">=3.9"
 license = {"file" = "LICENSE"}
@@ -56,9 +57,6 @@ doc = [
     "ipython",
     "matplotlib"
 ]
-
-# [tool.setuptools]
-# packages = ["hdspin"]
 
 [tool.setuptools.packages.find]
 where = ["src"]  # list of folders that contain the packages (["."] by default)
