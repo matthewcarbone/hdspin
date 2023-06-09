@@ -8,7 +8,7 @@ The `hdspin` repository requires no external libraries whatsoever. The file `jso
 To make on Linux should be as simple as
 
 ```bash
-make local_linux
+make linux
 ```
 
 
