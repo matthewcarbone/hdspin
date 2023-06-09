@@ -2,13 +2,15 @@
 REM/EREM sandbox
 
 ## Installation instructions
-The `hdspin` repository requires basically no external libraries whatsoever. The only one we use is `json.hpp`:
-1. Go to `https://github.com/nlohmann/json`
-2. Download `json.hpp` and put it in your path
 
-You'll also likely need to modify the `Makefile` a bit with a custom command. That said, I have found that using `-std=c++17` is basically all that needs to be done. You'll have to compile with `mpic++` (see the `Makefile` for some examples).
+The `hdspin` repository requires no external libraries whatsoever. The file `json.hpp` is now included in the repository as per the terms of the MIT license at `inc/Json/json.hpp`.
 
-Finally, if you don't put `json.hpp` in your path, use `-I/path/to/include`, where `include` contains `json.hpp`.
+To make on Linux should be as simple as
+
+```bash
+make local_linux
+```
+
 
 ## How to run
 

@@ -17,7 +17,7 @@
 // Requires nlohmann::json
 // See here: https://github.com/nlohmann/json
 // Download the json.hpp file and put it in your path, it's that easy
-#include <json.hpp>
+#include <Json/json.hpp>
 using json = nlohmann::json;
 
 
