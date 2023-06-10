@@ -22,6 +22,14 @@ StandardSimulation::StandardSimulation(const FileNames fnames,
     const RuntimeParameters rtp) : Simulation(fnames, rtp) {};
 
 
+void step_all_observables(const Vals prev, const Vals curr,
+    const long double waiting_time, const long double simulation_clock,
+    Energy& obs_energy)
+{
+    obs_energy.step(simulation_clock, prev);
+}
+
+
 void GillespieSimulation::execute()
 {
 
@@ -67,7 +75,7 @@ void GillespieSimulation::execute()
         curr = sys.get_curr();
 
         // Step observables - energy
-        obs_energy.step(simulation_clock, prev);
+        step_all_observables(prev, curr, waiting_time, simulation_clock, obs_energy);
         obs_energy_avg_neighbors.step(simulation_clock, sys);
         obs_energy_IS.step(simulation_clock, prev);
         obs_config.step(simulation_clock, prev);

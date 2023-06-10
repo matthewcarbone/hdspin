@@ -4,12 +4,12 @@
 #define STRUCTURE_UTILS_H
 
 
-struct Vals
+// The properties of a state. Returned as a function of the states's
+// integer representation
+struct StateProperties
 {
-    long long int_rep;
-    long long int_rep_IS;
+    long long inherent_structure_state;
     double energy;
-    double energy_IS;
 };
 
 struct FileNames
