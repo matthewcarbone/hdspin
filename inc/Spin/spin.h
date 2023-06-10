@@ -21,14 +21,8 @@ protected:
     mutable std::exponential_distribution<double> exponential_distribution;
     mutable std::normal_distribution<double> normal_distribution;
 
-    // Pointer to the energy mapping, only initialized if rtp.memory == -1
-    double *_emap = 0;
-    bool _emap_allocated = false;  // Useful flag for the destructor later
-
-    // In the case where we're using adjusted memory dynamics
-    // This is just the default constructor, it doesn't really do anything
     // One must set the capacity using `set_capacity(int)`
-    mutable LRUCache lru;
+    mutable LRUCache energy_map;
 
 public:
     double sample_energy() const;
@@ -49,14 +43,6 @@ protected:
     // Initialize the MT random number generator and seed with random_device
     // This is seeded in the constructor
     mutable std::mt19937 generator;
-
-    // Pointer to the configuration in the case where we have memory
-    int* _spin_config = 0;  // NULL
-    bool _spin_config_allocated = false;
-
-    // Use an index for this instead in the case when we do not have memory
-    long long _memoryless_system_config;
-    double _memoryless_system_energy;
 
     // Pointer to the inherent structure mapping
     long long* _ism = 0;
