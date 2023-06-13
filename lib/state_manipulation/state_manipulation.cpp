@@ -40,7 +40,7 @@ namespace state_manipulation
         for (int ii=N-1; ii>=0; ii--)
         {
             const ap_uint<PRECISON> config_val = config[N - ii - 1];
-            const ap_uint<PRECISON> power_val =  _arbitrary_precision_integer_pow(2, ii);
+            const ap_uint<PRECISON> power_val = _arbitrary_precision_integer_pow(2, ii);
             res += config_val * power_val;
         }
     }
