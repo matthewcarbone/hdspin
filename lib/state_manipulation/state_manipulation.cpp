@@ -20,17 +20,14 @@ ap_uint<PRECISON> _arbitrary_precision_integer_pow(
 
 namespace state_manipulation
 {
-    std::vector<ap_uint<PRECISON>> get_neighbors(ap_uint<PRECISON> n,
+    void get_neighbors_(ap_uint<PRECISON> *neighbors, ap_uint<PRECISON> n,
         int bitLength)
-    {
-        std::vector<ap_uint<PRECISON>> result;
-        
+    {   
         for (int b = 0; b < bitLength; b++)
         {
             ap_uint<PRECISON> one = 1;
-            result.push_back(n ^ (one << b));
+            neighbors[b] = n ^ (one << b);
         }
-        return result;
     }
 
     void arbitrary_precision_integer_from_int_array_(

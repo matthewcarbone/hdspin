@@ -2,11 +2,10 @@
 // the state objects (integer representations of spin systems)
 // using arbitrary precision libraries.
 
+#include "ArbitraryPrecision/ap/ap.hpp"
 
 #ifndef STATE_MANIPULATION_H
 #define STATE_MANIPULATION_H
-
-#include "ArbitraryPrecision/ap/ap.hpp"
 
 // Default value for the arbitrary precision is 128
 // Meaning we can have up to 128 spins
@@ -16,7 +15,8 @@
 
 namespace state_manipulation
 {
-    std::vector<ap_uint<PRECISON>> get_neighbors(ap_uint<PRECISON>, int);
+    void get_neighbors_(ap_uint<PRECISON> *, ap_uint<PRECISON>,
+        int);
     void arbitrary_precision_integer_from_int_array_(
         const int *, const int, ap_uint<PRECISON> &);
     void int_array_from_arbitrary_precision_integer_(
