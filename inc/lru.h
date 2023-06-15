@@ -6,15 +6,15 @@
 
 // Modified from https://bhrigu.me/blog/2017/01/22/lru-cache-c-plus-plus-implementation/
 // Uses a least-recently used queue
-// Modified to use long long as keys and doubles as values
+// Modified to use std::string as keys and doubles as values
 
 class Node
 {
 public:
-    long long key;
+    std::string key;
     double value;
     Node *prev, *next;
-    Node(long long k, double v): key(k), value(v), prev(NULL), next(NULL) {}
+    Node(std::string k, double v): key(k), value(v), prev(NULL), next(NULL) {}
 };
 
 
@@ -27,7 +27,7 @@ private:
 public:
     DoublyLinkedList(): front(NULL), rear(NULL) {}
 
-    Node* add_page_to_head(long long key, double value)
+    Node* add_page_to_head(std::string key, double value)
     {
         Node *page = new Node(key, value);
 
@@ -89,7 +89,7 @@ class LRUCache
 private:
     int capacity, size;
     DoublyLinkedList *pageList;
-    std::unordered_map<long long, Node*> pageMap;
+    std::unordered_map<std::string, Node*> pageMap;
 
 public:
 
@@ -100,16 +100,16 @@ public:
         this->capacity = capacity;
         size = 0;
         pageList = new DoublyLinkedList();
-        pageMap = std::unordered_map<long long, Node*>();
+        pageMap = std::unordered_map<std::string, Node*>();
     }
 
-    bool key_exists(long long key) const
+    bool key_exists(std::string key) const
     {
         return !(pageMap.find(key) == pageMap.end());
     }
 
     // Gets without checking for key existence
-    double get_fast(long long key)
+    double get_fast(std::string key)
     {
         double val = pageMap[key]->value;
 
@@ -118,7 +118,7 @@ public:
         return val;
     }
 
-    double get(long long key)
+    double get(std::string key)
     {
         // If the key does not exist, return some number. It is extremely
         // unlikely that randomly, we will get exactly zero, so it is safe to
@@ -127,7 +127,7 @@ public:
         return get_fast(key);
     }
 
-    void put(long long key, double value)
+    void put(std::string key, double value)
     {
         if(pageMap.find(key)!=pageMap.end())
         {
@@ -140,7 +140,7 @@ public:
         if(size == capacity)
         {
           // remove rear page
-          long long k = pageList->get_rear_page()->key;
+          std::string k = pageList->get_rear_page()->key;
           pageMap.erase(k);
           pageList->remove_rear_page();
           size--;
@@ -154,7 +154,7 @@ public:
 
     ~LRUCache()
     {
-        std::unordered_map<long long, Node*>::iterator i1;
+        std::unordered_map<std::string, Node*>::iterator i1;
         for(i1=pageMap.begin(); i1!=pageMap.end(); i1++)
         {
             delete i1->second;

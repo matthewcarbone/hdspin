@@ -1,6 +1,6 @@
 #include <random>
 
-#include "../lib/state_manipulation/state_manipulation.h"
+#include "state_manipulation.h"
 
 #ifndef TEST_ARBITRARY_PRECISON_H
 #define TEST_ARBITRARY_PRECISON_H
@@ -105,7 +105,7 @@ bool test_neighbors_correct(const unsigned int seed, const unsigned int arr_size
         const ap_uint<PRECISON> val1 = neighbors_method_1[ii];
         const int jj = arr_size - ii - 1;
         const ap_uint<PRECISON> val2 = neighbors_method_2[jj];
-        std::cout << val1 << " " << val2 << std::endl;
+        // std::cout << val1 << " " << val2 << " " << std::string(val1) << " " << std::string(val2) << std::endl;
         if (val1 != val2){return false;}
     }
 
