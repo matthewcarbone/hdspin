@@ -30,7 +30,6 @@ TEST_CASE("Test massive arbitrary precision nearest neighbors", "[arbitrary_prec
     REQUIRE(test_neighbors_correct(seed, arr_size));
 }
 
-
 // int main(int argc, char const *argv[])
 // {
 
