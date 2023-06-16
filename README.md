@@ -3,13 +3,18 @@ REM/EREM sandbox
 
 ## Installation instructions
 
-The `hdspin` repository requires no external libraries whatsoever. The file `json.hpp` is now included in the repository as per the terms of the MIT license at `inc/Json/json.hpp`.
+The `hdspin` repository requires no external libraries whatsoever, everything is self-contained. This includes nlohmann's [Json](https://github.com/nlohmann/json) header, as well as [Catch2](https://github.com/catchorg/Catch2) and the [Arbitrary Precision](https://www.codeproject.com/Articles/5319814/Arbitrary-Precision-Easy-to-use-Cplusplus-Library) library (as per the permissive terms of the associated licenses).
 
-To make on Linux should be as simple as
+Building the code should be equally simple via CMake.
 
 ```bash
-make linux
+export HDSPIN_PRECISON=256
+cmake -S . -B build
+cd build
+make
 ```
+
+Note that you should set the environment variable `HDSPIN_PRECISON` before running `cmake`. This determines the maximum number of spins you can use during the simulation.
 
 
 ## How to run
