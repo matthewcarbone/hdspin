@@ -1,8 +1,8 @@
 #include <vector>
-#include "state_manipulation.h"
+#include "utils.h"
 #include "ArbitraryPrecision/ap/ap.hpp"
 
-ap_uint<PRECISON> _arbitrary_precision_integer_pow(
+ap_uint<PRECISON> arbitrary_precision_integer_pow(
     const int base, const int exponent)
 {
     if (exponent == 0)
@@ -18,7 +18,7 @@ ap_uint<PRECISON> _arbitrary_precision_integer_pow(
     return val;
 }
 
-namespace state_manipulation
+namespace state
 {
     void get_neighbors_(ap_uint<PRECISON> *neighbors, ap_uint<PRECISON> n,
         int bitLength)
@@ -37,18 +37,19 @@ namespace state_manipulation
         for (int ii=N-1; ii>=0; ii--)
         {
             const ap_uint<PRECISON> config_val = config[N - ii - 1];
-            const ap_uint<PRECISON> power_val = _arbitrary_precision_integer_pow(2, ii);
+            const ap_uint<PRECISON> power_val = arbitrary_precision_integer_pow(2, ii);
             res += config_val * power_val;
         }
     }
 
     void int_array_from_arbitrary_precision_integer_(
-        int *config, const int N, ap_uint<PRECISON> integer)
+        int *config, const int N, const ap_uint<PRECISON> &integer)
     {
+        ap_uint<PRECISON> _integer = integer;
         for (int ii=0; ii<N; ii++)
         {
-            ap_uint<PRECISON> remainder = integer % 2;
-            integer = integer / 2;
+            ap_uint<PRECISON> remainder = _integer % 2;
+            _integer = _integer / 2;
             config[N - ii - 1] = int(remainder);
         }
     }
