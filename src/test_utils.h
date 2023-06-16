@@ -1,6 +1,6 @@
 #include <random>
 
-#include "state_manipulation.h"
+#include "utils.h"
 
 #ifndef TEST_ARBITRARY_PRECISON_H
 #define TEST_ARBITRARY_PRECISON_H
@@ -39,10 +39,10 @@ bool test_array_to_int_to_array_conversion(
     _fill_binary_vector(arr, arr_size, seed);
 
     ap_uint<PRECISON> res;
-    state_manipulation::arbitrary_precision_integer_from_int_array_(arr, arr_size, res);
+    state::arbitrary_precision_integer_from_int_array_(arr, arr_size, res);
 
     int arr2[arr_size];
-    state_manipulation::int_array_from_arbitrary_precision_integer_(arr2, arr_size, res);
+    state::int_array_from_arbitrary_precision_integer_(arr2, arr_size, res);
 
     for (int ii=0; ii<arr_size; ii++)
     {
@@ -83,7 +83,7 @@ bool test_neighbors_correct(const unsigned int seed, const unsigned int arr_size
         else{arr[ii] = 0;}
 
         // Get the decimal representation of this binary vector
-        state_manipulation::arbitrary_precision_integer_from_int_array_(arr, arr_size, neighbors_method_1[ii]);
+        state::arbitrary_precision_integer_from_int_array_(arr, arr_size, neighbors_method_1[ii]);
 
         // Flip the ii'th bit back
         if (arr[ii] == 0){arr[ii] = 1;}
@@ -93,10 +93,10 @@ bool test_neighbors_correct(const unsigned int seed, const unsigned int arr_size
     // Now we do the opposite: first convert the array to decimal
     // representation, and find its neighbors from that directly.
     ap_uint<PRECISON> decimal_rep;
-    state_manipulation::arbitrary_precision_integer_from_int_array_(arr, arr_size, decimal_rep);
+    state::arbitrary_precision_integer_from_int_array_(arr, arr_size, decimal_rep);
 
     ap_uint<PRECISON> neighbors_method_2[arr_size];
-    state_manipulation::get_neighbors_(neighbors_method_2, decimal_rep, arr_size);
+    state::get_neighbors_(neighbors_method_2, decimal_rep, arr_size);
 
     // Compare!
     // Note they save the neighbors in opposite order!

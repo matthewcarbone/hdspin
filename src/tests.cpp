@@ -1,7 +1,7 @@
 #include "catch2/catch_test_macros.hpp"  // New library version of Catch2
 // #include "inc/Catch2/catch.hpp"  // Old header-only version of Catch2
 #include "ArbitraryPrecision/ap/ap.hpp"
-#include "test_state_manipulation.h"
+#include "test_utils.h"
 
 
 TEST_CASE("Test arbitrary precision interconversion", "[arbitrary_precision]")

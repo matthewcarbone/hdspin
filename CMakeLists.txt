@@ -11,5 +11,10 @@ add_subdirectory(lib)
 add_executable(tests src/tests.cpp)
 target_link_libraries(
     tests
-    PRIVATE Catch2::Catch2WithMain state_manipulation
+    PRIVATE Catch2::Catch2WithMain state
 )
+set_target_properties(
+    tests
+    PROPERTIES CXX_STANDARD 17
+)
+
