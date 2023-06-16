@@ -1,40 +1,75 @@
-/* Standalone utilities and helper functions.
- *
- * Matthew Carbone, Columbia University 2020
- *
+/**
+ * This library contains all utilities required to manipulate the states in
+ * the code, as well as general utils.
  */
+
+#include "ArbitraryPrecision/ap/ap.hpp"
 
 #ifndef UTILS_H
 #define UTILS_H
 
-#include <random>
+// Default value for the arbitrary precision is 128
+// Meaning we can have up to 128 spins
+// This must be defined at compile time using e.g. -DPRECISON=12345
+// As per the Arbitrary Precision docs, this should probably be a power of 2!
+#ifndef PRECISON
+#define PRECISON 128
+#endif
 
-/* Computes the integer power with provided base and exponent. Note that both
-base and exponent must be non-negative long long values, as this uses bitwise
-manipulation to perform the exponentiation. */
-long long ipow(long long, long long);
+/**
+ * @brief Defines arbitrary precision integer powers
+ * @details Using the Arbitrary Precision library, defines custom code for
+ * performing arbitrary precision power operations using only multiplication
+ * in for loops
+ * 
+ * @param const int The base
+ * @param const int The exponent
+ * 
+ * @return The integral result of the power operation.
+ */
+ap_uint<PRECISON> arbitrary_precision_integer_pow(const int, const int);
 
-/* Converts a configuration (array) of spins (binary numbers, 0 & 1) into an
-integer representation by assuming the vector is the binary representation of
-the integer. Uses bitwise manipulations. */
-long long binary_vector_to_int(const int *, const int);
 
-/* Prints the configuration followed by the energy of that configuration. */
-void print_config_and_energy(const double *, const int, const double);
+// These functions are all defined in lib/state/state.cpp
+namespace state
+{
 
-/* Finds the minimum element in the provided array. Returns the index of that
-element. */
-int min_element(const double *, const int);
+/**
+ * @brief Gets the neighboring states given a representation
+ * @details Using binary operations (bit shifts) and arbitrary precision
+ * integers, finds all neighbors in the binary bit-shift space.
+ * 
+ * @param ap_uint<PRECISON> * Pointer to an array of neighbors to be populated
+ * @param ap_uint<PRECISON> The binary representation of the state of which we
+ * want to find the neighbors of
+ * @param int The number of spins (bitlength)
+ */
+void get_neighbors_(ap_uint<PRECISON> *, ap_uint<PRECISON>, int);
 
-/* In-place flips the spin of the provided array at the location specified. */
-void _helper_flip_spin_(int *, const int);
+/**
+ * @brief Converts an integer array to an arbitrary precision integer
+ * @details Using the Arbitrary Precision library, converts a binary integer
+ * array to an arbitrary precision integer
+ * 
+ * @param const int * Pointer to the binary array
+ * @param const int The total number of spins
+ * @param ap_uint<PRECISON> & Memory address of the integer to fill
+ */
+void arbitrary_precision_integer_from_int_array_(
+    const int *, const int, ap_uint<PRECISON> &);
 
-void load_long_long_grid_(std::vector<long long> &, const std::string);
+/**
+ * @brief Reverses that of arbitrary_precision_integer_from_int_array_
+ * @details Using the Arbitrary Precision library, converts an an arbitrary
+ * precision integer to a binary integer array
+ * 
+ * @param int * Pointer to the binary array to fill
+ * @param const int The number of spins
+ * @param const ap_uint<PRECISON> The integer to compute
+ */
+void int_array_from_arbitrary_precision_integer_(
+    int *, const int, const ap_uint<PRECISON> &);
 
-double iterative_mean(double, double, long long);
-
-double iterative_S(double, double, double, double);
-
-double var_from_S(double, long long);
+}
 
 #endif
