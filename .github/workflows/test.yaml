@@ -29,6 +29,9 @@ jobs:
       - name: build
         run: |
           cmake -S . -B build -DPRECISON=256 -DBUILD_TESTS=ON
+          cd build
+          make
+          cd ..
 
       - name: run tests
         run: |
