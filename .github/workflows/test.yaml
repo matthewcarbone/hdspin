@@ -7,7 +7,6 @@ on:
     branches: ['master']
     tags: ["v*"]
 
-
 jobs:
 
   test:
@@ -18,14 +17,18 @@ jobs:
       - name: checkout
         uses: actions/checkout@v3
         with:
-          submodules: 'true'
+          submodules: true
+
+      # - name: build
+      #   uses: threeal/cmake-action@latest
+      #   with:
+      #     source-dir: .
+      #     build-dir: build
+      #     args: -DPRECISON=256 -DBUILD_TESTS=ON
 
       - name: build
-        uses: threeal/cmake-action@latest
-        with:
-          source-dir: .
-          build-dir: build
-          args: -DPRECISON=256 -DBUILD_TESTS=ON
+        run: |
+          cmake -S . -B build -DPRECISON=256 -DBUILD_TESTS=ON
 
       - name: run tests
         run: |
