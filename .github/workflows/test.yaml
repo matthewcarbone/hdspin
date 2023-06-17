@@ -19,19 +19,19 @@ jobs:
         with:
           submodules: true
 
-      # - name: build
-      #   uses: threeal/cmake-action@latest
-      #   with:
-      #     source-dir: .
-      #     build-dir: build
-      #     args: -DPRECISON=256 -DBUILD_TESTS=ON
-
       - name: build
-        run: |
-          cmake -S . -B build -DPRECISON=256 -DBUILD_TESTS=ON
-          cd build
-          make
-          cd ..
+        uses: threeal/cmake-action@latest
+        with:
+          source-dir: .
+          build-dir: build
+          args: -DPRECISON=256 -DBUILD_TESTS=ON
+
+      # - name: build
+      #   run: |
+      #     cmake -S . -B build -DPRECISON=256 -DBUILD_TESTS=ON
+      #     cd build
+      #     make
+      #     cd ..
 
       - name: run tests
         run: |
