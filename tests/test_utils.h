@@ -110,6 +110,6 @@ bool test_neighbors_correct(const unsigned int seed, const unsigned int arr_size
     }
 
     return true;
-}   
+}
 
 #endif
