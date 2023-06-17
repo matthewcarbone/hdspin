@@ -1,0 +1,26 @@
+name: test
+
+on:
+  push:
+  pull_request:
+
+jobs:
+
+  test:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: build
+        uses: threeal/cmake-action@latest
+        with:
+          source-dir: .
+          build-dir: build
+          args: -DPRECISON=256 -DBUILD_TESTS=ON
+
+      - name: run tests
+        run: |
+          ./build/tests
