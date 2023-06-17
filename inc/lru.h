@@ -1,6 +1,8 @@
 #include <iostream>
 #include <unordered_map> 
 
+#include "utils.h"
+
 #ifndef LRU_H
 #define LRU_H
 
@@ -87,7 +89,7 @@ public:
 class LRUCache
 {
 private:
-    int capacity, size;
+    ap_uint<PRECISON> capacity, size;
     DoublyLinkedList *pageList;
     std::unordered_map<std::string, Node*> pageMap;
 
@@ -95,7 +97,7 @@ public:
 
     LRUCache(){};  // Default constructor
 
-    void set_capacity(int capacity)
+    void set_capacity(ap_uint<PRECISON> capacity)
     {
         this->capacity = capacity;
         size = 0;
