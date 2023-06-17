@@ -1,8 +1,12 @@
 name: test
 
 on:
-  push: ["master"]
-  pull_request: ["master"]
+  pull_request:
+    branches: ['master']
+  push:
+    branches: ['master']
+    tags: ["v*"]
+
 
 jobs:
 
