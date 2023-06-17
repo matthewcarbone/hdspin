@@ -1,35 +1,38 @@
 cmake_minimum_required(VERSION 3.6)
 project(hdspin)
 
+
+option(PRECISON "Set the Arbitrary Precision" 256)
+option(BUILD_TESTS "Build tests or not" OFF)
+
 # Essentially -Iinc
 include_directories(inc)
 
-# Find other CMakeLists.txt files in lib and execute
-add_subdirectory(lib)
+if (${BUILD_TESTS})
+    
+    # Find other CMakeLists.txt files in lib and execute
+    add_subdirectory(lib/Catch2_v3)
 
-# Compile the tests, link against required libraries
-add_executable(
-    tests
-    src/tests.cpp
-    src/state.cpp
-)
+    # Compile the tests, link against required libraries
+    add_executable(
+        tests
+        tests/tests.cpp
+        src/utils.cpp
+    )
 
-set(PRECISON $ENV{HDSPIN_PRECISON})
-
-if (${PRECISON} MATCHES "^[0-9]+$")
     target_compile_definitions(
         tests
         PUBLIC -DPRECISON=${PRECISON}
     )
+
+    set_target_properties(
+        tests
+        PROPERTIES CXX_STANDARD 17
+    )
+
+    target_link_libraries(
+        tests
+        PRIVATE Catch2::Catch2WithMain
+    )
+
 endif()
-
-set_target_properties(
-    tests
-    PROPERTIES CXX_STANDARD 17
-)
-
-
-target_link_libraries(
-    tests
-    PRIVATE Catch2::Catch2WithMain
-)

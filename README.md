@@ -8,14 +8,14 @@ The `hdspin` repository requires no external libraries whatsoever, everything is
 Building the code should be equally simple via CMake.
 
 ```bash
-export HDSPIN_PRECISON=256
-cmake -S . -B build
+cmake -S . -B build -DPRECISON=256 -DBUILD_TESTS=ON 
 cd build
 make
 ```
 
-Note that you should set the environment variable `HDSPIN_PRECISON` before running `cmake`. This determines the maximum number of spins you can use during the simulation.
-
+There are two options for the user to set:
+* `-DPRECISON=<INT>` is the maximum number of spins you can use during the simulation. Should be a power of 2 (as recommended by the Arbitrary Precision library). Default is `256`.
+* `-DBUILD_TESTS={ON, OFF}` is a boolean flag for telling CMake whether or not to compile the testing suite. Default is `OFF`.
 
 ## How to run
 
