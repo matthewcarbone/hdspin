@@ -17,6 +17,7 @@ if (${BUILD_TESTS})
     add_executable(
         tests
         tests/tests.cpp
+        src/energy_mapping.cpp
         src/utils.cpp
     )
 

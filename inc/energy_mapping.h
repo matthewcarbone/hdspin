@@ -3,13 +3,13 @@
 
 #include <random>
 
-#include "structures.h"
+#include "utils.h"
 #include "lru.h"
 
 class EnergyMapping
 {
 protected:
-    RuntimeParameters rtp;
+    parameters::SimulationParameters parameters;
 
     // Initialize the MT random number generator and seed with random_device
     // This is seeded in the constructor
@@ -25,10 +25,9 @@ protected:
 
 public:
     double sample_energy() const;
-    double get_config_energy(const long long) const;
-    EnergyMapping(const RuntimeParameters);
-    ~EnergyMapping();
+    double get_config_energy(const ap_uint<PRECISON>) const;
+    void _initialize_distributions();
+    EnergyMapping(const parameters::SimulationParameters);
 };
-
 
 #endif

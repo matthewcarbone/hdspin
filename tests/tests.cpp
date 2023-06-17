@@ -1,7 +1,10 @@
 #include "catch2/catch_test_macros.hpp"  // New library version of Catch2
 // #include "inc/Catch2/catch.hpp"  // Old header-only version of Catch2
 #include "ArbitraryPrecision/ap/ap.hpp"
+
+// Import the tests themselves
 #include "test_utils.h"
+#include "test_energy_mapping.h"
 
 
 TEST_CASE("Test arbitrary precision interconversion", "[arbitrary_precision]")
@@ -17,17 +20,23 @@ TEST_CASE("Test arbitrary precision interconversion", "[arbitrary_precision]")
     }
 }
 
-TEST_CASE("Test massive arbitrary precision nearest neighbors", "[arbitrary_precision]")
+TEST_CASE("Test massive arbitrary precision (arr_size==PRECISON) nearest neighbors", "[arbitrary_precision]")
 {
     const unsigned int seed = 1235;
-    const unsigned int arr_size = 256;
-
-    // If this fails, you need to recompile with a higher precision
-    REQUIRE(arr_size <= PRECISON);
+    const unsigned int arr_size = PRECISON;
 
     // Note that the array size represents a number far larger than the
     // largest default precision long long integer
     REQUIRE(test_neighbors_correct(seed, arr_size));
+}
+
+TEST_CASE("Test energy mapping EREM sampling", "[energy_mapping]")
+{
+    for (int ii=1; ii<11; ii++)
+    {
+        const double beta_critical = (1.0 * ii - 0.5) * 0.5;
+        REQUIRE(_test_energy_mapping_sampling_EREM_given_beta_critical(beta_critical));
+    }
 }
 
 // int main(int argc, char const *argv[])
