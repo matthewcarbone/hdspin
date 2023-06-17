@@ -39,6 +39,14 @@ TEST_CASE("Test energy mapping EREM sampling", "[energy_mapping]")
     }
 }
 
+TEST_CASE("Test energy mapping REM sampling", "[energy_mapping]")
+{
+    for (int ii=1; ii<10; ii++)
+    {
+        REQUIRE(_test_energy_mapping_sampling_REM_given_N_spins(ii*10));
+    }
+}
+
 // int main(int argc, char const *argv[])
 // {
 
