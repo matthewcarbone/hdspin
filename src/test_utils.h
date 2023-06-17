@@ -2,8 +2,8 @@
 
 #include "utils.h"
 
-#ifndef TEST_ARBITRARY_PRECISON_H
-#define TEST_ARBITRARY_PRECISON_H
+#ifndef TEST_UTILS_H
+#define TEST_UTILS_H
 
 void _fill_binary_vector(int *arr, const unsigned int arr_size,
     const unsigned int seed)

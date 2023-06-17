@@ -1,4 +1,3 @@
-#include <vector>
 #include "utils.h"
 #include "ArbitraryPrecision/ap/ap.hpp"
 
