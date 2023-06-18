@@ -3,9 +3,7 @@ REM/EREM sandbox
 
 ## Installation instructions
 
-The `hdspin` repository requires no external libraries whatsoever, everything is self-contained. This includes nlohmann's [Json](https://github.com/nlohmann/json) header, as well as [Catch2](https://github.com/catchorg/Catch2) and the [Arbitrary Precision](https://www.codeproject.com/Articles/5319814/Arbitrary-Precision-Easy-to-use-Cplusplus-Library) library (as per the permissive terms of the associated licenses).
-
-Building the code should be equally simple via CMake.
+The `hdspin` repository requires no external libraries whatsoever, everything is self-contained. Building the code should be simple via CMake.
 
 ```bash
 cmake -S . -B build -DPRECISON=256 -DBUILD_TESTS=ON 
@@ -147,10 +145,9 @@ if [[ -e "data/00000000_ridge_S.txt" ]]; then
 fi
 ```
 
+## License
 
-
-
-
+The `hdspin` code is released under a 3-clause BSD license. Hosted codes are contained locally as per the permissive terms of the associated licenses. This includes nlohmann's [Json](https://github.com/nlohmann/json) header, as well as [Catch2](https://github.com/catchorg/Catch2) and the [Arbitrary Precision](https://www.codeproject.com/Articles/5319814/Arbitrary-Precision-Easy-to-use-Cplusplus-Library) library.
 
 
 
