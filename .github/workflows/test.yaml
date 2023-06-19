@@ -35,4 +35,4 @@ jobs:
 
       - name: run tests
         run: |
-          ./build/tests
+          ./build/tests -d yes
