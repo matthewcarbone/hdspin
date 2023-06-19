@@ -86,7 +86,8 @@ bool _test_energy_mapping_sampling_REM_given_N_spins(const int N_spins)
 }
 
 
-bool _test_small_cache(const int N_spins){
+bool _test_small_cache(const int N_spins)
+{
     parameters::SimulationParameters sp;
     sp.landscape = "REM";
     sp.N_spins = N_spins;
@@ -125,5 +126,27 @@ bool _test_small_cache(const int N_spins){
     if (!same){return false;}
 
     // std::cout << " ----- " << std::endl;
+    return true;
+}
+
+
+bool _test_memory_minus_one(const int N_spins)
+{
+    parameters::SimulationParameters sp;
+    sp.landscape = "REM";
+    sp.N_spins = N_spins;
+    sp.use_manual_seed = true;
+    sp.seed = 4567;
+    sp.memory = -1;
+    EnergyMapping emap = EnergyMapping(sp);
+
+    // For every configuration, we call the get_config_energy()
+    // function twice to make sure that nothing was popped.
+    double e;
+    for (int ii=0; ii<pow(2, N_spins); ii++)
+    {
+        e = emap.get_config_energy(ii);
+        if (e != emap.get_config_energy(ii)){return false;}
+    }
     return true;
 }
