@@ -35,7 +35,7 @@ TEST_CASE("Test energy mapping EREM sampling", "[energy_mapping]")
     for (int ii=1; ii<11; ii++)
     {
         const double beta_critical = (1.0 * ii - 0.5) * 0.5;
-        REQUIRE(_test_energy_mapping_sampling_EREM_given_beta_critical(beta_critical));
+        REQUIRE(test_energy_mapping_sampling_EREM_given_beta_critical(beta_critical));
     }
 }
 
@@ -43,7 +43,7 @@ TEST_CASE("Test energy mapping REM sampling", "[energy_mapping]")
 {
     for (int ii=1; ii<10; ii++)
     {
-        REQUIRE(_test_energy_mapping_sampling_REM_given_N_spins(ii*10));
+        REQUIRE(test_energy_mapping_sampling_REM_given_N_spins(ii*10));
     }
 }
 
@@ -51,7 +51,7 @@ TEST_CASE("Test small cache", "[energy_mapping]")
 {
     for (int ii=1; ii<10; ii++)
     {
-        REQUIRE(_test_small_cache(ii*10));
+        REQUIRE(test_small_cache(ii*10));
     } 
 }
 
@@ -59,7 +59,17 @@ TEST_CASE("Test memory -1", "[energy_mapping]")
 {
     for (int ii=2; ii<12; ii++)
     {
-        REQUIRE(_test_memory_minus_one(ii));
+        REQUIRE(test_memory_minus_one(ii));
+    }
+}
+
+TEST_CASE("Test massive AP LRU", "[energy_mapping]")
+{
+    int N_spins = 10;
+    while (N_spins < PRECISON)
+    {
+        REQUIRE(test_massive_AP_LRU(N_spins));
+        N_spins += 10;
     }
 }
 
