@@ -47,6 +47,14 @@ TEST_CASE("Test energy mapping REM sampling", "[energy_mapping]")
     }
 }
 
+TEST_CASE("Test small cache", "[energy_mapping]")
+{
+    for (int ii=1; ii<10; ii++)
+    {
+        REQUIRE(_test_small_cache(ii*10));
+    } 
+}
+
 // int main(int argc, char const *argv[])
 // {
 

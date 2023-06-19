@@ -24,7 +24,7 @@ jobs:
         with:
           source-dir: .
           build-dir: build
-          args: -DPRECISON=256 -DBUILD_TESTS=ON
+          args: -DPRECISON=256 -DBUILD_TESTS=ON -DSMOKE=0
 
       # - name: build
       #   run: |

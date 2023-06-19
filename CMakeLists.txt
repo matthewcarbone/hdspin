@@ -4,6 +4,7 @@ project(hdspin)
 
 option(PRECISON "Set the Arbitrary Precision" 256)
 option(BUILD_TESTS "Build tests or not" OFF)
+option(SMOKE "Whether or not to use smoke tests" ON)
 
 # Essentially -Iinc
 include_directories(inc)
@@ -21,10 +22,18 @@ if (${BUILD_TESTS})
         src/utils.cpp
     )
 
-    target_compile_definitions(
-        tests
-        PUBLIC -DPRECISON=${PRECISON}
-    )
+    # Handle the smoke tests
+    if (${SMOKE})
+        target_compile_definitions(
+            tests
+            PUBLIC -DPRECISON=${PRECISON} -DSMOKE=1
+        )
+    else()
+        target_compile_definitions(
+            tests
+            PUBLIC -DPRECISON=${PRECISON} -DSMOKE=0
+        )
+    endif()
 
     set_target_properties(
         tests
