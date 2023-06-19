@@ -12,8 +12,18 @@ bool _test_energy_mapping_sampling_EREM_given_beta_critical(const double beta_cr
     EnergyMapping emap = EnergyMapping(sp);
     const double mean = -1.0 / sp.beta_critical;
     const double variance = 1.0 / sp.beta_critical / sp.beta_critical;
-    const int N = 1000000;
-    const double eps = 0.1;
+    int N;
+    double eps;
+    if (SMOKE == 1)
+    {
+        N = 100000;
+        eps = 1.0;
+    }
+    else
+    {
+        N = 1000000;
+        eps = 0.1;    
+    }
     std::vector<double> v;
     for (int ii=0; ii<N; ii++)
     {
@@ -43,8 +53,20 @@ bool _test_energy_mapping_sampling_REM_given_N_spins(const int N_spins)
     EnergyMapping emap = EnergyMapping(sp);
     const double mean = 0.0;
     const double variance = N_spins;
-    const int N = 10000000;
-    const double eps = 0.1;
+
+    int N;
+    double eps;
+    if (SMOKE == 1)
+    {
+        N = 1000000;
+        eps = 1.0;
+    }
+    else
+    {
+        N = 10000000;
+        eps = 0.1;    
+    }
+    
     std::vector<double> v;
     for (int ii=0; ii<N; ii++)
     {
@@ -60,5 +82,48 @@ bool _test_energy_mapping_sampling_REM_given_N_spins(const int N_spins)
     if ((num_mean > mean + eps) || (num_mean < mean - eps)){return false;}    
     if ((num_var > variance + eps) || (num_var < variance - eps)){return false;}
 
+    return true;
+}
+
+
+bool _test_small_cache(const int N_spins){
+    parameters::SimulationParameters sp;
+    sp.landscape = "REM";
+    sp.N_spins = N_spins;
+    sp.use_manual_seed = true;
+    sp.seed = 4567;
+    sp.memory = 3;
+    EnergyMapping emap = EnergyMapping(sp);
+    
+    const ap_uint<PRECISON> state_1 = 1234;
+    const ap_uint<PRECISON> state_2 = 5678;
+    const ap_uint<PRECISON> state_3 = 9123;
+    const ap_uint<PRECISON> state_4 = 3456;
+
+    const double e1 = emap.get_config_energy(state_1);
+    // std::cout << e1 << " " << emap.get_config_energy(state_1) << std::endl;
+    if (e1 != emap.get_config_energy(state_1)){return false;}
+
+    const double e2 = emap.get_config_energy(state_2);
+    // std::cout << e2 << " " << emap.get_config_energy(state_2) << std::endl;
+    if (e2 != emap.get_config_energy(state_2)){return false;}
+
+    const double e3 = emap.get_config_energy(state_3);
+    // std::cout << e3 << " " << emap.get_config_energy(state_3) << std::endl;
+    if (e3 != emap.get_config_energy(state_3)){return false;}
+
+    const double e4 = emap.get_config_energy(state_4);
+    // std::cout << e4 << " " << emap.get_config_energy(state_4) << std::endl;
+    if (e4 != emap.get_config_energy(state_4)){return false;}
+
+    bool same = (e1 == emap.get_config_energy(state_1));
+    // std::cout << "should be different: " << e1 << " " << emap.get_config_energy(state_1) << " " << same << std::endl;
+    if (same){return false;}
+
+    same = (e4 == emap.get_config_energy(state_4));
+    // std::cout << "should be the same: " << e4 << " " << emap.get_config_energy(state_4) << " " << same << std::endl;
+    if (!same){return false;}
+
+    // std::cout << " ----- " << std::endl;
     return true;
 }

@@ -85,7 +85,7 @@ EnergyMapping::EnergyMapping(const parameters::SimulationParameters parameters) 
 
     // Allocate the energy storage mediums
     if (parameters.memory == -1){
-        const ap_uint<PRECISON> n_configs = arbitrary_precision_integer_pow(2, parameters.N_spins);
+        const long long n_configs = pow(2, parameters.N_spins);
         energy_map.set_capacity(n_configs);
     }
     else if (parameters.memory > 0){energy_map.set_capacity(parameters.memory);}

@@ -16,6 +16,14 @@
 #define PRECISON 128
 #endif
 
+// The smoke test is a faster version of the tests
+// this modifies a few of the tests that otherwise might take a while
+// Set -DSMOKE=OFF when using GH actions to run tests.
+// Otherwise the default is ON
+#ifndef SMOKE
+#define SMOKE 1
+#endif
+
 /**
  * @brief Defines arbitrary precision integer powers
  * @details Using the Arbitrary Precision library, defines custom code for
