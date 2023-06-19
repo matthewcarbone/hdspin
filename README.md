@@ -6,14 +6,15 @@ REM/EREM sandbox
 The `hdspin` repository requires no external libraries whatsoever, everything is self-contained. Building the code should be simple via CMake.
 
 ```bash
-cmake -S . -B build -DPRECISON=256 -DBUILD_TESTS=ON 
+cmake -S . -B build -DPRECISON=256 -DBUILD_TESTS=ON -DSMOKE=ON 
 cd build
 make
 ```
 
-There are two options for the user to set:
+There are three options for the user to set:
 * `-DPRECISON=<INT>` is the maximum number of spins you can use during the simulation. Should be a power of 2 (as recommended by the Arbitrary Precision library). Default is `256`.
 * `-DBUILD_TESTS={ON, OFF}` is a boolean flag for telling CMake whether or not to compile the testing suite. Default is `OFF`.
+* `-DSMOKE={ON, OFF}` controls whether or not to use the smoke testing or not. Smoke tests basically run tests using slightly less statistics, and are generally faster. Default is `ON`.
 
 ## How to run
 
