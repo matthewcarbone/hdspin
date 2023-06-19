@@ -55,6 +55,14 @@ TEST_CASE("Test small cache", "[energy_mapping]")
     } 
 }
 
+TEST_CASE("Test memory -1", "[energy_mapping]")
+{
+    for (int ii=2; ii<12; ii++)
+    {
+        REQUIRE(_test_memory_minus_one(ii));
+    }
+}
+
 // int main(int argc, char const *argv[])
 // {
 
