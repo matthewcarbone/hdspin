@@ -2,7 +2,7 @@
 #include "utils.h"
 #include "utils_testing_suite.h"
 
-bool _test_energy_mapping_sampling_EREM_given_beta_critical(const double beta_critical)
+bool test_energy_mapping_sampling_EREM_given_beta_critical(const double beta_critical)
 {
     parameters::SimulationParameters sp;
     sp.landscape = "EREM";
@@ -43,7 +43,7 @@ bool _test_energy_mapping_sampling_EREM_given_beta_critical(const double beta_cr
 }
 
 
-bool _test_energy_mapping_sampling_REM_given_N_spins(const int N_spins)
+bool test_energy_mapping_sampling_REM_given_N_spins(const int N_spins)
 {
     parameters::SimulationParameters sp;
     sp.landscape = "REM";
@@ -86,7 +86,7 @@ bool _test_energy_mapping_sampling_REM_given_N_spins(const int N_spins)
 }
 
 
-bool _test_small_cache(const int N_spins)
+bool test_small_cache(const int N_spins)
 {
     parameters::SimulationParameters sp;
     sp.landscape = "REM";
@@ -130,7 +130,7 @@ bool _test_small_cache(const int N_spins)
 }
 
 
-bool _test_memory_minus_one(const int N_spins)
+bool test_memory_minus_one(const int N_spins)
 {
     parameters::SimulationParameters sp;
     sp.landscape = "REM";
@@ -147,6 +147,32 @@ bool _test_memory_minus_one(const int N_spins)
     {
         e = emap.get_config_energy(ii);
         if (e != emap.get_config_energy(ii)){return false;}
+    }
+    return true;
+}
+
+
+bool test_massive_AP_LRU(const int N_spins)
+{
+    parameters::SimulationParameters sp;
+    sp.landscape = "REM";
+    sp.N_spins = N_spins;
+    sp.use_manual_seed = true;
+    sp.seed = 45678;
+    sp.memory = 1000;
+    EnergyMapping emap = EnergyMapping(sp);
+
+    ap_uint<PRECISON> large_number = arbitrary_precision_integer_pow(2, N_spins-1);
+
+    double e;
+    for (int ii=0; ii<10; ii++)
+    {
+        // Check that the mapping works each time
+        // indicating that the lru cache is looking up the result
+        // correctly
+        e = emap.get_config_energy(large_number);
+        if (e != emap.get_config_energy(large_number)){return false;}
+        large_number -= 13;
     }
     return true;
 }
