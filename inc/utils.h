@@ -3,7 +3,11 @@
  * the code, as well as general utils.
  */
 
+#include <fstream>      // std::ofstream
+
 #include "ArbitraryPrecision/ap/ap.hpp"
+#include "Json/json.hpp"
+using json = nlohmann::json;
 
 #ifndef UTILS_H
 #define UTILS_H
@@ -37,46 +41,57 @@
  */
 ap_uint<PRECISON> arbitrary_precision_integer_pow(const int, const int);
 
+/**
+ * @brief [brief description]
+ * @details [long description]
+ * 
+ * @param long [description]
+ * @param long [description]
+ * 
+ * @return [description]
+ */
+long long ipow(long long base, long long exp);
+
 
 // These functions are all defined in lib/state/state.cpp
 namespace state
 {
 
-/**
- * @brief Gets the neighboring states given a representation
- * @details Using binary operations (bit shifts) and arbitrary precision
- * integers, finds all neighbors in the binary bit-shift space.
- * 
- * @param ap_uint<PRECISON> * Pointer to an array of neighbors to be populated
- * @param ap_uint<PRECISON> The binary representation of the state of which we
- * want to find the neighbors of
- * @param int The number of spins (bitlength)
- */
-void get_neighbors_(ap_uint<PRECISON> *, ap_uint<PRECISON>, int);
+    /**
+     * @brief Gets the neighboring states given a representation
+     * @details Using binary operations (bit shifts) and arbitrary precision
+     * integers, finds all neighbors in the binary bit-shift space.
+     * 
+     * @param n ap_uint<PRECISON> * Pointer to an array of neighbors to be populated
+     * @param bitLength ap_uint<PRECISON> The binary representation of the state of which we
+     * want to find the neighbors of
+     * @param int The number of spins (bitlength)
+     */
+    void get_neighbors_(ap_uint<PRECISON> *neighbors, ap_uint<PRECISON> n, int bitLength);
 
-/**
- * @brief Converts an integer array to an arbitrary precision integer
- * @details Using the Arbitrary Precision library, converts a binary integer
- * array to an arbitrary precision integer
- * 
- * @param const int * Pointer to the binary array
- * @param const int The total number of spins
- * @param ap_uint<PRECISON> & Memory address of the integer to fill
- */
-void arbitrary_precision_integer_from_int_array_(
-    const int *, const int, ap_uint<PRECISON> &);
+    /**
+     * @brief Converts an integer array to an arbitrary precision integer
+     * @details Using the Arbitrary Precision library, converts a binary integer
+     * array to an arbitrary precision integer
+     * 
+     * @param const int * Pointer to the binary array
+     * @param const int The total number of spins
+     * @param ap_uint<PRECISON> & Memory address of the integer to fill
+     */
+    void arbitrary_precision_integer_from_int_array_(
+        const int *, const int, ap_uint<PRECISON> &);
 
-/**
- * @brief Reverses that of arbitrary_precision_integer_from_int_array_
- * @details Using the Arbitrary Precision library, converts an an arbitrary
- * precision integer to a binary integer array
- * 
- * @param int * Pointer to the binary array to fill
- * @param const int The number of spins
- * @param const ap_uint<PRECISON> The integer to compute
- */
-void int_array_from_arbitrary_precision_integer_(
-    int *, const int, const ap_uint<PRECISON> &);
+    /**
+     * @brief Reverses that of arbitrary_precision_integer_from_int_array_
+     * @details Using the Arbitrary Precision library, converts an an arbitrary
+     * precision integer to a binary integer array
+     * 
+     * @param int * Pointer to the binary array to fill
+     * @param const int The number of spins
+     * @param const ap_uint<PRECISON> The integer to compute
+     */
+    void int_array_from_arbitrary_precision_integer_(
+        int *, const int, const ap_uint<PRECISON> &);
 
 }
 
@@ -107,30 +122,92 @@ namespace parameters
 
     struct SimulationParameters
     {
-        unsigned int log_N_timesteps;
+        int log10_N_timesteps;
+        long long N_timesteps;
         unsigned int N_spins;
-        long long memory;
-        bool calculate_inherent_structure;
-        double beta;
-        double beta_critical;
         std::string landscape;
+        long long memory;
+        double beta;
+        double beta_critical;    
         std::string dynamics;
+        int n_tracers_per_MPI_rank;
+
         unsigned int seed;
         bool use_manual_seed = false;
+        bool valid_entropic_attractor = true;
 
-
-        long long N_configs;
-        long long N_timesteps;
-        
-        int divN;
         double energetic_threshold;
         double entropic_attractor;
-        
-        int memoryless_retain_last_energy;
-        int max_ridges;
-        bool valid_entropic_attractor;
-        int n_tracers;
     };
+
+    /**
+     * @brief [brief description]
+     * @details [long description]
+     * 
+     * @param p [description]
+     */
+    void log_parameters(const SimulationParameters p);
+
+    /**
+     * @brief [brief description]
+     * @details [long description]
+     * @return [description]
+     */
+    SimulationParameters get_parameters();
+
+    /**
+     * @brief [brief description]
+     * @details [long description]
+     * 
+     * @param ii [description]
+     * @return [description]
+     */
+    FileNames get_filenames(const int ii);
+
 }
+
+/**
+ * @brief [brief description]
+ * @details [long description]
+ */
+void make_directories();
+
+namespace grids
+{
+
+    /**
+     * @brief [brief description]
+     * @details [long description]
+     * 
+     * @param log10_timesteps [description]
+     * @param n_gridpoints [description]
+     */
+    void make_energy_grid_logspace(const int log10_timesteps, const int n_gridpoints);
+
+    /**
+     * @brief [brief description]
+     * @details [long description]
+     * 
+     * @param log10_timesteps [description]
+     * @param dw [description]
+     * @param n_gridpoints [description]
+     */
+    void make_pi_grids(const int log10_timesteps, const double dw, const int n_gridpoints);
+
+}
+
+
+// https://codereview.stackexchange.com/q/196245
+// CC BY-SA 4.0
+class Timer
+{
+private:
+    std::chrono::time_point<std::chrono::steady_clock> m_StartTime;
+
+public:
+    Timer();
+    float GetDuration();
+};
+
 
 #endif
