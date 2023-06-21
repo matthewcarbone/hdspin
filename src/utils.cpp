@@ -282,16 +282,3 @@ namespace grids
     }
 
 }
-
-
-float Timer::GetDuration()
-{
-    const std::chrono::duration<float> duration = std::chrono::high_resolution_clock::now() - m_StartTime;
-    return duration.count();
-}
-
-Timer::Timer()
-{
-    m_StartTime = std::chrono::high_resolution_clock::now();
-}
-
