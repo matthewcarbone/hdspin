@@ -78,8 +78,7 @@ namespace state
      * @param const int The total number of spins
      * @param ap_uint<PRECISON> & Memory address of the integer to fill
      */
-    void arbitrary_precision_integer_from_int_array_(
-        const int *, const int, ap_uint<PRECISON> &);
+    void arbitrary_precision_integer_from_int_array_(const int *, const int, ap_uint<PRECISON> &);
 
     /**
      * @brief Reverses that of arbitrary_precision_integer_from_int_array_
@@ -90,8 +89,7 @@ namespace state
      * @param const int The number of spins
      * @param const ap_uint<PRECISON> The integer to compute
      */
-    void int_array_from_arbitrary_precision_integer_(
-        int *, const int, const ap_uint<PRECISON> &);
+    void int_array_from_arbitrary_precision_integer_(int *, const int, const ap_uint<PRECISON> &);
 
 }
 
@@ -195,19 +193,5 @@ namespace grids
     void make_pi_grids(const int log10_timesteps, const double dw, const int n_gridpoints);
 
 }
-
-
-// https://codereview.stackexchange.com/q/196245
-// CC BY-SA 4.0
-class Timer
-{
-private:
-    std::chrono::time_point<std::chrono::steady_clock> m_StartTime;
-
-public:
-    Timer();
-    float GetDuration();
-};
-
 
 #endif
