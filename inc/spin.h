@@ -28,7 +28,7 @@ protected:
 
     // Initialize some objects for storing the previous and current values of
     // things:
-    // Vals prev, curr;
+    parameters::StateProperties _prev, _curr;
 
     // Multiplier for sampling from the waiting time and total
     // exit rate. This is 1 by default but is set to try and find the
@@ -39,7 +39,7 @@ protected:
      * @brief [brief description]
      * @details [long description]
      */
-    void _initialize_state_();
+    void _first_time_state_initialization_();
 
     /**
      * @brief [brief description]
@@ -59,8 +59,8 @@ protected:
 
     // // Updater for the previous values; this should be done at the end of
     // // every recording phase
-    // void _init_prev();
-    // void _init_curr();
+    void _init_previous_state_();
+    void _init_current_state_();
 
 // Accessible outside of the class instance
 public:
@@ -130,21 +130,21 @@ public:
 // };
 
 
-// class StandardSpinSystem : public SpinSystem
-// {
-// private:
-//     std::uniform_real_distribution<> uniform_0_1_distribution;
-//     std::uniform_int_distribution<> spin_distribution;
+class StandardSpinSystem : public SpinSystem
+{
+private:
+    std::uniform_real_distribution<> uniform_0_1_distribution;
+    std::uniform_int_distribution<> spin_distribution;
 
-// public:
-//     StandardSpinSystem(const RuntimeParameters, EnergyMapping&);
+public:
+    StandardSpinSystem(const parameters::SimulationParameters params, EnergyMapping& emap);
 
-//     // Step executes a possible alteration in the state, but not always. Thus,
-//     // the standard step actually returns whether or not the new state was
-//     // accepted: if there was a rejection, return false, else, if the proposed
-//     // state was accepted, return true.
-//     long double step();
-// };
+    // Step executes a possible alteration in the state, but not always. Thus,
+    // the standard step actually returns whether or not the new state was
+    // accepted: if there was a rejection, return false, else, if the proposed
+    // state was accepted, return true.
+    long double step();
+};
 
 
 

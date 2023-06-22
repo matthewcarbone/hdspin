@@ -70,6 +70,16 @@ namespace state
     void get_neighbors_(ap_uint<PRECISON> *neighbors, ap_uint<PRECISON> n, int bitLength);
 
     /**
+     * @brief Flips a specific spin in the bit representation
+     * 
+     * @param state ap_uint<PRECISON> The current state
+     * @param k int The bit to flip
+     * 
+     * @return ap_uint<PRECISON>
+     */
+    ap_uint<PRECISON> flip_bit(const ap_uint<PRECISON> state, const int k, const int bitLength);
+
+    /**
      * @brief Converts an integer array to an arbitrary precision integer
      * @details Using the Arbitrary Precision library, converts a binary integer
      * array to an arbitrary precision integer
@@ -100,7 +110,7 @@ namespace parameters
     // integer representation
     struct StateProperties
     {
-        long long inherent_structure_state;
+        ap_uint<PRECISON> state;
         double energy;
     };
 

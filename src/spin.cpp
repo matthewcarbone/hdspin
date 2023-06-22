@@ -5,7 +5,7 @@
 #include "spin.h"
 
 
-void SpinSystem::_initialize_state_()
+void SpinSystem::_first_time_state_initialization_()
 {
     if (params.use_manual_seed == true)
     {
@@ -45,13 +45,24 @@ void SpinSystem::_fill_neighboring_energies_()
     }
 }
 
+void SpinSystem::_init_previous_state_()
+{
+    _prev.state = current_state;
+    _prev.energy = energy();
+}
+
+void SpinSystem::_init_current_state_()
+{
+    _curr.state = current_state;
+    _curr.energy = energy();
+}
 
 SpinSystem::SpinSystem(const parameters::SimulationParameters params,
     EnergyMapping& emap) : params(params)
 {
     emap_ptr = &emap;
 
-    _initialize_state_();
+    _first_time_state_initialization_();
 
     // std::uniform_int_distribution<> int_dist(0, params.N_spins - 1);
 
@@ -171,29 +182,6 @@ of the inherent structure */
 //         _ism[config_int] = config_IS_int;
 //     }
 //     return config_IS_int;
-// }
-
-
-// void SpinSystem::_init_prev()
-// {
-//     prev.int_rep = _get_current_int_rep();
-//     prev.energy = _get_current_energy();
-//     if (rtp.memory != 0)
-//     {
-//         prev.int_rep_IS = _get_inherent_structure();
-//         prev.energy_IS = emap_ptr->get_config_energy(prev.int_rep_IS);
-//     }
-// }
-
-// void SpinSystem::_init_curr()
-// {
-//     curr.int_rep = _get_current_int_rep();
-//     curr.energy = _get_current_energy();
-//     if (rtp.memory != 0)
-//     {
-//         curr.int_rep_IS = _get_inherent_structure();
-//         curr.energy_IS = emap_ptr->get_config_energy(curr.int_rep_IS);
-//     }
 // }
 
 
@@ -337,80 +325,53 @@ SpinSystem::~SpinSystem()
 
 // // Standard Spin system -------------------------------------------------------
 
-// StandardSpinSystem::StandardSpinSystem(const RuntimeParameters rtp,
-//     EnergyMapping& emap) : SpinSystem(rtp, emap)
+// StandardSpinSystem::StandardSpinSystem(const parameters::SimulationParameters params, EnergyMapping& emap) : SpinSystem(params, emap)
 // {
 //     uniform_0_1_distribution.param(
 //         std::uniform_real_distribution<>::param_type(0.0, 1.0));
 //     spin_distribution.param(
-//         std::uniform_int_distribution<>::param_type(0, rtp.N_spins - 1));
+//         std::uniform_int_distribution<>::param_type(0, params.N_spins - 1));
 // };
 
 
 // long double StandardSpinSystem::step()
 // {
 
-//     const double current_energy = _get_current_energy();
+//     // Initialize the current state as _prev
+//     _init_previous_state_();
 
-//     _init_prev();  // Initialize the current state
+//     // Get the current energy of the state
+//     const double current_energy = _prev.energy;
 
-//     const double intermediate_energy = prev.energy;
+//     // Select a random spin to flip
 //     const int spin_to_flip = spin_distribution(generator);
 
-//     if (rtp.memory != 0)
+//     _flip_spin(spin_to_flip);
+
+//     // Step 4, get the proposed energy (energy of the new configuration)
+//     // long long proposed_config_int = get_int_rep();
+//     const double proposed_energy = _get_current_energy();
+
+//     // Step 5, compute the difference between the energies, and find the
+//     // metropolis criterion
+//     const double dE = proposed_energy - intermediate_energy;
+//     const double metropolis_prob = exp(-rtp.beta * dE);
+
+//     // Step 6, sample a random number between 0 and 1.
+//     const double sampled = uniform_0_1_distribution(generator);
+
+//     // Step 7, determine whether or not to remain in this configuration or
+//     // to flip back. If the randomly sampled value is less than the
+//     // metropolis probability, we accept that new configuration. An easy
+//     // sanity check for this is when dE is negative, then the argument of
+//     // the exponent is positive and the e^(...) > 1 always; thus we always
+//     // accept. However, if dE is positive, we only accept with some
+//     // probability that decays exponentially quickly with the difference
+//     // in energy.
+//     if (sampled > metropolis_prob)  // reject
 //     {
-//         _flip_spin(spin_to_flip);
-
-//         // Step 4, get the proposed energy (energy of the new configuration)
-//         // long long proposed_config_int = get_int_rep();
-//         const double proposed_energy = _get_current_energy();
-
-//         // Step 5, compute the difference between the energies, and find the
-//         // metropolis criterion
-//         const double dE = proposed_energy - intermediate_energy;
-//         const double metropolis_prob = exp(-rtp.beta * dE);
-
-//         // Step 6, sample a random number between 0 and 1.
-//         const double sampled = uniform_0_1_distribution(generator);
-
-//         // Step 7, determine whether or not to remain in this configuration or
-//         // to flip back. If the randomly sampled value is less than the
-//         // metropolis probability, we accept that new configuration. An easy
-//         // sanity check for this is when dE is negative, then the argument of
-//         // the exponent is positive and the e^(...) > 1 always; thus we always
-//         // accept. However, if dE is positive, we only accept with some
-//         // probability that decays exponentially quickly with the difference
-//         // in energy.
-//         if (sampled > metropolis_prob)  // reject
-//         {
-//             _flip_spin(spin_to_flip);  // flip the spin back
-//         }
+//         _flip_spin(spin_to_flip);  // flip the spin back
 //     }
-
-//     else
-//     {
-//         // There's no memory, so we just sample a random energy
-//         const double proposed_energy = _neighboring_energies[spin_to_flip];
-//         const double dE = proposed_energy - intermediate_energy;
-//         const double metropolis_prob = exp(-rtp.beta * dE);
-//         const double sampled = uniform_0_1_distribution(generator);
-//         if (sampled <= metropolis_prob)  // accepted
-//         {
-//             _memoryless_system_energy = proposed_energy;
-//             _memoryless_system_config += 1;
-
-//             // Accepting a move leads to a new state and new neighbors
-//             _helper_fill_neighboring_energies(_spin_config, rtp.N_spins,
-//                 _neighboring_energies);
-
-//             if (rtp.memoryless_retain_last_energy == 1)
-//             {
-//                 _neighboring_energies[0] = _previous_energy;
-//             }
-//         }
-//     }
-
-//     _previous_energy = current_energy;
 
 //     // This is called multiple times in the loop dynamics, eventually
 //     // ending with the actual value in the loop dynamics.

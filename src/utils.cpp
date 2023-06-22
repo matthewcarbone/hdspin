@@ -44,6 +44,13 @@ namespace state
         }
     }
 
+    ap_uint<PRECISON> flip_bit(const ap_uint<PRECISON> state, const int k, const int bitLength)
+    {
+        const int bit = bitLength - k;
+        const ap_uint<PRECISON> one = 1;
+        return (state ^ (one << (bit - 1)));
+    }
+
     void arbitrary_precision_integer_from_int_array_(
         const int *config, const int N, ap_uint<PRECISON> &res)
     {
