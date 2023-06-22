@@ -31,6 +31,15 @@ TEST_CASE("Test massive arbitrary precision (arr_size==PRECISON) nearest neighbo
     REQUIRE(test_neighbors_correct(seed, arr_size));
 }
 
+TEST_CASE("Test flip_bit huge", "[arbitrary_precision]")
+{
+    REQUIRE(test_flip_bit_small());
+    REQUIRE(test_flip_bit_huge(123, 5));
+    REQUIRE(test_flip_bit_huge(1234, 50));
+    REQUIRE(test_flip_bit_huge(12345, 100));
+    REQUIRE(test_flip_bit_huge(123456, PRECISON));
+}
+
 TEST_CASE("Test energy mapping EREM sampling", "[energy_mapping]")
 {
     for (int ii=1; ii<11; ii++)
