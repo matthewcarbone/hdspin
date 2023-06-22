@@ -19,6 +19,11 @@ jobs:
         with:
           submodules: true
 
+      - name: install MPI
+        uses: mpi4py/setup-mpi@v1
+        with:
+          mpi: "mpich"
+
       - name: build
         uses: threeal/cmake-action@latest
         with:
