@@ -6,7 +6,7 @@ option(PRECISON "Set the Arbitrary Precision" 256)
 option(BUILD_TESTS "Build tests or not" OFF)
 option(SMOKE "Whether or not to use smoke tests" ON)
 
-set (CMAKE_CXX_STANDARD 14)
+set (CMAKE_CXX_STANDARD 17)
 set (CMAKE_CXX_STANDARD_REQUIRED True)
 set (EXTRA_CXX_FLAGS "-O3 -Wall")
 
@@ -43,6 +43,7 @@ if (${BUILD_TESTS})
 
     target_link_libraries(
         tests
+        PROPERTIES
         PRIVATE Catch2::Catch2WithMain
     )
 
