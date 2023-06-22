@@ -39,6 +39,7 @@ TEST_CASE("Test flip_bit huge", "[arbitrary_precision]")
     REQUIRE(test_flip_bit_huge(12345, 100));
     REQUIRE(test_flip_bit_huge(123456, PRECISON));
     REQUIRE(test_flip_bit_big_number(PRECISON));
+    REQUIRE(test_flip_bit_big_number_self_consistent(PRECISON));
 }
 
 TEST_CASE("Test energy mapping EREM sampling", "[energy_mapping]")
