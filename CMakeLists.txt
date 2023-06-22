@@ -73,10 +73,6 @@ add_executable(
     src/spin.cpp
 )
 
-set_target_properties(
-    hdspin
-    PROPERTIES
-    PUBLIC -DPRECISON=${PRECISON}
-)
+target_compile_definitions(hdspin PUBLIC -DPRECISON=${PRECISON})
 
 target_link_libraries(hdspin ${MPI_CXX_LIBRARIES})
