@@ -43,7 +43,6 @@ if (${BUILD_TESTS})
 
     target_link_libraries(
         tests
-        PROPERTIES
         PRIVATE Catch2::Catch2WithMain
     )
 
