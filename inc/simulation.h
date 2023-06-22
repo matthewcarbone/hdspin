@@ -3,36 +3,35 @@
 
 #include <random>
 
-#include "Utils/structures.h"
+#include "utils.h"
 
 
 class Simulation
 {
 protected:
     // Global parameters for the simulation
-    FileNames fnames;
-    RuntimeParameters rtp;
+    parameters::FileNames fnames;
+    parameters::SimulationParameters params;
 
     // Simulation parameters
     long double simulation_clock = 0.0;
 
 public:
-    Simulation(const FileNames, const RuntimeParameters);
-
+    Simulation(const parameters::FileNames, const parameters::SimulationParameters);
 };
 
 
 class GillespieSimulation : public Simulation
 {
 public:
-    GillespieSimulation(const FileNames, const RuntimeParameters);
+    GillespieSimulation(const parameters::FileNames, const parameters::SimulationParameters);
     void execute();
 };
 
 class StandardSimulation : public Simulation
 {
 public:
-    StandardSimulation(const FileNames, const RuntimeParameters);
+    StandardSimulation(const parameters::FileNames, const parameters::SimulationParameters);
     void execute();
 };
 

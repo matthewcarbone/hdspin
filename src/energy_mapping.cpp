@@ -52,7 +52,7 @@ void EnergyMapping::_initialize_distributions()
     else
     {
         const unsigned int seed = std::random_device{}();  
-        generator.seed(seed);  
+        generator.seed(seed);
     }
     
     // Initialize the distributions themselves

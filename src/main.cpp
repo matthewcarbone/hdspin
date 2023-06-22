@@ -13,6 +13,11 @@
 #include "utils.h"
 
 
+// temporary includes
+#include "energy_mapping.h"
+#include "spin.h"
+
+
 int main(int argc, char *argv[])
 {
     // Initialize the MPI environment
@@ -39,7 +44,25 @@ int main(int argc, char *argv[])
     fflush(stdout);
     MPI_Barrier(MPI_COMM_WORLD);
 
-    parameters::SimulationParameters p = parameters::get_parameters();
+    // parameters::SimulationParameters p = parameters::get_parameters();
+
+    //////-------///////-------///////-------///////-------///////-------//////
+    //////-------///////-------///////-------///////-------///////-------//////
+    //////-------///////-------///////-------///////-------///////-------//////
+    // Define some testing simulation parameters
+    parameters::SimulationParameters p;
+    p.log10_N_timesteps = 4;
+    p.N_timesteps = ipow(10, int(p.log10_N_timesteps));
+    p.N_spins = 4;
+    p.landscape = "EREM";
+    p.beta = 2.4;
+    p.beta_critical = 1.0;
+    p.dynamics = "standard";
+    p.memory = 16;
+    p.n_tracers_per_MPI_rank = 1;
+    //////-------///////-------///////-------///////-------///////-------//////
+    //////-------///////-------///////-------///////-------///////-------//////
+    //////-------///////-------///////-------///////-------///////-------//////
 
     // Get the information for this MPI rank
     const int n_tracers_per_MPI_rank = p.n_tracers_per_MPI_rank;
@@ -70,70 +93,74 @@ int main(int argc, char *argv[])
     fflush(stdout);
     MPI_Barrier(MPI_COMM_WORLD);
 
-    // Define some helpers to be used to track progress.
-    const int total_steps = end - start;
-    const int step_size = total_steps / 50; // Print at 50 percent steps
-    int loop_count = 0;
+    EnergyMapping emap(p);
+    SpinSystem spin(p, emap);
+    std::cout << spin.binary_state() << std::endl;
 
-    auto start_t_global_clock = std::chrono::high_resolution_clock::now();
+//     // Define some helpers to be used to track progress.
+//     const int total_steps = end - start;
+//     const int step_size = total_steps / 50; // Print at 50 percent steps
+//     int loop_count = 0;
 
-    for(int ii = start; ii < end; ii++)
-    {
+//     auto start_t_global_clock = std::chrono::high_resolution_clock::now();
 
-        const parameters::FileNames fnames = parameters::get_filenames(ii);
+//     for(int ii = start; ii < end; ii++)
+//     {
 
-        // Run dynamics START -------------------------------------------------
-        if (p.dynamics == "gillespie")
-        {
-            GillespieSimulation gillespie_sim(fnames, p);
-            gillespie_sim.execute();
-        }
-        else if (p.dynamics == "standard")
-        {
-            StandardSimulation standard_sim(fnames, p);
-            standard_sim.execute();
-        }
-        else
-        {
-            printf("Unsupported dynamics");
-            MPI_Abort(MPI_COMM_WORLD, 1);
-        }
-        // Run dynamics END ---------------------------------------------------
+//         const parameters::FileNames fnames = parameters::get_filenames(ii);
 
-        // auto t = std::time(nullptr);
-        // auto tm = *std::localtime(&t);
-        // std::ostringstream oss;
-        // oss << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
-        // std::string dt_string = oss.str();
+//         // Run dynamics START -------------------------------------------------
+//         if (p.dynamics == "gillespie")
+//         {
+//             GillespieSimulation gillespie_sim(fnames, p);
+//             gillespie_sim.execute();
+//         }
+//         else if (p.dynamics == "standard")
+//         {
+//             StandardSimulation standard_sim(fnames, p);
+//             standard_sim.execute();
+//         }
+//         else
+//         {
+//             printf("Unsupported dynamics");
+//             MPI_Abort(MPI_COMM_WORLD, 1);
+//         }
+//         // Run dynamics END ---------------------------------------------------
 
-        // auto stop = std::chrono::high_resolution_clock::now();
-        // auto duration_seconds = 
-        //     std::chrono::duration_cast<std::chrono::seconds>(stop - start_t);
-        // int duration_double_seconds = 
-        //     std::chrono::duration<int>(duration_seconds).count();
+//         // auto t = std::time(nullptr);
+//         // auto tm = *std::localtime(&t);
+//         // std::ostringstream oss;
+//         // oss << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
+//         // std::string dt_string = oss.str();
 
-        // loop_count++;
+//         // auto stop = std::chrono::high_resolution_clock::now();
+//         // auto duration_seconds = 
+//         //     std::chrono::duration_cast<std::chrono::seconds>(stop - start_t);
+//         // int duration_double_seconds = 
+//         //     std::chrono::duration<int>(duration_seconds).count();
 
-        // if (MPI_RANK == 0)
-        // {
-        //     if (loop_count % step_size == 0 | loop_count == 1)
-        //     {
-        //         auto stop_g = std::chrono::high_resolution_clock::now();
-        //         auto duration_seconds_g = 
-        //             std::chrono::duration_cast<std::chrono::seconds>(
-        //                 stop_g - start_t_global_clock);
-        //         int duration_double_seconds_g = 
-        //             std::chrono::duration<int>(duration_seconds_g).count();
-        //         printf(
-        //             "%s ~ %s done in %i s (%i/%i) total elapsed %i s\n",
-        //             dt_string.c_str(), fnames.ii_str.c_str(),
-        //             duration_double_seconds, loop_count, total_steps, 
-        //             duration_double_seconds_g
-        //         );
-        //         fflush(stdout);
-        //     }
-        // }
-    }
+//         // loop_count++;
+
+//         // if (MPI_RANK == 0)
+//         // {
+//         //     if (loop_count % step_size == 0 | loop_count == 1)
+//         //     {
+//         //         auto stop_g = std::chrono::high_resolution_clock::now();
+//         //         auto duration_seconds_g = 
+//         //             std::chrono::duration_cast<std::chrono::seconds>(
+//         //                 stop_g - start_t_global_clock);
+//         //         int duration_double_seconds_g = 
+//         //             std::chrono::duration<int>(duration_seconds_g).count();
+//         //         printf(
+//         //             "%s ~ %s done in %i s (%i/%i) total elapsed %i s\n",
+//         //             dt_string.c_str(), fnames.ii_str.c_str(),
+//         //             duration_double_seconds, loop_count, total_steps, 
+//         //             duration_double_seconds_g
+//         //         );
+//         //         fflush(stdout);
+//         //     }
+//         // }
+//     }
 
     MPI_Finalize();
 }

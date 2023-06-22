@@ -1,30 +1,19 @@
 #include <assert.h>
 
-#include "Utils/structures.h"
-#include "Spin/spin.h"
-#include "Engine/sim.h"
-
-// Observable includes
-#include "Obs/energy.h"
-#include "Obs/psi.h"
-#include "Obs/age.h"
-#include "Obs/ridge.h"
-#include "Obs/configs.h"
+#include "simulation.h"
 
 
-Simulation::Simulation(const FileNames fnames,
-    const RuntimeParameters rtp) : fnames(fnames), rtp(rtp) {};
+Simulation::Simulation(const parameters::FileNames fnames,
+    const parameters::SimulationParameters params) : fnames(fnames), params(params) {};
 
-GillespieSimulation::GillespieSimulation(const FileNames fnames,
-    const RuntimeParameters rtp) : Simulation(fnames, rtp) {};
+GillespieSimulation::GillespieSimulation(const parameters::FileNames fnames,
+    const parameters::SimulationParameters params) : Simulation(fnames, params) {};
 
-StandardSimulation::StandardSimulation(const FileNames fnames,
-    const RuntimeParameters rtp) : Simulation(fnames, rtp) {};
+StandardSimulation::StandardSimulation(const parameters::FileNames fnames,
+    const parameters::SimulationParameters params) : Simulation(fnames, params) {};
 
 
-void step_all_observables(const Vals prev, const Vals curr,
-    const long double waiting_time, const long double simulation_clock,
-    Energy& obs_energy)
+void step_all_observables(const parameters::StateProperties prev, const parameters::StateProperties curr, const long double waiting_time, const long double simulation_clock, Energy& obs_energy)
 {
     obs_energy.step(simulation_clock, prev);
 }

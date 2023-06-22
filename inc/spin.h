@@ -3,33 +3,8 @@
 
 #include <random>
 
-#include "Utils/structures.h"
-#include "Utils/lru.h"
-
-
-class EnergyMapping
-{
-protected:
-    RuntimeParameters rtp;
-
-    // Initialize the MT random number generator and seed with random_device
-    // This is seeded in the constructor
-    mutable std::mt19937 generator;
-
-    // Distributions; we'll only use one of these depending on which type
-    // of dynamics we're doing
-    mutable std::exponential_distribution<double> exponential_distribution;
-    mutable std::normal_distribution<double> normal_distribution;
-
-    // One must set the capacity using `set_capacity(int)`
-    mutable LRUCache energy_map;
-
-public:
-    double sample_energy() const;
-    double get_config_energy(const long long) const;
-    EnergyMapping(const RuntimeParameters);
-    ~EnergyMapping();
-};
+#include "utils.h"
+#include "energy_mapping.h"
 
 
 class SpinSystem
@@ -37,98 +12,131 @@ class SpinSystem
 
 // Accessible only from within the class or it children
 protected:
-    RuntimeParameters rtp;
+    parameters::SimulationParameters params;
     EnergyMapping* emap_ptr;
+    ap_uint<PRECISON> current_state;
 
     // Initialize the MT random number generator and seed with random_device
     // This is seeded in the constructor
     mutable std::mt19937 generator;
 
-    // Pointer to the inherent structure mapping
-    long long* _ism = 0;
-    bool _ism_allocated = false;
-
-    // Pointer to the neighboring energies, used in the inherent structure
-    // computation
-    double* _neighboring_energies = 0;
-    double _previous_energy;
-    bool _neighboring_energies_allocated = false;
+    // Pointer to the neighbors and neighboring energies, used in the inherent
+    // structure computation
+    ap_uint<PRECISON>* neighbors = 0;
+    double* neighboring_energies = 0;
 
 
     // Initialize some objects for storing the previous and current values of
     // things:
-    Vals prev, curr;
+    // Vals prev, curr;
 
     // Multiplier for sampling from the waiting time and total
     // exit rate. This is 1 by default but is set to try and find the
     // equivalent Gillespie simulation for the "loop" standard dynamics.
     double _waiting_time_multiplier = 1.0;
 
-    // Getter for the current spin representation, energies, etc.
-    void _flip_spin(const int);
-    long long _get_current_int_rep() const;
-    double _get_current_energy() const;
-    void _helper_fill_neighboring_energies(int *, int, double *) const;
-    long long _help_get_inherent_structure() const;
-    long long _get_inherent_structure() const;
+    /**
+     * @brief [brief description]
+     * @details [long description]
+     */
+    void _initialize_state_();
 
-    // Updater for the previous values; this should be done at the end of
-    // every recording phase
-    void _init_prev();
-    void _init_curr();
+    /**
+     * @brief [brief description]
+     * @details [long description]
+     */
+    void _fill_neighbors_();
+
+    /**
+     * @brief [brief description]
+     * @details [long description]
+     */
+    void _fill_neighboring_energies_();
+
+    // void _helper_fill_neighboring_energies(int *, int, double *) const;
+    // long long _help_get_inherent_structure() const;
+    // long long _get_inherent_structure() const;
+
+    // // Updater for the previous values; this should be done at the end of
+    // // every recording phase
+    // void _init_prev();
+    // void _init_curr();
 
 // Accessible outside of the class instance
 public:
-    SpinSystem(const RuntimeParameters, EnergyMapping&);
-    Vals get_prev() const {return prev;}
-    Vals get_curr() const {return curr;}
-    double get_average_neighboring_energy() const;
+
+    /**
+     * @brief [brief description]
+     * @details [long description]
+     * 
+     * @param s [description]
+     * @param g [description]
+     */
+    SpinSystem(const parameters::SimulationParameters, EnergyMapping&);
+
+    /**
+     * @brief [brief description]
+     * @details [long description]
+     * @return [description]
+     */
+    double energy() const;
+
+    /**
+     * @brief [brief description]
+     * @details [long description]
+     * @return [description]
+     */
+    std::string binary_state() const;
+
+    // Vals get_prev() const {return prev;}
+    // Vals get_curr() const {return curr;}
+    // double get_average_neighboring_energy() const;
     ~SpinSystem();
 };
 
 
-class GillespieSpinSystem : public SpinSystem
-{
-private:
+// class GillespieSpinSystem : public SpinSystem
+// {
+// private:
 
-    // Pointer to the delta E and exit rates
-    double *_delta_E = 0;
-    double *_exit_rates = 0;
+//     // Pointer to the delta E and exit rates
+//     double *_delta_E = 0;
+//     double *_exit_rates = 0;
 
-    std::vector<double> _normalized_exit_rates;
-    std::exponential_distribution<long double> total_exit_rate_dist;
+//     std::vector<double> _normalized_exit_rates;
+//     std::exponential_distribution<long double> total_exit_rate_dist;
 
-    // Fills the exit_rates and delta_E arrays and returns the total exit
-    // rate.
-    double _calculate_exit_rates() const;
+//     // Fills the exit_rates and delta_E arrays and returns the total exit
+//     // rate.
+//     double _calculate_exit_rates() const;
 
-public:
-    GillespieSpinSystem(const RuntimeParameters, EnergyMapping&);
+// public:
+//     GillespieSpinSystem(const RuntimeParameters, EnergyMapping&);
 
-    // Step computes the neighboring energies, delta E values and exit rates,
-    // then based on that information, steps the spin configuration and
-    // returns the waiting time. Note that a Gillespie step is always accepted.
-    long double step();
+//     // Step computes the neighboring energies, delta E values and exit rates,
+//     // then based on that information, steps the spin configuration and
+//     // returns the waiting time. Note that a Gillespie step is always accepted.
+//     long double step();
 
-    ~GillespieSpinSystem();
-};
+//     ~GillespieSpinSystem();
+// };
 
 
-class StandardSpinSystem : public SpinSystem
-{
-private:
-    std::uniform_real_distribution<> uniform_0_1_distribution;
-    std::uniform_int_distribution<> spin_distribution;
+// class StandardSpinSystem : public SpinSystem
+// {
+// private:
+//     std::uniform_real_distribution<> uniform_0_1_distribution;
+//     std::uniform_int_distribution<> spin_distribution;
 
-public:
-    StandardSpinSystem(const RuntimeParameters, EnergyMapping&);
+// public:
+//     StandardSpinSystem(const RuntimeParameters, EnergyMapping&);
 
-    // Step executes a possible alteration in the state, but not always. Thus,
-    // the standard step actually returns whether or not the new state was
-    // accepted: if there was a rejection, return false, else, if the proposed
-    // state was accepted, return true.
-    long double step();
-};
+//     // Step executes a possible alteration in the state, but not always. Thus,
+//     // the standard step actually returns whether or not the new state was
+//     // accepted: if there was a rejection, return false, else, if the proposed
+//     // state was accepted, return true.
+//     long double step();
+// };
 
 
 
