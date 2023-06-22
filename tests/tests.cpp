@@ -5,6 +5,7 @@
 // Import the tests themselves
 #include "test_utils.h"
 #include "test_energy_mapping.h"
+#include "test_spin.h"
 
 
 TEST_CASE("Test arbitrary precision interconversion", "[arbitrary_precision]")
@@ -71,6 +72,11 @@ TEST_CASE("Test massive AP LRU", "[energy_mapping]")
         REQUIRE(test_massive_AP_LRU(N_spins));
         N_spins += 10;
     }
+}
+
+TEST_CASE("Test spin emap", "[spin]")
+{
+    REQUIRE(test_basic_lru_cache_with_spin());
 }
 
 // int main(int argc, char const *argv[])

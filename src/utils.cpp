@@ -75,22 +75,20 @@ namespace parameters
 
     void log_parameters(const SimulationParameters p)
     {
-        printf("log10_N_timesteps        = %i\n", p.log10_N_timesteps);
-        printf("N_timesteps              = %lli\n", p.N_timesteps);
-        printf("N_spins                  = %i\n", p.N_spins);
-        printf("beta                     = %.05f\n", p.beta);
-        printf("beta_critical            = %.05f\n", p.beta_critical);
-        printf("landscape                = %s\n", p.landscape.c_str());
-        printf("dynamics                 = %s\n", p.dynamics.c_str());
-
-        std::string _mem;
-        if (p.memory == -1){_mem = "full initialization of memory";}
-        else{_mem = "specific memory value set";}
-
-        printf("memory                   = %lli (%s)\n", p.memory, _mem.c_str());
-        printf("energetic threshold      = %.05f\n", p.energetic_threshold);
-        printf("entropic attractor       = %.05f\n", p.entropic_attractor);
-        printf("valid_entropic_attractor = %i\n", p.valid_entropic_attractor);
+        printf("----------------------------------------------------------\n");
+        printf("log10_N_timesteps        \t\t\t= %i\n", p.log10_N_timesteps);
+        printf("N_timesteps              \t\t\t= %lli\n", p.N_timesteps);
+        printf("N_spins                  \t\t\t= %i\n", p.N_spins);
+        printf("beta                     \t\t\t= %.05f\n", p.beta);
+        printf("beta_critical            \t\t\t= %.05f\n", p.beta_critical);
+        printf("landscape                \t\t\t= %s\n", p.landscape.c_str());
+        printf("dynamics                 \t\t\t= %s\n", p.dynamics.c_str());
+        printf("memory                   \t\t\t= %lli\n", p.memory);
+        printf("energetic threshold      \t\t\t= %.05f\n", p.energetic_threshold);
+        printf("entropic attractor       \t\t\t= %.05f\n", p.entropic_attractor);
+        printf("valid_entropic_attractor \t\t\t= %i\n", p.valid_entropic_attractor);
+        printf("PRECISON                 \t\t\t= %i\n", PRECISON);
+        printf("----------------------------------------------------------\n");
     }
 
     SimulationParameters get_parameters()

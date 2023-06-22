@@ -79,6 +79,11 @@ double SpinSystem::energy() const
     return emap_ptr->get_config_energy(current_state);
 }
 
+void SpinSystem::set_state(ap_uint<PRECISON> state)
+{
+    current_state = state;
+}
+
 std::string SpinSystem::binary_state() const
 {
     int* binary_array = 0;
