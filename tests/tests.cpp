@@ -10,6 +10,7 @@
 
 TEST_CASE("Test arbitrary precision interconversion", "[arbitrary_precision]")
 {
+    std::cout << "PRECISON==" << PRECISON << std::endl;
     for (unsigned int seed=1; seed<11; seed++)
     {
         for (unsigned int arr_size=1; arr_size<11; arr_size++)
@@ -24,11 +25,10 @@ TEST_CASE("Test arbitrary precision interconversion", "[arbitrary_precision]")
 TEST_CASE("Test massive arbitrary precision (arr_size==PRECISON) nearest neighbors", "[arbitrary_precision]")
 {
     const unsigned int seed = 1235;
-    const unsigned int arr_size = PRECISON;
 
     // Note that the array size represents a number far larger than the
     // largest default precision long long integer
-    REQUIRE(test_neighbors_correct(seed, arr_size));
+    REQUIRE(test_neighbors_correct(seed, PRECISON));
 }
 
 TEST_CASE("Test flip_bit huge", "[arbitrary_precision]")
@@ -38,6 +38,7 @@ TEST_CASE("Test flip_bit huge", "[arbitrary_precision]")
     REQUIRE(test_flip_bit_huge(1234, 50));
     REQUIRE(test_flip_bit_huge(12345, 100));
     REQUIRE(test_flip_bit_huge(123456, PRECISON));
+    REQUIRE(test_flip_bit_big_number(PRECISON));
 }
 
 TEST_CASE("Test energy mapping EREM sampling", "[energy_mapping]")

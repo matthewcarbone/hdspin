@@ -124,6 +124,40 @@ bool test_flip_bit_huge(const unsigned int seed, const unsigned int arr_size)
 {
     int arr[arr_size];
     _fill_binary_vector(arr, arr_size, seed);
+    arr[0] = 1;
+    arr[arr_size - 1] = 1;
+    ap_uint<PRECISON> v1, v2, arr_rep;
+    state::arbitrary_precision_integer_from_int_array_(arr, arr_size, arr_rep);
+
+    for (int ii=0; ii<arr_size; ii++)
+    {
+        // Flip in the spin representation
+        if (arr[ii] == 0){arr[ii] = 1;}
+        else{arr[ii] = 0;}
+
+        // Calculate the value
+        state::arbitrary_precision_integer_from_int_array_(arr, arr_size, v1);
+
+        // Flip back
+        if (arr[ii] == 0){arr[ii] = 1;}
+        else{arr[ii] = 0;}
+
+        // Calculate the value by flipping bits
+        v2 = state::flip_bit(arr_rep, ii, arr_size);
+
+        // std::cout << v1 << " " << v2 << std::endl;
+        if (v1 != v2){return false;}
+    }
+
+    return true;
+}
+
+
+bool test_flip_bit_big_number(const unsigned int arr_size)
+{
+    int arr[arr_size];
+    for (int ii=0; ii<arr_size; ii++){arr[ii] = 1;}
+    
     ap_uint<PRECISON> v1, v2, arr_rep;
     state::arbitrary_precision_integer_from_int_array_(arr, arr_size, arr_rep);
 
