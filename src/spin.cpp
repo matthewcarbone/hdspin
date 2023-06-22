@@ -32,18 +32,18 @@ void SpinSystem::_first_time_state_initialization_()
     delete[] spin_config;
 }
 
-void SpinSystem::_fill_neighbors_()
-{
-    state::get_neighbors_(neighbors, current_state, params.N_spins);
-}
+// void SpinSystem::_fill_neighbors_()
+// {
+//     state::get_neighbors_(neighbors, current_state, params.N_spins);
+// }
 
-void SpinSystem::_fill_neighboring_energies_()
-{
-    for (int ii=0; ii<params.N_spins; ii++)
-    {
-        neighboring_energies[ii] = emap_ptr->get_config_energy(neighbors[ii]);
-    }
-}
+// void SpinSystem::_fill_neighboring_energies_()
+// {
+//     for (int ii=0; ii<params.N_spins; ii++)
+//     {
+//         neighboring_energies[ii] = emap_ptr->get_config_energy(neighbors[ii]);
+//     }
+// }
 
 void SpinSystem::_init_previous_state_()
 {
@@ -68,12 +68,18 @@ SpinSystem::SpinSystem(const parameters::SimulationParameters params,
 
     // if (params.divN == 1){_waiting_time_multiplier = 1.0 / params.N_spins;}
 
+    // ONLY REQUIRED FOR GILLESPE
+    // ---- // ---- // ---- // ---- // ---- // ---- // ---- // ---- // ---- //
+    // ---- // ---- // ---- // ---- // ---- // ---- // ---- // ---- // ---- //
     // Initialize an array for containing the neighbors themselves
-    neighbors = new ap_uint<PRECISON>[params.N_spins];
+    // neighbors = new ap_uint<PRECISON>[params.N_spins];
 
     // Initialize an array for containing the neighboring energies of the
     // state
-    neighboring_energies = new double[params.N_spins];
+    // neighboring_energies = new double[params.N_spins];
+
+    // ---- // ---- // ---- // ---- // ---- // ---- // ---- // ---- // ---- //
+    // ---- // ---- // ---- // ---- // ---- // ---- // ---- // ---- // ---- //
 
     // _spin_config if in the memoryless calculation will just be a null
     // pointer; nothing is done in the helper to the config if we're doing
@@ -207,11 +213,11 @@ of the inherent structure */
 // }
 
 
-SpinSystem::~SpinSystem()
-{
-    delete[] neighbors;
-    delete[] neighboring_energies;
-}
+// SpinSystem::~SpinSystem()
+// {
+//     delete[] neighbors;
+//     delete[] neighboring_energies;
+// }
 
 
 // Gillespie Spin system ------------------------------------------------------
@@ -325,59 +331,69 @@ SpinSystem::~SpinSystem()
 
 // // Standard Spin system -------------------------------------------------------
 
-// StandardSpinSystem::StandardSpinSystem(const parameters::SimulationParameters params, EnergyMapping& emap) : SpinSystem(params, emap)
-// {
-//     uniform_0_1_distribution.param(
-//         std::uniform_real_distribution<>::param_type(0.0, 1.0));
-//     spin_distribution.param(
-//         std::uniform_int_distribution<>::param_type(0, params.N_spins - 1));
-// };
+StandardSpinSystem::StandardSpinSystem(const parameters::SimulationParameters params, EnergyMapping& emap) : SpinSystem(params, emap)
+{
+    uniform_0_1_distribution.param(
+        std::uniform_real_distribution<>::param_type(0.0, 1.0));
+    spin_distribution.param(
+        std::uniform_int_distribution<>::param_type(0, params.N_spins - 1));
+};
 
 
-// long double StandardSpinSystem::step()
-// {
+long double StandardSpinSystem::step()
+{
 
-//     // Initialize the current state as _prev
-//     _init_previous_state_();
+    // Initialize the current state as _prev
+    _init_previous_state_();
 
-//     // Get the current energy of the state
-//     const double current_energy = _prev.energy;
+    // Get the current energy of the state
+    const double current_energy = _prev.energy;
 
-//     // Select a random spin to flip
-//     const int spin_to_flip = spin_distribution(generator);
+    // Select a random spin to flip
+    const int spin_to_flip = spin_distribution(generator);
 
-//     _flip_spin(spin_to_flip);
+    // Flip the current state into its new one
+    const ap_uint<PRECISON> possible_state = state::flip_bit(current_state, spin_to_flip, params.N_spins);
 
-//     // Step 4, get the proposed energy (energy of the new configuration)
-//     // long long proposed_config_int = get_int_rep();
-//     const double proposed_energy = _get_current_energy();
+    // Get the proposed energy (energy of the new configuration)
+    const double proposed_energy = emap_ptr->get_config_energy(possible_state);
 
-//     // Step 5, compute the difference between the energies, and find the
-//     // metropolis criterion
-//     const double dE = proposed_energy - intermediate_energy;
-//     const double metropolis_prob = exp(-rtp.beta * dE);
+    // Compute the difference between the energies, and find the metropolis
+    // selection criterion
+    const double dE = proposed_energy - current_energy;
+    const double metropolis_prob = exp(-params.beta * dE);
 
-//     // Step 6, sample a random number between 0 and 1.
-//     const double sampled = uniform_0_1_distribution(generator);
+    // Sample a random number between 0 and 1
+    const double sampled = uniform_0_1_distribution(generator);
 
-//     // Step 7, determine whether or not to remain in this configuration or
-//     // to flip back. If the randomly sampled value is less than the
-//     // metropolis probability, we accept that new configuration. An easy
-//     // sanity check for this is when dE is negative, then the argument of
-//     // the exponent is positive and the e^(...) > 1 always; thus we always
-//     // accept. However, if dE is positive, we only accept with some
-//     // probability that decays exponentially quickly with the difference
-//     // in energy.
-//     if (sampled > metropolis_prob)  // reject
-//     {
-//         _flip_spin(spin_to_flip);  // flip the spin back
-//     }
+    // Determine whether or not to remain in this configuration or
+    // to flip back. If the randomly sampled value is less than the
+    // metropolis probability, we accept that new configuration. An easy
+    // sanity check for this is when dE is negative, then the argument of
+    // the exponent is positive and the e^(...) > 1 always; thus we always
+    // accept. However, if dE is positive, we only accept with some
+    // probability that decays exponentially quickly with the difference
+    // in energy.
+    if (sampled <= metropolis_prob)  // accept
+    {
+        current_state = possible_state;
+        counter.acceptances += 1;
+    }
+    else
+    {
+        counter.rejections += 1;
+    }
 
-//     // This is called multiple times in the loop dynamics, eventually
-//     // ending with the actual value in the loop dynamics.
-//     _init_curr();
+    // This is called multiple times in the loop dynamics, eventually
+    // ending with the actual value in the loop dynamics.
+    _init_current_state_();
 
-//     return _waiting_time_multiplier;
-// }
+    return 1.0;
+}
 
+
+void StandardSpinSystem::summarize()
+{
+    printf("Acceptances/rejections: %lli/%lli\n", counter.acceptances, counter.rejections);
+}
 

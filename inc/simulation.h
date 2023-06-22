@@ -13,20 +13,17 @@ protected:
     parameters::FileNames fnames;
     parameters::SimulationParameters params;
 
-    // Simulation parameters
-    long double simulation_clock = 0.0;
-
 public:
     Simulation(const parameters::FileNames, const parameters::SimulationParameters);
 };
 
 
-class GillespieSimulation : public Simulation
-{
-public:
-    GillespieSimulation(const parameters::FileNames, const parameters::SimulationParameters);
-    void execute();
-};
+// class GillespieSimulation : public Simulation
+// {
+// public:
+//     GillespieSimulation(const parameters::FileNames, const parameters::SimulationParameters);
+//     void execute();
+// };
 
 class StandardSimulation : public Simulation
 {

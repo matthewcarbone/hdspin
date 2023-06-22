@@ -289,4 +289,18 @@ namespace grids
         fclose(outfile2);
     }
 
+    void load_long_long_grid_(std::vector<long long> &grid, const std::string loc)
+    {
+        std::ifstream myfile (loc);
+        std::string line;
+        if (myfile.is_open())
+        {
+            while (getline(myfile, line))
+            {
+                grid.push_back(stoll(line));
+            }
+            myfile.close();
+        }
+    }
+
 }

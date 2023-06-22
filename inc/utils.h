@@ -103,6 +103,12 @@ namespace state
 
 }
 
+struct Counter
+{
+    unsigned long long rejections = 0;
+    unsigned long long acceptances = 0;
+};
+
 namespace parameters
 {
 
@@ -146,6 +152,9 @@ namespace parameters
 
         double energetic_threshold;
         double entropic_attractor;
+
+        int grid_size = 100;
+        double dw = 0.5;
     };
 
     /**
@@ -201,6 +210,16 @@ namespace grids
      * @param n_gridpoints [description]
      */
     void make_pi_grids(const int log10_timesteps, const double dw, const int n_gridpoints);
+
+    /**
+     * @brief [brief description]
+     * @details [long description]
+     * 
+     * @param long [description]
+     * @param loc [description]
+     * @param grid_size [description]
+     */
+    void load_long_long_grid_(std::vector<long long> &grid, const std::string loc);
 
 }
 
