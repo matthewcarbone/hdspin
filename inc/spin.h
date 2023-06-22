@@ -84,6 +84,14 @@ public:
     /**
      * @brief [brief description]
      * @details [long description]
+     * 
+     * @param state [description]
+     */
+    void set_state(ap_uint<PRECISON> state);
+
+    /**
+     * @brief [brief description]
+     * @details [long description]
      * @return [description]
      */
     std::string binary_state() const;
