@@ -71,6 +71,8 @@ add_executable(
     src/energy_mapping.cpp
     src/utils.cpp
     src/spin.cpp
+    src/simulation.cpp
+    src/obs_energy.cpp
 )
 
 target_compile_definitions(hdspin PUBLIC -DPRECISON=${PRECISON})

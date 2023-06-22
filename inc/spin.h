@@ -15,6 +15,7 @@ protected:
     parameters::SimulationParameters params;
     EnergyMapping* emap_ptr;
     ap_uint<PRECISON> current_state;
+    Counter counter;
 
     // Initialize the MT random number generator and seed with random_device
     // This is seeded in the constructor
@@ -22,18 +23,13 @@ protected:
 
     // Pointer to the neighbors and neighboring energies, used in the inherent
     // structure computation
-    ap_uint<PRECISON>* neighbors = 0;
-    double* neighboring_energies = 0;
+    // ap_uint<PRECISON>* neighbors = 0;
+    // double* neighboring_energies = 0;
 
 
     // Initialize some objects for storing the previous and current values of
     // things:
     parameters::StateProperties _prev, _curr;
-
-    // Multiplier for sampling from the waiting time and total
-    // exit rate. This is 1 by default but is set to try and find the
-    // equivalent Gillespie simulation for the "loop" standard dynamics.
-    double _waiting_time_multiplier = 1.0;
 
     /**
      * @brief [brief description]
@@ -96,10 +92,10 @@ public:
      */
     std::string binary_state() const;
 
-    // Vals get_prev() const {return prev;}
-    // Vals get_curr() const {return curr;}
+    parameters::StateProperties get_previous_state() const {return _prev;}
+    parameters::StateProperties get_current_state() const {return _curr;}
     // double get_average_neighboring_energy() const;
-    ~SpinSystem();
+    // ~SpinSystem();
 };
 
 
@@ -144,6 +140,7 @@ public:
     // accepted: if there was a rejection, return false, else, if the proposed
     // state was accepted, return true.
     long double step();
+    void summarize();
 };
 
 
