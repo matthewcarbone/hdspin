@@ -167,6 +167,9 @@ namespace parameters
             ea = -p.N_spins * p.beta / 2.0;
         }
 
+        p.energetic_threshold = et;
+        p.entropic_attractor = ea;
+
         return p;
     }
 
