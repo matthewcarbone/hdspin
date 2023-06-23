@@ -5,5 +5,5 @@
     "landscape" : "EREM",
     "dynamics": "standard",
     "memory": 12,
-    "n_tracers_per_MPI_rank": 100,
+    "n_tracers_per_MPI_rank": 1
 }
