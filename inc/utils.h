@@ -161,6 +161,14 @@ namespace parameters
      * @brief [brief description]
      * @details [long description]
      * 
+     * @param inp [description]
+     */
+    void log_json(const json inp);
+
+    /**
+     * @brief [brief description]
+     * @details [long description]
+     * 
      * @param p [description]
      */
     void log_parameters(const SimulationParameters p);
@@ -170,7 +178,7 @@ namespace parameters
      * @details [long description]
      * @return [description]
      */
-    SimulationParameters get_parameters();
+    SimulationParameters get_parameters(const json inp);
 
     /**
      * @brief [brief description]

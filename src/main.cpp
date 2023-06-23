@@ -33,32 +33,16 @@ int main(int argc, char *argv[])
     MPI_Get_processor_name(processor_name, &name_len);
 
     // Print off a hello world message
-    printf("Ready: processor %s, rank %d/%d\n", processor_name, MPI_RANK,
-        MPI_WORLD_SIZE);
+    printf("Ready: processor %s, rank %d/%d\n", processor_name, MPI_RANK, MPI_WORLD_SIZE);
 
     // Quick barrier to make sure the printing works out cleanly
     fflush(stdout);
     MPI_Barrier(MPI_COMM_WORLD);
 
-    // parameters::SimulationParameters p = parameters::get_parameters();
-
-    //////-------///////-------///////-------///////-------///////-------//////
-    //////-------///////-------///////-------///////-------///////-------//////
-    //////-------///////-------///////-------///////-------///////-------//////
-    // Define some testing simulation parameters
-    parameters::SimulationParameters p;
-    p.log10_N_timesteps = 6;
-    p.N_timesteps = ipow(10, int(p.log10_N_timesteps));
-    p.N_spins = 10;
-    p.landscape = "EREM";
-    p.beta = 2.4;
-    p.beta_critical = 1.0;
-    p.dynamics = "standard";
-    p.memory = 15;
-    p.n_tracers_per_MPI_rank = 1;
-    //////-------///////-------///////-------///////-------///////-------//////
-    //////-------///////-------///////-------///////-------///////-------//////
-    //////-------///////-------///////-------///////-------///////-------//////
+    std::ifstream ifs("config.json");
+    json inp = json::parse(ifs);
+    parameters::SimulationParameters p = parameters::get_parameters(inp);
+    MPI_Barrier(MPI_COMM_WORLD);
 
     // Get the information for this MPI rank
     const int n_tracers_per_MPI_rank = p.n_tracers_per_MPI_rank;
@@ -73,6 +57,7 @@ int main(int argc, char *argv[])
 
     if (MPI_RANK == 0)
     {
+        parameters::log_json(inp);
         parameters::log_parameters(p);
     }
     fflush(stdout);
