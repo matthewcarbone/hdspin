@@ -3,7 +3,7 @@ REM/EREM sandbox
 
 ## Installation instructions
 
-HI!The `hdspin` repository requires no external libraries whatsoever, everything is self-contained. Building the code should be simple via CMake.
+The `hdspin` repository requires no external libraries whatsoever, everything is self-contained. Building the code should be simple via CMake.
 
 ```bash
 cmake -S . -B build -DPRECISON=256 -DBUILD_TESTS=ON -DSMOKE=ON 
