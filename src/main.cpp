@@ -39,6 +39,7 @@ int main(int argc, char *argv[])
     fflush(stdout);
     MPI_Barrier(MPI_COMM_WORLD);
 
+    // Load the parameters
     std::ifstream ifs("config.json");
     json inp = json::parse(ifs);
     parameters::SimulationParameters p = parameters::get_parameters(inp);
