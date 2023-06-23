@@ -12,3 +12,4 @@ old/
 archive/
 config.yaml
 debug/
+lib/Catch2_v3/build/
