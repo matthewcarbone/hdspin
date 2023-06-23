@@ -80,6 +80,13 @@ namespace state
 namespace parameters
 {
 
+    bool _key_exists(const json inp, const std::string key)
+    {
+        const std::string_view string_key = key;
+        if (inp.contains(std::string(string_key))){return true;}
+        return false;
+    }
+
     void log_parameters(const SimulationParameters p)
     {
         printf("----------------------------------------------------------\n");
@@ -100,11 +107,34 @@ namespace parameters
 
     SimulationParameters get_parameters()
     {
-        std::ifstream ifs("input.json");
+        std::ifstream ifs("config.json");
         json inp = json::parse(ifs);
         SimulationParameters p;
 
-        // Seeding
+        // Run assertions
+        const int N_required_parameters = 7;
+        const std::string required_parameters[N_required_parameters] = {
+            "log10_N_timesteps",
+            "N_spins",
+            "landscape",
+            "memory",
+            "beta",
+            "dynamics",
+            "n_tracers_per_MPI_rank"
+        };
+        bool error = false;
+        for (int ii=0; ii<N_required_parameters; ii++)
+        {
+            if (!_key_exists(inp, required_parameters[ii]))
+            {
+                printf("Key %s not found", required_parameters[ii].c_str());
+                error = true;
+            }
+        }
+        if (error){throw std::runtime_error("At least one required config key not provided");}
+
+        // Required parameters
+
         p.log10_N_timesteps = inp["log_N_timesteps"];
         p.N_timesteps = ipow(10, int(p.log10_N_timesteps));
 
@@ -174,6 +204,20 @@ namespace parameters
 
         p.energetic_threshold = et;
         p.entropic_attractor = ea;
+
+        // Not-required parameters
+
+        if (_key_exists(inp, "seed"))
+        {
+            p.seed = inp["seed"];
+            p.use_manual_seed = true;
+        }
+
+        p.grid_size = inp.value("grid_size", p.grid_size);
+        p.dw = inp.value("dw", p.dw);
+
+        p.seed = inp.value("seed", 0);
+        p.use_manual_seed = inp.value("use_manual_seed", false);
 
         return p;
     }
