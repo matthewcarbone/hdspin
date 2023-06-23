@@ -87,9 +87,19 @@ namespace parameters
         return false;
     }
 
+    void log_json(const json inp)
+    {
+        printf("------------------- config.json loaded -------------------\n");
+        for (auto it=inp.begin(); it!=inp.end(); ++it)
+        {
+            std::cout << it.key() << " : " << it.value() << std::endl;
+        }   
+    }
+
     void log_parameters(const SimulationParameters p)
     {
-        printf("----------------------------------------------------------\n");
+        
+        printf("--------------- simulation parameters set ----------------\n");
         printf("log10_N_timesteps        \t\t\t= %i\n", p.log10_N_timesteps);
         printf("N_timesteps              \t\t\t= %lli\n", p.N_timesteps);
         printf("N_spins                  \t\t\t= %i\n", p.N_spins);
@@ -101,14 +111,19 @@ namespace parameters
         printf("energetic threshold      \t\t\t= %.05f\n", p.energetic_threshold);
         printf("entropic attractor       \t\t\t= %.05f\n", p.entropic_attractor);
         printf("valid_entropic_attractor \t\t\t= %i\n", p.valid_entropic_attractor);
+        printf("grid_size                \t\t\t= %i\n", p.grid_size);
+        printf("dw                       \t\t\t= %.05f\n", p.dw);
+        printf("n_tracers_per_MPI_rank   \t\t\t= %i\n", p.n_tracers_per_MPI_rank);
+        if (p.use_manual_seed)
+        {
+            printf("manual seed              \t\t\t= %i\n", p.seed);
+        }
         printf("PRECISON                 \t\t\t= %i\n", PRECISON);
         printf("----------------------------------------------------------\n");
     }
 
-    SimulationParameters get_parameters()
+    SimulationParameters get_parameters(const json inp)
     {
-        std::ifstream ifs("config.json");
-        json inp = json::parse(ifs);
         SimulationParameters p;
 
         // Run assertions
@@ -135,7 +150,7 @@ namespace parameters
 
         // Required parameters
 
-        p.log10_N_timesteps = inp["log_N_timesteps"];
+        p.log10_N_timesteps = inp["log10_N_timesteps"];
         p.N_timesteps = ipow(10, int(p.log10_N_timesteps));
 
         // Assert N_timesteps
