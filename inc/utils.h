@@ -231,4 +231,24 @@ namespace grids
 
 }
 
+
+namespace time_utils
+{
+    /**
+     * @brief [brief description]
+     * @details [long description]
+     * @return [description]
+     */
+    std::string get_datetime();
+
+    /**
+     * @brief [brief description]
+     * @details [long description]
+     * 
+     * @param start [description]
+     * @return [description]
+     */
+    int get_time_delta(const std::chrono::time_point<std::chrono::high_resolution_clock> start);
+}
+
 #endif

@@ -1,3 +1,5 @@
+#include <sstream>  // oss
+
 #include "utils.h"
 #include "ArbitraryPrecision/ap/ap.hpp"
 
@@ -362,4 +364,24 @@ namespace grids
         }
     }
 
+}
+
+
+namespace time_utils
+{
+    std::string get_datetime()
+    {
+        auto t = std::time(nullptr);
+        auto tm = *std::localtime(&t);
+        std::ostringstream oss;
+        oss << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
+        return oss.str();
+    }
+
+    int get_time_delta(const std::chrono::time_point<std::chrono::high_resolution_clock> start)
+    {
+        std::chrono::time_point<std::chrono::high_resolution_clock> stop = std::chrono::high_resolution_clock::now();
+        const auto dur = std::chrono::duration_cast<std::chrono::seconds>(stop - start);
+        return std::chrono::duration<int>(dur).count();
+    }
 }

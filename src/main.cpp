@@ -78,12 +78,12 @@ int main(int argc, char *argv[])
     const int step_size = total_steps / 50; // Print at 50 percent steps
     int loop_count = 0;
 
-    auto start_t_global_clock = std::chrono::high_resolution_clock::now();
+    auto global_start = std::chrono::high_resolution_clock::now();
 
     for(int ii=start; ii<end; ii++)
     {
 
-        auto start_t = std::chrono::high_resolution_clock::now();
+        auto start = std::chrono::high_resolution_clock::now();
 
         const parameters::FileNames fnames = parameters::get_filenames(ii);
 
@@ -105,17 +105,7 @@ int main(int argc, char *argv[])
         }
         // Run dynamics END ---------------------------------------------------
 
-        auto t = std::time(nullptr);
-        auto tm = *std::localtime(&t);
-        std::ostringstream oss;
-        oss << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
-        std::string dt_string = oss.str();
-
-        auto stop = std::chrono::high_resolution_clock::now();
-        auto duration_seconds = 
-            std::chrono::duration_cast<std::chrono::seconds>(stop - start_t);
-        int duration_double_seconds = 
-            std::chrono::duration<int>(duration_seconds).count();
+        const int duration = time_utils::get_time_delta(start);
 
         loop_count++;
 
@@ -123,17 +113,11 @@ int main(int argc, char *argv[])
         {
             if (loop_count % step_size == 0 | loop_count == 1)
             {
-                auto stop_g = std::chrono::high_resolution_clock::now();
-                auto duration_seconds_g = 
-                    std::chrono::duration_cast<std::chrono::seconds>(
-                        stop_g - start_t_global_clock);
-                int duration_double_seconds_g = 
-                    std::chrono::duration<int>(duration_seconds_g).count();
+                const std::string dt_string = time_utils::get_datetime();
+                const int global_duration = time_utils::get_time_delta(global_start);
+                
                 printf(
-                    "%s ~ %s done in %i s (%i/%i) total elapsed %i s\n",
-                    dt_string.c_str(), fnames.ii_str.c_str(),
-                    duration_double_seconds, loop_count, total_steps, 
-                    duration_double_seconds_g
+                    "%s ~ %s done in %i s (%i/%i) total elapsed %i s\n", dt_string.c_str(), fnames.ii_str.c_str(), duration, loop_count, total_steps, global_duration
                 );
                 fflush(stdout);
             }
