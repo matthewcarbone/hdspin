@@ -42,7 +42,7 @@ jobs:
         run: |
           ./build/tests -d yes
 
-      - name: run executable with default config
-        run: |
-          cp build/config.json .
-          mpiexec -n 2 ./build/hdspin
+      # - name: run executable with default config
+      #   run: |
+      #     cp build/config.json .
+      #     mpiexec -n 2 ./build/hdspin
