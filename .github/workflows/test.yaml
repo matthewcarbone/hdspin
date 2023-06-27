@@ -22,7 +22,7 @@ jobs:
       - name: install MPI
         uses: mpi4py/setup-mpi@v1
         with:
-          mpi: "mpich"
+          mpi: "openmpi"
 
       - name: build
         uses: threeal/cmake-action@latest
