@@ -5,5 +5,7 @@
     "landscape" : "EREM",
     "dynamics": "standard",
     "memory": 12,
-    "n_tracers_per_MPI_rank": 1
+    "n_tracers_per_MPI_rank": 1,
+    "use_manual_seed": true,
+    "seed": 123
 }
