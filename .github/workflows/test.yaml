@@ -44,5 +44,4 @@ jobs:
 
       - name: run executable with default config
         run: |
-          cd build
-          mpiexec -n 2 hdspin
+          mpiexec -n 2 ./build/hdspin
