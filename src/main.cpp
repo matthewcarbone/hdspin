@@ -43,6 +43,10 @@ int main(int argc, char *argv[])
     std::ifstream ifs("config.json");
     json inp = json::parse(ifs);
     parameters::SimulationParameters p = parameters::get_parameters(inp);
+
+    // Change the seed based on the MPI rank, very important for seeded runs!
+    p.seed += MPI_RANK;
+
     MPI_Barrier(MPI_COMM_WORLD);
 
     // Get the information for this MPI rank
