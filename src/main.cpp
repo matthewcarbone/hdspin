@@ -49,9 +49,6 @@ int main(int argc, char *argv[])
     json inp = json::parse(ifs);
     parameters::SimulationParameters p = parameters::get_parameters(inp);
 
-    // Change the seed based on the MPI rank, very important for seeded runs!
-    p.seed += MPI_RANK;
-
     MPI_Barrier(MPI_COMM_WORLD);
 
     // Get the information for this MPI rank
@@ -90,12 +87,18 @@ int main(int argc, char *argv[])
 
     auto global_start = std::chrono::high_resolution_clock::now();
 
+    const int starting_seed = p.seed;
+
     for(int ii=start; ii<end; ii++)
     {
 
         auto t_start = std::chrono::high_resolution_clock::now();
 
         const parameters::FileNames fnames = parameters::get_filenames(ii);
+
+        // Change the seed based on the MPI rank, very important for seeded runs!
+        // This will be ignored later if p.use_manual_seed is false
+        p.seed = starting_seed + ii + MPI_RANK * n_tracers_per_MPI_rank;
 
         // Run dynamics START -------------------------------------------------
         if (p.dynamics == "gillespie")
