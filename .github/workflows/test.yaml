@@ -19,10 +19,10 @@ jobs:
         with:
           submodules: true
 
-      # - name: install MPI
-      #   uses: mpi4py/setup-mpi@v1
-      #   with:
-      #     mpi: "openmpi"
+      - name: install MPI
+        uses: mpi4py/setup-mpi@v1
+        with:
+          mpi: "openmpi"
 
       - name: build
         uses: threeal/cmake-action@latest
@@ -44,4 +44,4 @@ jobs:
 
       - name: run executable with default config (no MPI)
         run: |
-          ./build/hdspin tests/test_config_standard.json
+          mpiexec -n 2 ./build/hdspin tests/test_config_standard.json
