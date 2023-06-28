@@ -68,18 +68,6 @@ SpinSystem::SpinSystem(const parameters::SimulationParameters params,
 
     // if (params.divN == 1){_waiting_time_multiplier = 1.0 / params.N_spins;}
 
-    // ONLY REQUIRED FOR GILLESPE
-    // ---- // ---- // ---- // ---- // ---- // ---- // ---- // ---- // ---- //
-    // ---- // ---- // ---- // ---- // ---- // ---- // ---- // ---- // ---- //
-    // Initialize an array for containing the neighbors themselves
-    // neighbors = new ap_uint<PRECISON>[params.N_spins];
-
-    // Initialize an array for containing the neighboring energies of the
-    // state
-    // neighboring_energies = new double[params.N_spins];
-
-    // ---- // ---- // ---- // ---- // ---- // ---- // ---- // ---- // ---- //
-    // ---- // ---- // ---- // ---- // ---- // ---- // ---- // ---- // ---- //
 
     // _spin_config if in the memoryless calculation will just be a null
     // pointer; nothing is done in the helper to the config if we're doing
@@ -222,114 +210,97 @@ of the inherent structure */
 
 // Gillespie Spin system ------------------------------------------------------
 
+GillespieSpinSystem::GillespieSpinSystem(const parameters::SimulationParameters params,
+    EnergyMapping& emap) : SpinSystem(params, emap)
+{
+    // Initialize the other pointers to gillespie-only required arrays
+    _delta_E = new double[params.N_spins];
+    _exit_rates = new double[params.N_spins];
+    _neighbors = new ap_uint<PRECISON>[params.N_spins];
+    _neighboring_energies = new double[params.N_spins];
 
-// GillespieSpinSystem::GillespieSpinSystem(const RuntimeParameters rtp,
-//     EnergyMapping& emap) : SpinSystem(rtp, emap)
-// {
-//     // Initialize the other pointers to gillespie-only required arrays
-//     _delta_E = new double[rtp.N_spins];
-//     _exit_rates = new double[rtp.N_spins];
-
-//     // Initialize the normalized exit rate object
-//     for (int ii=0; ii<rtp.N_spins; ii++){_normalized_exit_rates.push_back(0.0);}
-// }
-
-
-// double GillespieSpinSystem::_calculate_exit_rates() const
-// {
-//     const double current_energy = _get_current_energy();
-
-//     for (int ii=0; ii<rtp.N_spins; ii++)
-//     {
-//         _delta_E[ii] = _neighboring_energies[ii] - current_energy;
-//         _exit_rates[ii] = exp(-rtp.beta * _delta_E[ii]);
-//         if (_exit_rates[ii] > 1.0){_exit_rates[ii] = 1.0;}
-//     }
-//     for (int ii=0; ii<rtp.N_spins; ii++)
-//     {
-//         _exit_rates[ii] = _exit_rates[ii] / ((double) rtp.N_spins);
-//     }
-
-//     double total_exit_rate = 0.0;
-//     for (int ii=0; ii<rtp.N_spins; ii++)
-//     {
-//         total_exit_rate += _exit_rates[ii];
-
-//     }
-//     return total_exit_rate;
-// }
-
-// long double GillespieSpinSystem::step()
-// {
-
-//     const double current_energy = _get_current_energy();
-
-//     // Update the previous state with the current information before flipping
-//     _init_prev();
-
-//     // Make a copy of the config if the memory != 0
-//     int config_copy[rtp.N_spins];
-//     if (rtp.memory != 0)
-//     {
-//         memcpy(config_copy, _spin_config, rtp.N_spins*sizeof(int));
-//     }
-
-//     // This just gets a list of random numbers if memoryless
-//     _helper_fill_neighboring_energies(config_copy,
-//         rtp.N_spins, _neighboring_energies);
-
-//     // IF whatever flag is true, set one of the new neighboring energies
-//     // equal to the old one
-//     if ((rtp.memoryless_retain_last_energy == 1) and (rtp.memory == 0))
-//     {
-//         _neighboring_energies[0] = _previous_energy;
-//     }
-
-//     const double total_exit_rate = _calculate_exit_rates();
-
-//     for (int ii=0; ii<rtp.N_spins; ii++)
-//     {
-//         _normalized_exit_rates[ii] = _exit_rates[ii] / total_exit_rate;
-//     }
-
-//     // Now, we make a choice of the spin to flip
-//     std::discrete_distribution<int> _dist(
-//         _normalized_exit_rates.begin(), _normalized_exit_rates.end());
-//     const int spin_to_flip = _dist(generator);
-
-//     // Flip that spin for real in the simulations with memory
-//     if (rtp.memory != 0)
-//     {
-//         _flip_spin(spin_to_flip);
-//     }
-
-//     // This is the only place that the system energy and system config
-//     // will be updated in the memoryless simulation!!!
-//     else
-//     {
-//         _memoryless_system_energy = _neighboring_energies[spin_to_flip];
-//         _memoryless_system_config += 1;
-//     }
-
-//     _init_curr();  // Initialize the current state
-
-//     total_exit_rate_dist.param(
-//         std::exponential_distribution<long double>::param_type(total_exit_rate));
-
-//     _previous_energy = current_energy;
-
-//     // Return the waiting time
-//     return total_exit_rate_dist(generator) * _waiting_time_multiplier;
-// }
-
-// GillespieSpinSystem::~GillespieSpinSystem()
-// {
-//     delete[] _delta_E;
-//     delete[] _exit_rates;
-// }
+    // Initialize the normalized exit rate object
+    for (int ii=0; ii<params.N_spins; ii++)
+    {
+        _normalized_exit_rates.push_back(0.0);
+    }
+}
 
 
-// // Standard Spin system -------------------------------------------------------
+double GillespieSpinSystem::_calculate_exit_rates() const
+{
+
+    for (int ii=0; ii<params.N_spins; ii++)
+    {
+        _delta_E[ii] = _neighboring_energies[ii] - _prev.energy;
+        _exit_rates[ii] = exp(-params.beta * _delta_E[ii]);
+        if (_exit_rates[ii] > 1.0){_exit_rates[ii] = 1.0;}
+    }
+    for (int ii=0; ii<params.N_spins; ii++)
+    {
+        _exit_rates[ii] = _exit_rates[ii] / ((double) params.N_spins);
+    }
+
+    double total_exit_rate = 0.0;
+    for (int ii=0; ii<params.N_spins; ii++)
+    {
+        total_exit_rate += _exit_rates[ii];
+
+    }
+    return total_exit_rate;
+}
+
+long double GillespieSpinSystem::step()
+{
+
+    // Initialize the current state as _prev
+    _init_previous_state_();
+
+    // Get the current energy of the state
+    const double current_energy = _prev.energy;
+
+    // Get the neighboring states
+    state::get_neighbors_(_neighbors, current_state, params.N_spins);
+
+    // Populate the neighboring energies
+    emap_ptr->get_config_energies_array(_neighbors, _neighboring_energies, params.N_spins);
+
+    const double total_exit_rate = _calculate_exit_rates();
+
+    for (int ii=0; ii<params.N_spins; ii++)
+    {
+        _normalized_exit_rates[ii] = _exit_rates[ii] / total_exit_rate;
+    }
+
+    // Now, we make a choice of the spin to flip
+    std::discrete_distribution<int> _dist(
+        _normalized_exit_rates.begin(), _normalized_exit_rates.end());
+    const int spin_to_flip = _dist(generator);
+
+    // And always flip that spin in a Gillespie simulation
+    current_state = state::flip_bit(current_state, spin_to_flip, params.N_spins);
+
+    // Initialize the current state
+    _init_current_state_();
+
+    // Calculate the waiting time
+    total_exit_rate_dist.param(
+        std::exponential_distribution<long double>::param_type(total_exit_rate));
+
+    // Return the waiting time which is generally != 1
+    return total_exit_rate_dist(generator);
+}
+
+GillespieSpinSystem::~GillespieSpinSystem()
+{
+    delete[] _delta_E;
+    delete[] _exit_rates;
+    delete[] _neighbors;
+    delete[] _neighboring_energies;
+}
+
+
+// Standard Spin system -------------------------------------------------------
 
 StandardSpinSystem::StandardSpinSystem(const parameters::SimulationParameters params, EnergyMapping& emap) : SpinSystem(params, emap)
 {

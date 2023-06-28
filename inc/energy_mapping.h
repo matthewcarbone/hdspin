@@ -26,6 +26,7 @@ protected:
 public:
     double sample_energy() const;
     double get_config_energy(const ap_uint<PRECISON>) const;
+    void get_config_energies_array(const ap_uint<PRECISON> *neighbors, double *neighboring_energies, const int bitLength);
     void _initialize_distributions();
     EnergyMapping(const parameters::SimulationParameters);
 };
