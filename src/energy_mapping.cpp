@@ -73,7 +73,7 @@ void EnergyMapping::_initialize_distributions()
             std::exponential_distribution<double>::param_type(p)
         );
     }
-    else if (parameters.landscape == "REM")
+    else if (parameters.landscape == "GREM")
     {
         const double p = sqrt(parameters.N_spins);
         normal_distribution.param(
