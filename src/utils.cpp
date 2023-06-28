@@ -168,7 +168,6 @@ namespace parameters
         if (
             p.landscape != "EREM"
             && p.landscape != "GREM"
-            && p.landscape != "GREM-num"
         )
         {
             throw std::runtime_error("Invalid landscape");
@@ -217,6 +216,10 @@ namespace parameters
         {
             et = -sqrt(2.0 * p.N_spins * log(p.N_spins));
             ea = -p.N_spins * p.beta / 2.0;
+        }
+        else
+        {
+            throw std::runtime_error("Invalid landscape");
         }
 
         p.energetic_threshold = et;
