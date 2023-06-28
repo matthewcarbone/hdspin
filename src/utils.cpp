@@ -167,8 +167,8 @@ namespace parameters
         // Assert landscape
         if (
             p.landscape != "EREM"
-            && p.landscape != "REM"
-            && p.landscape != "REM-num"
+            && p.landscape != "GREM"
+            && p.landscape != "GREM-num"
         )
         {
             throw std::runtime_error("Invalid landscape");
