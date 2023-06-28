@@ -138,8 +138,6 @@ void StandardSimulation::execute()
 
         if (simulation_clock > params.N_timesteps - 1){break;}
     }
-
-    sys.summarize();
 }
 
 
