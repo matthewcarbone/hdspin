@@ -1,0 +1,11 @@
+{
+    "log10_N_timesteps": 6,
+    "N_spins": 12,
+    "beta": 1.667,
+    "landscape" : "EREM",
+    "dynamics": "gillespie",
+    "memory": 12,
+    "n_tracers_per_MPI_rank": 1,
+    "use_manual_seed": true,
+    "seed": 123
+}

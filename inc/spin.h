@@ -68,7 +68,7 @@ public:
      * @param s [description]
      * @param g [description]
      */
-    SpinSystem(const parameters::SimulationParameters, EnergyMapping&);
+    SpinSystem(const parameters::SimulationParameters params, EnergyMapping& emap);
 
     /**
      * @brief [brief description]
@@ -99,31 +99,33 @@ public:
 };
 
 
-// class GillespieSpinSystem : public SpinSystem
-// {
-// private:
+class GillespieSpinSystem : public SpinSystem
+{
+private:
 
-//     // Pointer to the delta E and exit rates
-//     double *_delta_E = 0;
-//     double *_exit_rates = 0;
+    // Pointer to the delta E and exit rates
+    double *_delta_E = 0;
+    double *_exit_rates = 0;
+    ap_uint<PRECISON> *_neighbors = 0;
+    double *_neighboring_energies = 0;
 
-//     std::vector<double> _normalized_exit_rates;
-//     std::exponential_distribution<long double> total_exit_rate_dist;
+    std::vector<double> _normalized_exit_rates;
+    std::exponential_distribution<long double> total_exit_rate_dist;
 
-//     // Fills the exit_rates and delta_E arrays and returns the total exit
-//     // rate.
-//     double _calculate_exit_rates() const;
+    // Fills the exit_rates and delta_E arrays and returns the total exit
+    // rate.
+    double _calculate_exit_rates() const;
 
-// public:
-//     GillespieSpinSystem(const RuntimeParameters, EnergyMapping&);
+public:
+    GillespieSpinSystem(const parameters::SimulationParameters params, EnergyMapping& emap);
 
-//     // Step computes the neighboring energies, delta E values and exit rates,
-//     // then based on that information, steps the spin configuration and
-//     // returns the waiting time. Note that a Gillespie step is always accepted.
-//     long double step();
+    // Step computes the neighboring energies, delta E values and exit rates,
+    // then based on that information, steps the spin configuration and
+    // returns the waiting time. Note that a Gillespie step is always accepted.
+    long double step();
 
-//     ~GillespieSpinSystem();
-// };
+    ~GillespieSpinSystem();
+};
 
 
 class StandardSpinSystem : public SpinSystem

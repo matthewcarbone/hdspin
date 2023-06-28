@@ -18,12 +18,12 @@ public:
 };
 
 
-// class GillespieSimulation : public Simulation
-// {
-// public:
-//     GillespieSimulation(const parameters::FileNames, const parameters::SimulationParameters);
-//     void execute();
-// };
+class GillespieSimulation : public Simulation
+{
+public:
+    GillespieSimulation(const parameters::FileNames, const parameters::SimulationParameters);
+    void execute();
+};
 
 class StandardSimulation : public Simulation
 {
