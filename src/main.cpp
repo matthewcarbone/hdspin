@@ -40,7 +40,12 @@ int main(int argc, char *argv[])
     MPI_Barrier(MPI_COMM_WORLD);
 
     // Load the parameters
-    std::ifstream ifs("config.json");
+    std::string params_name;
+    if (argc == 1){params_name = "config.json";}
+    else{params_name = argv[1];}
+    if (MPI_RANK == 0){printf("Loading config from %s", params_name.c_str());}
+
+    std::ifstream ifs(params_name);
     json inp = json::parse(ifs);
     parameters::SimulationParameters p = parameters::get_parameters(inp);
 
