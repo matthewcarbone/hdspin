@@ -136,7 +136,7 @@ void StandardSimulation::execute()
         // Step observables
         obs_energy.step(simulation_clock, prev.energy);
 
-        if (simulation_clock > params.N_timesteps - 1){break;}
+        if (simulation_clock > params.N_timesteps){break;}
     }
 }
 
@@ -177,6 +177,6 @@ void GillespieSimulation::execute()
         // Step observables
         obs_energy.step(simulation_clock, prev.energy);
 
-        if (simulation_clock > params.N_timesteps - 1){break;}
+        if (simulation_clock > params.N_timesteps){break;}
     }
 }
