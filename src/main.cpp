@@ -92,29 +92,35 @@ int main(int argc, char *argv[])
     for(int ii=start; ii<end; ii++)
     {
 
-        auto start = std::chrono::high_resolution_clock::now();
+        auto t_start = std::chrono::high_resolution_clock::now();
 
         const parameters::FileNames fnames = parameters::get_filenames(ii);
 
         // Run dynamics START -------------------------------------------------
         if (p.dynamics == "gillespie")
         {
-            throw std::runtime_error("gillespie not implemented yet");
-            MPI_Abort(MPI_COMM_WORLD, 1);
+            GillespieSimulation gillespie_sim(fnames, p);
+            gillespie_sim.execute();
         }
         else if (p.dynamics == "standard")
         {
             StandardSimulation standard_sim(fnames, p);
             standard_sim.execute();
         }
+        else if (p.dynamics == "auto")
+        {
+            // TODO
+            printf("Unsupported dynamics (auto)");
+            MPI_Abort(MPI_COMM_WORLD, 1);   
+        }
         else
         {
-            printf("Unsupported dynamics");
+            printf("Unsupported dynamics (unknown)");
             MPI_Abort(MPI_COMM_WORLD, 1);
         }
         // Run dynamics END ---------------------------------------------------
 
-        const int duration = time_utils::get_time_delta(start);
+        const int duration = time_utils::get_time_delta(t_start);
 
         loop_count++;
 

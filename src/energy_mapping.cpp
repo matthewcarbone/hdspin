@@ -42,6 +42,15 @@ double EnergyMapping::get_config_energy(const ap_uint<PRECISON> state) const
     }
 }
 
+void EnergyMapping::get_config_energies_array(const ap_uint<PRECISON> *neighbors, double *neighboring_energies, const int bitLength)
+{
+    for (int ii=0; ii<bitLength; ii++)
+    {
+        neighboring_energies[ii] = get_config_energy(neighbors[ii]);
+    }
+}
+
+
 
 void EnergyMapping::_initialize_distributions()
 {
