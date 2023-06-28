@@ -46,7 +46,7 @@ bool test_energy_mapping_sampling_EREM_given_beta_critical(const double beta_cri
 bool test_energy_mapping_sampling_REM_given_N_spins(const int N_spins)
 {
     parameters::SimulationParameters sp;
-    sp.landscape = "REM";
+    sp.landscape = "GREM";
     sp.N_spins = N_spins;
     sp.use_manual_seed = true;
     sp.seed = 4567;
@@ -89,7 +89,7 @@ bool test_energy_mapping_sampling_REM_given_N_spins(const int N_spins)
 bool test_small_cache(const int N_spins)
 {
     parameters::SimulationParameters sp;
-    sp.landscape = "REM";
+    sp.landscape = "GREM";
     sp.N_spins = N_spins;
     sp.use_manual_seed = true;
     sp.seed = 4567;
@@ -133,7 +133,7 @@ bool test_small_cache(const int N_spins)
 bool test_memory_minus_one(const int N_spins)
 {
     parameters::SimulationParameters sp;
-    sp.landscape = "REM";
+    sp.landscape = "GREM";
     sp.N_spins = N_spins;
     sp.use_manual_seed = true;
     sp.seed = 4567;
@@ -155,7 +155,7 @@ bool test_memory_minus_one(const int N_spins)
 bool test_massive_AP_LRU(const int N_spins)
 {
     parameters::SimulationParameters sp;
-    sp.landscape = "REM";
+    sp.landscape = "GREM";
     sp.N_spins = N_spins;
     sp.use_manual_seed = true;
     sp.seed = 45678;
