@@ -44,4 +44,4 @@ jobs:
 
       - name: run executable with default config
         run: |
-          mpiexec -n 2 ./build/hdspin build/test_config_standard.json
+          mpiexec -n 2 ./build/hdspin tests/test_config_standard.json
