@@ -274,20 +274,13 @@ long double GillespieSpinSystem::step()
     // Now, we make a choice of the spin to flip
     std::discrete_distribution<int> _dist(
         _normalized_exit_rates.begin(), _normalized_exit_rates.end());
+
+    // The spin to flip is actually on the "opposite side" because of how
+    // bits work
     const int spin_to_flip = params.N_spins - 1 - _dist(generator);
-    // std::cout << "flipping: " << spin_to_flip << std::endl;
 
     // And always flip that spin in a Gillespie simulation
-    // const ap_uint<PRECISON> c1 = current_state;
-    // const std::string s1 = binary_state();
     current_state = state::flip_bit(current_state, spin_to_flip, params.N_spins);
-    // const ap_uint<PRECISON> c2 = current_state;
-    // const std::string s2 = binary_state();
-    // for (int ii=0; ii<params.N_spins; ii++){
-    //     std::cout << _normalized_exit_rates[ii] << std::endl;
-    // }
-    // std::cout << c1 << " " << c2 << std::endl;
-    // std::cout << s1 << "->" << s2 << std::endl;
 
     // Initialize the current state
     _init_current_state_();
@@ -329,10 +322,10 @@ long double StandardSpinSystem::step()
     const double current_energy = _prev.energy;
 
     // Select a random spin to flip
-    const int spin_to_flip = spin_distribution(generator);
+    const int bit_to_flip = spin_distribution(generator);
 
     // Flip the current state into its new one
-    const ap_uint<PRECISON> possible_state = state::flip_bit(current_state, spin_to_flip, params.N_spins);
+    const ap_uint<PRECISON> possible_state = state::flip_bit(current_state, bit_to_flip, params.N_spins);
 
     // Get the proposed energy (energy of the new configuration)
     const double proposed_energy = emap_ptr->get_config_energy(possible_state);
