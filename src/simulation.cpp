@@ -3,6 +3,7 @@
 #include "simulation.h"
 #include "spin.h"
 #include "obs_energy.h"
+#include "obs_cache_size.h"
 
 
 Simulation::Simulation(const parameters::FileNames fnames,
@@ -114,6 +115,7 @@ void StandardSimulation::execute()
     long double simulation_clock = 0.0;
 
     Energy obs_energy(fnames, params);
+    CacheSize obs_cache_size(fnames, emap);
 
     // Simulation clock is 0 before entering the while loop
     while (true)
@@ -135,6 +137,7 @@ void StandardSimulation::execute()
 
         // Step observables
         obs_energy.step(simulation_clock, prev.energy);
+        obs_cache_size.step(simulation_clock);
 
         if (simulation_clock > params.N_timesteps){break;}
     }
@@ -155,6 +158,7 @@ void GillespieSimulation::execute()
     long double simulation_clock = 0.0;
 
     Energy obs_energy(fnames, params);
+    CacheSize obs_cache_size(fnames, emap);
 
     // Simulation clock is 0 before entering the while loop
     while (true)
@@ -176,6 +180,7 @@ void GillespieSimulation::execute()
 
         // Step observables
         obs_energy.step(simulation_clock, prev.energy);
+        obs_cache_size.step(simulation_clock);
 
         if (simulation_clock > params.N_timesteps){break;}
     }
