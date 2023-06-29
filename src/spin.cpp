@@ -32,19 +32,6 @@ void SpinSystem::_first_time_state_initialization_()
     delete[] spin_config;
 }
 
-// void SpinSystem::_fill_neighbors_()
-// {
-//     state::get_neighbors_(neighbors, current_state, params.N_spins);
-// }
-
-// void SpinSystem::_fill_neighboring_energies_()
-// {
-//     for (int ii=0; ii<params.N_spins; ii++)
-//     {
-//         neighboring_energies[ii] = emap_ptr->get_config_energy(neighbors[ii]);
-//     }
-// }
-
 void SpinSystem::_init_previous_state_()
 {
     _prev.state = current_state;
@@ -61,22 +48,7 @@ SpinSystem::SpinSystem(const parameters::SimulationParameters params,
     EnergyMapping& emap) : params(params)
 {
     emap_ptr = &emap;
-
     _first_time_state_initialization_();
-
-    // std::uniform_int_distribution<> int_dist(0, params.N_spins - 1);
-
-    // if (params.divN == 1){_waiting_time_multiplier = 1.0 / params.N_spins;}
-
-
-    // _spin_config if in the memoryless calculation will just be a null
-    // pointer; nothing is done in the helper to the config if we're doing
-    // memoryless, so this should work fine
-    // _helper_fill_neighboring_energies(_spin_config, params.N_spins, _neighboring_energies);
-
-    // Initialize the previous energy to something random, from one of
-    // the neighbors. It doesn't really matter at t=0 anyway
-    // _previous_energy = _neighboring_energies[0];
 };
 
 double SpinSystem::energy() const
@@ -105,110 +77,6 @@ std::string SpinSystem::binary_state() const
 
     return s;
 }
-
-/* Finds the lowest energy configuration via greedy search from a config
- * through its neighbors. Returns the config index of this inherent
- structure. */
-// long long SpinSystem::_help_get_inherent_structure() const
-// {
-
-//     int min_el;
-//     double tmp_energy;
-
-//     // Make a copy of the config
-//     int config_copy[rtp.N_spins];
-//     memcpy(config_copy, _spin_config, rtp.N_spins*sizeof(int));
-
-//     // Neighboring energies local copy
-//     double ne[rtp.N_spins];
-
-//     // While we are not at the inherent structure, keep going
-//     while (true)
-//     {
-//         // Compute the neighboring energies on the copy
-//         _helper_fill_neighboring_energies(config_copy, rtp.N_spins, ne);
-
-//         // If we have not reached the lowest local energy which can be reached
-//         // by flipping a spin
-//         min_el = min_element(ne, rtp.N_spins);
-//         tmp_energy = emap_ptr->get_config_energy(
-//             binary_vector_to_int(config_copy, rtp.N_spins));
-
-//         if (ne[min_el] < tmp_energy)
-//         {
-//             _helper_flip_spin_(config_copy, min_el);
-//         }
-//         else
-//         {
-//             return binary_vector_to_int(config_copy, rtp.N_spins);
-//         }
-//     }
-
-//     throw std::runtime_error("Unknown error in _help_get_inherent_structure");
-// }
-
-
-/* Updates the inherent_structure_mapping if needed and returns the config
-of the inherent structure */
-// long long SpinSystem::_get_inherent_structure() const
-// {
-//     if (rtp.memory == 0)
-//     {
-//         throw std::runtime_error(
-//             "Inherent structure not defined for memoryless spin systems");
-//     }
-
-//     // Get the current configuration integer representations and energies
-//     const long long config_int
-//         = binary_vector_to_int(_spin_config, rtp.N_spins);
-
-//     // Update the inherent structure dictionary
-//     long long config_IS_int;
-//     if (_ism[config_int] != -1)
-//     {
-//         // We've computed the inherent structure before, no need to do
-//         // it again
-//         config_IS_int = _ism[config_int];
-//     }
-//     else
-//     {
-//         config_IS_int = _help_get_inherent_structure();
-//         _ism[config_int] = config_IS_int;
-//     }
-//     return config_IS_int;
-// }
-
-
-// double SpinSystem::get_average_neighboring_energy() const
-// {
-//     // Make a copy of the config if the memory != 0
-//     int config_copy[rtp.N_spins];
-//     double ne[rtp.N_spins];
-//     if (rtp.memory != 0)
-//     {
-//         memcpy(config_copy, _spin_config, rtp.N_spins*sizeof(int));
-//     }
-//     _helper_fill_neighboring_energies(config_copy, rtp.N_spins, ne);
-
-//     if ((rtp.memoryless_retain_last_energy == 1) and (rtp.memory == 0))
-//     {
-//         ne[0] = _previous_energy;
-//     }
-
-//     double tmp_e = 0.0;
-//     for (int ii=0; ii<rtp.N_spins; ii++){tmp_e += ne[ii];}
-//     return tmp_e / ((double) rtp.N_spins);
-// }
-
-
-// SpinSystem::~SpinSystem()
-// {
-//     delete[] neighbors;
-//     delete[] neighboring_energies;
-// }
-
-
-// Gillespie Spin system ------------------------------------------------------
 
 GillespieSpinSystem::GillespieSpinSystem(const parameters::SimulationParameters params,
     EnergyMapping& emap) : SpinSystem(params, emap)
@@ -299,9 +167,6 @@ GillespieSpinSystem::~GillespieSpinSystem()
     delete[] _neighbors;
     delete[] _neighboring_energies;
 }
-
-
-// Standard Spin system -------------------------------------------------------
 
 StandardSpinSystem::StandardSpinSystem(const parameters::SimulationParameters params, EnergyMapping& emap) : SpinSystem(params, emap)
 {
