@@ -104,7 +104,6 @@ class GillespieSpinSystem : public SpinSystem
 private:
 
     // Pointer to the delta E and exit rates
-    double *_delta_E = 0;
     double *_exit_rates = 0;
     ap_uint<PRECISON> *_neighbors = 0;
     double *_neighboring_energies = 0;
@@ -114,7 +113,7 @@ private:
 
     // Fills the exit_rates and delta_E arrays and returns the total exit
     // rate.
-    double _calculate_exit_rates() const;
+    double _calculate_exit_rates(const double current_energy) const;
 
 public:
     GillespieSpinSystem(const parameters::SimulationParameters params, EnergyMapping& emap);

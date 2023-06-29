@@ -214,7 +214,6 @@ GillespieSpinSystem::GillespieSpinSystem(const parameters::SimulationParameters 
     EnergyMapping& emap) : SpinSystem(params, emap)
 {
     // Initialize the other pointers to gillespie-only required arrays
-    _delta_E = new double[params.N_spins];
     _exit_rates = new double[params.N_spins];
     _neighbors = new ap_uint<PRECISON>[params.N_spins];
     _neighboring_energies = new double[params.N_spins];
@@ -227,13 +226,13 @@ GillespieSpinSystem::GillespieSpinSystem(const parameters::SimulationParameters 
 }
 
 
-double GillespieSpinSystem::_calculate_exit_rates() const
+double GillespieSpinSystem::_calculate_exit_rates(const double current_energy) const
 {
-
+    double dE;
     for (int ii=0; ii<params.N_spins; ii++)
     {
-        _delta_E[ii] = _neighboring_energies[ii] - _prev.energy;
-        _exit_rates[ii] = exp(-params.beta * _delta_E[ii]);
+        dE = _neighboring_energies[ii] - current_energy;
+        _exit_rates[ii] = exp(-params.beta * dE);
         if (_exit_rates[ii] > 1.0){_exit_rates[ii] = 1.0;}
     }
     for (int ii=0; ii<params.N_spins; ii++)
@@ -265,7 +264,7 @@ long double GillespieSpinSystem::step()
     // Populate the neighboring energies
     emap_ptr->get_config_energies_array(_neighbors, _neighboring_energies, params.N_spins);
 
-    const double total_exit_rate = _calculate_exit_rates();
+    const double total_exit_rate = _calculate_exit_rates(current_energy);
 
     for (int ii=0; ii<params.N_spins; ii++)
     {
@@ -275,10 +274,20 @@ long double GillespieSpinSystem::step()
     // Now, we make a choice of the spin to flip
     std::discrete_distribution<int> _dist(
         _normalized_exit_rates.begin(), _normalized_exit_rates.end());
-    const int spin_to_flip = _dist(generator);
+    const int spin_to_flip = params.N_spins - 1 - _dist(generator);
+    // std::cout << "flipping: " << spin_to_flip << std::endl;
 
     // And always flip that spin in a Gillespie simulation
+    // const ap_uint<PRECISON> c1 = current_state;
+    // const std::string s1 = binary_state();
     current_state = state::flip_bit(current_state, spin_to_flip, params.N_spins);
+    // const ap_uint<PRECISON> c2 = current_state;
+    // const std::string s2 = binary_state();
+    // for (int ii=0; ii<params.N_spins; ii++){
+    //     std::cout << _normalized_exit_rates[ii] << std::endl;
+    // }
+    // std::cout << c1 << " " << c2 << std::endl;
+    // std::cout << s1 << "->" << s2 << std::endl;
 
     // Initialize the current state
     _init_current_state_();
@@ -293,7 +302,6 @@ long double GillespieSpinSystem::step()
 
 GillespieSpinSystem::~GillespieSpinSystem()
 {
-    delete[] _delta_E;
     delete[] _exit_rates;
     delete[] _neighbors;
     delete[] _neighboring_energies;
@@ -355,8 +363,6 @@ long double StandardSpinSystem::step()
         counter.rejections += 1;
     }
 
-    // This is called multiple times in the loop dynamics, eventually
-    // ending with the actual value in the loop dynamics.
     _init_current_state_();
 
     return 1.0;
