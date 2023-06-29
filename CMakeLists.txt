@@ -73,6 +73,7 @@ add_executable(
     src/spin.cpp
     src/simulation.cpp
     src/obs_energy.cpp
+    src/obs_cache_size.cpp
 )
 
 target_compile_definitions(hdspin PUBLIC -DPRECISON=${PRECISON})
