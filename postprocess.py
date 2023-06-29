@@ -75,7 +75,24 @@ def energy(all_filenames, substring, save_path):
     np.savetxt(save_path, final, fmt='%.08e')
 
 
+def cache_size(all_filenames, substring, save_path):
+
+    files = [f for f in all_filenames if substring in f]
+    if len(files) == 0:
+        return
+    arr = np.array(read_files_via_numpy(files))
+    n = arr[0, 0]
+    arr = arr[:, 1:] / n  # Percentage of cache filled
+    grid = np.loadtxt("grids/energy.txt")
+    mu = arr.mean(axis=0)
+    sd = arr.std(axis=0)
+    stderr = sem(arr, axis=0)
+    final = np.array([grid, mu, sd, stderr]).T
+    np.savetxt(save_path, final, fmt='%.08e')
+
+
 if __name__ == '__main__':
     Path(FINAL_DIRECTORY).mkdir(exist_ok=True, parents=False)
     fnames = get_all_results_filenames()
     energy(fnames, "_energy.txt", Path(FINAL_DIRECTORY) / "energy.txt")
+    cache_size(fnames, "_cache_size.txt", Path(FINAL_DIRECTORY) / "cache_size.txt")

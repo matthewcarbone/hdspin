@@ -154,6 +154,9 @@ public:
         pageMap[key] = page;
     }
 
+    ap_uint<PRECISON> get_size(){return size;}
+    ap_uint<PRECISON> get_capacity(){return capacity;}
+
     ~LRUCache()
     {
         std::unordered_map<std::string, Node*>::iterator i1;
