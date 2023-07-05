@@ -42,11 +42,14 @@ double EnergyMapping::get_config_energy(const ap_uint<PRECISON> state) const
     }
 }
 
-void EnergyMapping::get_config_energies_array(const ap_uint<PRECISON> *neighbors, double *neighboring_energies, const int bitLength)
+void EnergyMapping::get_config_energies_array_(const ap_uint<PRECISON> *neighbors, double *neighboring_energies, const unsigned int bitLength)
 {
+    unsigned int jj;
     for (int ii=0; ii<bitLength; ii++)
     {
-        neighboring_energies[ii] = get_config_energy(neighbors[ii]);
+        // Fill in reverse because of the way that bit flips work 
+        jj = bitLength - 1 - ii;
+        neighboring_energies[jj] = get_config_energy(neighbors[ii]);
     }
 }
 

@@ -12,7 +12,8 @@ protected:
 
     parameters::FileNames fnames;
     parameters::SimulationParameters params;
-    FILE *outfile;
+    FILE* outfile;
+    SpinSystem* spin_system_pointer;
 
     // The grid (in time) itself
     std::vector<long long> grid;
