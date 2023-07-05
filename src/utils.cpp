@@ -239,6 +239,11 @@ namespace parameters
         p.seed = inp.value("seed", 0);
         p.use_manual_seed = inp.value("use_manual_seed", false);
 
+        if (_key_exists(inp, "calculate_inherent_structure_observables"))
+        {
+            p.calculate_inherent_structure_observables = inp["calculate_inherent_structure_observables"];
+        }
+
         return p;
     }
 
@@ -357,10 +362,10 @@ namespace time_utils
         return oss.str();
     }
 
-    int get_time_delta(const std::chrono::time_point<std::chrono::high_resolution_clock> start)
+    double get_time_delta(const std::chrono::time_point<std::chrono::high_resolution_clock> start)
     {
         std::chrono::time_point<std::chrono::high_resolution_clock> stop = std::chrono::high_resolution_clock::now();
         const auto dur = std::chrono::duration_cast<std::chrono::seconds>(stop - start);
-        return std::chrono::duration<int>(dur).count();
+        return std::chrono::duration<double>(dur).count();
     }
 }

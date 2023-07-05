@@ -1,5 +1,5 @@
-#ifndef ENERGYMAPPING_H
-#define ENERGYMAPPING_H
+#ifndef ENERGY_MAPPING_H
+#define ENERGY_MAPPING_H
 
 #include <random>
 
@@ -26,7 +26,7 @@ protected:
 public:
     double sample_energy() const;
     double get_config_energy(const ap_uint<PRECISON>) const;
-    void get_config_energies_array(const ap_uint<PRECISON> *neighbors, double *neighboring_energies, const int bitLength);
+    void get_config_energies_array_(const ap_uint<PRECISON> *neighbors, double *neighboring_energies, const unsigned int bitLength);
     ap_uint<PRECISON> get_size(){return energy_map.get_size();}
     ap_uint<PRECISON> get_capacity(){return energy_map.get_capacity();}
     void _initialize_distributions();

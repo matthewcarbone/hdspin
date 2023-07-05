@@ -103,12 +103,6 @@ namespace state
 
 }
 
-struct Counter
-{
-    unsigned long long rejections = 0;
-    unsigned long long acceptances = 0;
-};
-
 namespace parameters
 {
 
@@ -128,24 +122,32 @@ namespace parameters
     struct SimulationParameters
     {
         int log10_N_timesteps;
-        long long N_timesteps;
         unsigned int N_spins;
         std::string landscape;
         long long memory;
         double beta;
-        double beta_critical;    
         std::string dynamics;
         int n_tracers_per_MPI_rank;
 
+        // Some defaults which are not required to be explicitly set by the user
         unsigned int seed;
-        bool use_manual_seed = false;
-        bool valid_entropic_attractor = true;
-
+        long long N_timesteps;
+        double beta_critical;
         double energetic_threshold;
         double entropic_attractor;
-
+        bool use_manual_seed = false;
+        bool valid_entropic_attractor = true;
         int grid_size = 100;
         double dw = 0.5;
+        bool calculate_inherent_structure_observables = false;
+    };
+
+    struct SimulationStatistics
+    {
+        unsigned long long rejections = 0;
+        unsigned long long acceptances = 0;
+        unsigned long long inherent_structure_calls = 0;
+        double inherent_structure_total_time = 0.0;
     };
 
     /**
@@ -239,7 +241,7 @@ namespace time_utils
      * @param start [description]
      * @return [description]
      */
-    int get_time_delta(const std::chrono::time_point<std::chrono::high_resolution_clock> start);
+    double get_time_delta(const std::chrono::time_point<std::chrono::high_resolution_clock> start);
 }
 
 #endif

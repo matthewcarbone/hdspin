@@ -30,6 +30,65 @@ void SpinSystem::_first_time_state_initialization_()
     state::arbitrary_precision_integer_from_int_array_(spin_config, params.N_spins, current_state);
 
     delete[] spin_config;
+
+    if (params.dynamics == "standard"){_init_standard();}
+    else if (params.dynamics == "gillespie"){_init_gillespie();}
+    else
+    {
+        throw std::runtime_error("Uknown dynamics during setup");
+    }
+
+}
+
+
+unsigned int _min_element(const double *arr, const unsigned int N)
+{
+    unsigned int min_el = 0;
+    for (int ii=1; ii<N; ii++)
+    {
+        if (arr[ii] < arr[min_el]){min_el = ii;}
+    }
+    return min_el;
+}
+
+
+ap_uint<PRECISON> SpinSystem::_get_inherent_structure_()
+{
+
+    auto t_start = std::chrono::high_resolution_clock::now();
+
+    unsigned int min_el;
+    double tmp_energy;
+    ap_uint<PRECISON> tmp_state = current_state;
+
+    ap_uint<PRECISON>* tmp_neighbors = 0;
+    tmp_neighbors = new ap_uint<PRECISON> [params.N_spins];
+
+    double* tmp_neighbor_energies = 0;
+    tmp_neighbor_energies = new double [params.N_spins];
+
+    while (true)
+    {
+        state::get_neighbors_(tmp_neighbors, current_state, params.N_spins);
+        emap_ptr->get_config_energies_array_(tmp_neighbors, tmp_neighbor_energies, params.N_spins);
+        min_el = _min_element(tmp_neighbor_energies, params.N_spins);
+        tmp_energy = emap_ptr->get_config_energy(tmp_state);
+
+        if (tmp_neighbor_energies[min_el] < tmp_energy)
+        {
+            // flip to new energy
+            tmp_state = tmp_neighbors[min_el];
+        }
+        else{break;}
+    }
+
+    delete[] tmp_neighbors;
+    delete[] tmp_neighbor_energies;
+
+    const double duration = time_utils::get_time_delta(t_start);
+    sim_stat.inherent_structure_total_time += duration;
+    sim_stat.inherent_structure_calls += 1;
+    return tmp_state;
 }
 
 void SpinSystem::_init_previous_state_()
@@ -78,8 +137,8 @@ std::string SpinSystem::binary_state() const
     return s;
 }
 
-GillespieSpinSystem::GillespieSpinSystem(const parameters::SimulationParameters params,
-    EnergyMapping& emap) : SpinSystem(params, emap)
+
+void SpinSystem::_init_gillespie()
 {
     // Initialize the other pointers to gillespie-only required arrays
     _exit_rates = new double[params.N_spins];
@@ -93,8 +152,15 @@ GillespieSpinSystem::GillespieSpinSystem(const parameters::SimulationParameters 
     }
 }
 
+void SpinSystem::_teardown_gillespie()
+{
+    delete[] _exit_rates;
+    delete[] _neighbors;
+    delete[] _neighboring_energies;
+}
 
-double GillespieSpinSystem::_calculate_exit_rates(const double current_energy) const
+
+double SpinSystem::_calculate_exit_rates(const double current_energy) const
 {
     double dE;
     for (int ii=0; ii<params.N_spins; ii++)
@@ -117,7 +183,7 @@ double GillespieSpinSystem::_calculate_exit_rates(const double current_energy) c
     return total_exit_rate;
 }
 
-long double GillespieSpinSystem::step()
+double SpinSystem::_step_gillespie()
 {
 
     // Initialize the current state as _prev
@@ -130,7 +196,7 @@ long double GillespieSpinSystem::step()
     state::get_neighbors_(_neighbors, current_state, params.N_spins);
 
     // Populate the neighboring energies
-    emap_ptr->get_config_energies_array(_neighbors, _neighboring_energies, params.N_spins);
+    emap_ptr->get_config_energies_array_(_neighbors, _neighboring_energies, params.N_spins);
 
     const double total_exit_rate = _calculate_exit_rates(current_energy);
 
@@ -145,7 +211,7 @@ long double GillespieSpinSystem::step()
 
     // The spin to flip is actually on the "opposite side" because of how
     // bits work
-    const int spin_to_flip = params.N_spins - 1 - _dist(generator);
+    const int spin_to_flip = _dist(generator);
 
     // And always flip that spin in a Gillespie simulation
     current_state = state::flip_bit(current_state, spin_to_flip, params.N_spins);
@@ -161,23 +227,16 @@ long double GillespieSpinSystem::step()
     return total_exit_rate_dist(generator);
 }
 
-GillespieSpinSystem::~GillespieSpinSystem()
-{
-    delete[] _exit_rates;
-    delete[] _neighbors;
-    delete[] _neighboring_energies;
-}
 
-StandardSpinSystem::StandardSpinSystem(const parameters::SimulationParameters params, EnergyMapping& emap) : SpinSystem(params, emap)
+void SpinSystem::_init_standard()
 {
     uniform_0_1_distribution.param(
         std::uniform_real_distribution<>::param_type(0.0, 1.0));
     spin_distribution.param(
         std::uniform_int_distribution<>::param_type(0, params.N_spins - 1));
-};
+}
 
-
-long double StandardSpinSystem::step()
+double SpinSystem::_step_standard()
 {
 
     // Initialize the current state as _prev
@@ -214,11 +273,11 @@ long double StandardSpinSystem::step()
     if (sampled <= metropolis_prob)  // accept
     {
         current_state = possible_state;
-        counter.acceptances += 1;
+        sim_stat.acceptances += 1;
     }
     else
     {
-        counter.rejections += 1;
+        sim_stat.rejections += 1;
     }
 
     _init_current_state_();
@@ -226,9 +285,26 @@ long double StandardSpinSystem::step()
     return 1.0;
 }
 
+void SpinSystem::_teardown_standard(){;}
 
-void StandardSpinSystem::summarize()
+
+void SpinSystem::summarize()
 {
-    printf("Acceptances/rejections: %lli/%lli\n", counter.acceptances, counter.rejections);
+    printf("Acceptances/rejections: %lli/%lli\n", sim_stat.acceptances, sim_stat.rejections);
 }
 
+double SpinSystem::step()
+{
+    if (params.dynamics == "standard"){return _step_standard();}
+    else if (params.dynamics == "gillespie"){return _step_gillespie();}
+    else
+    {
+        throw std::runtime_error("Uknown dynamics during step");
+    }
+}
+
+SpinSystem::~SpinSystem()
+{
+    if (params.dynamics == "standard"){_teardown_standard();}
+    else if (params.dynamics == "gillespie"){_teardown_gillespie();}
+}

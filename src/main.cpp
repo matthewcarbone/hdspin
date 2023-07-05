@@ -101,27 +101,8 @@ int main(int argc, char *argv[])
         p.seed = starting_seed + ii + MPI_RANK * n_tracers_per_MPI_rank;
 
         // Run dynamics START -------------------------------------------------
-        if (p.dynamics == "gillespie")
-        {
-            GillespieSimulation gillespie_sim(fnames, p);
-            gillespie_sim.execute();
-        }
-        else if (p.dynamics == "standard")
-        {
-            StandardSimulation standard_sim(fnames, p);
-            standard_sim.execute();
-        }
-        else if (p.dynamics == "auto")
-        {
-            // TODO
-            printf("Unsupported dynamics (auto)");
-            MPI_Abort(MPI_COMM_WORLD, 1);   
-        }
-        else
-        {
-            printf("Unsupported dynamics (unknown)");
-            MPI_Abort(MPI_COMM_WORLD, 1);
-        }
+        Simulation sim(fnames, p);
+        sim.execute();
         // Run dynamics END ---------------------------------------------------
 
         const int duration = time_utils::get_time_delta(t_start);
