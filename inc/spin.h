@@ -15,7 +15,7 @@ protected:
     parameters::SimulationParameters params;
     EnergyMapping* emap_ptr;
     ap_uint<PRECISON> current_state;
-    parameters::SimulationStatistics sim_stat;
+    parameters::SimulationStatistics sim_stats;
 
     // Gillespie only //////////////////////////////////////////////////////
     // Pointer to the delta E and exit rates
@@ -108,6 +108,8 @@ public:
 
     parameters::StateProperties get_previous_state() const {return _prev;}
     parameters::StateProperties get_current_state() const {return _curr;}
+    EnergyMapping* get_emap_ptr() const {return emap_ptr;}
+    parameters::SimulationStatistics get_sim_stats() const {return sim_stats;}
     // double get_average_neighboring_energy() const;
     
     double _step_standard();

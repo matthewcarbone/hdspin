@@ -256,6 +256,8 @@ namespace parameters
 
         fnames.energy = "data/" + ii_str + "_energy.txt";
         fnames.cache_size = "data/" + ii_str + "_cache_size.txt";
+        fnames.acceptance_rate = "data/" + ii_str + "_acceptance_rate.txt";
+        fnames.inherent_structure_timings = "data/" + ii_str + "_inherent_structure_timings.txt";
 
         fnames.ii_str = ii_str;
         fnames.grids_directory = "grids";
