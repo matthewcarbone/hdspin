@@ -2,8 +2,7 @@
 
 #include "simulation.h"
 #include "spin.h"
-#include "obs_energy.h"
-#include "obs_cache_size.h"
+#include "obs1.h"
 
 
 Simulation::Simulation(const parameters::FileNames fnames,
@@ -22,8 +21,7 @@ void Simulation::execute()
     // Simulation parameters
     double simulation_clock = 0.0;
 
-    Energy obs_energy(fnames, params);
-    CacheSize obs_cache_size(fnames, emap);
+    OnePointObservables obs1(fnames, params, sys);
 
     // Simulation clock is 0 before entering the while loop
     while (true)
@@ -44,8 +42,7 @@ void Simulation::execute()
         curr = sys.get_current_state();
 
         // Step observables
-        obs_energy.step(simulation_clock, prev.energy);
-        obs_cache_size.step(simulation_clock);
+        obs1.step(simulation_clock);
 
         if (simulation_clock > params.N_timesteps){break;}
     }

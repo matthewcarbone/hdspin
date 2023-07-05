@@ -86,8 +86,8 @@ ap_uint<PRECISON> SpinSystem::_get_inherent_structure_()
     delete[] tmp_neighbor_energies;
 
     const double duration = time_utils::get_time_delta(t_start);
-    sim_stat.inherent_structure_total_time += duration;
-    sim_stat.inherent_structure_calls += 1;
+    sim_stats.inherent_structure_total_time += duration;
+    sim_stats.inherent_structure_calls += 1;
     return tmp_state;
 }
 
@@ -224,6 +224,7 @@ double SpinSystem::_step_gillespie()
         std::exponential_distribution<long double>::param_type(total_exit_rate));
 
     // Return the waiting time which is generally != 1
+    sim_stats.acceptances += 1;  // Gillespie always accepts! =)
     return total_exit_rate_dist(generator);
 }
 
@@ -273,11 +274,11 @@ double SpinSystem::_step_standard()
     if (sampled <= metropolis_prob)  // accept
     {
         current_state = possible_state;
-        sim_stat.acceptances += 1;
+        sim_stats.acceptances += 1;
     }
     else
     {
-        sim_stat.rejections += 1;
+        sim_stats.rejections += 1;
     }
 
     _init_current_state_();
@@ -290,11 +291,12 @@ void SpinSystem::_teardown_standard(){;}
 
 void SpinSystem::summarize()
 {
-    printf("Acceptances/rejections: %lli/%lli\n", sim_stat.acceptances, sim_stat.rejections);
+    printf("Acceptances/rejections: %lli/%lli\n", sim_stats.acceptances, sim_stats.rejections);
 }
 
 double SpinSystem::step()
 {
+    sim_stats.total_steps += 1;
     if (params.dynamics == "standard"){return _step_standard();}
     else if (params.dynamics == "gillespie"){return _step_gillespie();}
     else
@@ -307,4 +309,7 @@ SpinSystem::~SpinSystem()
 {
     if (params.dynamics == "standard"){_teardown_standard();}
     else if (params.dynamics == "gillespie"){_teardown_gillespie();}
+
+    // Else both to be safe
+    else{_teardown_standard(); _teardown_gillespie();}
 }

@@ -116,7 +116,11 @@ namespace parameters
 
     struct FileNames
     {
-        std::string energy, cache_size, ii_str, grids_directory;
+        // utilities
+        std::string ii_str, grids_directory;
+
+        // observables
+        std::string energy, cache_size, acceptance_rate, inherent_structure_timings;
     };
 
     struct SimulationParameters
@@ -148,6 +152,7 @@ namespace parameters
         unsigned long long acceptances = 0;
         unsigned long long inherent_structure_calls = 0;
         double inherent_structure_total_time = 0.0;
+        unsigned long long total_steps = 0;
     };
 
     /**
