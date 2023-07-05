@@ -22,9 +22,9 @@ void CacheSize::step(const long double simulation_clock)
     if (pointer > grid_length - 1){return;}
 
     // Write to the outfile
+    const std::string cache_size_string = std::string(emap_ptr->get_size());
     while (grid[pointer] < simulation_clock)
     {   
-        const std::string cache_size_string = std::string(emap_ptr->get_size());
         fprintf(outfile, "%s\n", cache_size_string.c_str());
 
         pointer += 1;

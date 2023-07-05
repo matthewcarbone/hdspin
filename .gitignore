@@ -1,3 +1,4 @@
+build/
 hdspin.sublime*
 .ipynb_checkpoints/
 *.ipynb

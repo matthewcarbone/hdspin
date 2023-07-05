@@ -15,7 +15,25 @@ protected:
     parameters::SimulationParameters params;
     EnergyMapping* emap_ptr;
     ap_uint<PRECISON> current_state;
-    Counter counter;
+    parameters::SimulationStatistics sim_stat;
+
+    // Gillespie only //////////////////////////////////////////////////////
+    // Pointer to the delta E and exit rates
+    double *_exit_rates = 0;
+    ap_uint<PRECISON> *_neighbors = 0;
+    double *_neighboring_energies = 0;
+    std::vector<double> _normalized_exit_rates;
+    std::exponential_distribution<long double> total_exit_rate_dist;
+
+    // Fills the exit_rates and delta_E arrays and returns the total exit
+    // rate.
+    double _calculate_exit_rates(const double current_energy) const;
+    ////////////////////////////////////////////////////////////////////////
+
+    // Standard only
+    std::uniform_real_distribution<> uniform_0_1_distribution;
+    std::uniform_int_distribution<> spin_distribution;
+    ////////////////////////////////////////////////////////////////////////
 
     // Initialize the MT random number generator and seed with random_device
     // This is seeded in the constructor
@@ -37,17 +55,13 @@ protected:
      */
     void _first_time_state_initialization_();
 
-    /**
-     * @brief [brief description]
-     * @details [long description]
-     */
-    void _fill_neighbors_();
+    void _init_gillespie();
+    void _teardown_gillespie();
+    void _init_standard();
+    void _teardown_standard();
 
-    /**
-     * @brief [brief description]
-     * @details [long description]
-     */
-    void _fill_neighboring_energies_();
+
+    ap_uint<PRECISON> _get_inherent_structure_();
 
     // void _helper_fill_neighboring_energies(int *, int, double *) const;
     // long long _help_get_inherent_structure() const;
@@ -95,56 +109,13 @@ public:
     parameters::StateProperties get_previous_state() const {return _prev;}
     parameters::StateProperties get_current_state() const {return _curr;}
     // double get_average_neighboring_energy() const;
-    // ~SpinSystem();
-};
-
-
-class GillespieSpinSystem : public SpinSystem
-{
-private:
-
-    // Pointer to the delta E and exit rates
-    double *_exit_rates = 0;
-    ap_uint<PRECISON> *_neighbors = 0;
-    double *_neighboring_energies = 0;
-
-    std::vector<double> _normalized_exit_rates;
-    std::exponential_distribution<long double> total_exit_rate_dist;
-
-    // Fills the exit_rates and delta_E arrays and returns the total exit
-    // rate.
-    double _calculate_exit_rates(const double current_energy) const;
-
-public:
-    GillespieSpinSystem(const parameters::SimulationParameters params, EnergyMapping& emap);
-
-    // Step computes the neighboring energies, delta E values and exit rates,
-    // then based on that information, steps the spin configuration and
-    // returns the waiting time. Note that a Gillespie step is always accepted.
-    long double step();
-
-    ~GillespieSpinSystem();
-};
-
-
-class StandardSpinSystem : public SpinSystem
-{
-private:
-    std::uniform_real_distribution<> uniform_0_1_distribution;
-    std::uniform_int_distribution<> spin_distribution;
-
-public:
-    StandardSpinSystem(const parameters::SimulationParameters params, EnergyMapping& emap);
-
-    // Step executes a possible alteration in the state, but not always. Thus,
-    // the standard step actually returns whether or not the new state was
-    // accepted: if there was a rejection, return false, else, if the proposed
-    // state was accepted, return true.
-    long double step();
+    
+    double _step_standard();
+    double _step_gillespie();
+    double step();
     void summarize();
+
+    ~SpinSystem();
 };
-
-
-
 
 #endif
