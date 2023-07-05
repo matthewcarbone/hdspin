@@ -94,5 +94,10 @@ def cache_size(all_filenames, substring, save_path):
 if __name__ == '__main__':
     Path(FINAL_DIRECTORY).mkdir(exist_ok=True, parents=False)
     fnames = get_all_results_filenames()
+
+    # Energy is the standard one-point observable
     energy(fnames, "_energy.txt", Path(FINAL_DIRECTORY) / "energy.txt")
+    energy(fnames, "_acceptance_rate.txt", Path(FINAL_DIRECTORY) / "acceptance_rate.txt")
+
+    # ...
     cache_size(fnames, "_cache_size.txt", Path(FINAL_DIRECTORY) / "cache_size.txt")
