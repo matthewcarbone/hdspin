@@ -23,7 +23,7 @@ protected:
     ap_uint<PRECISON> *_neighbors = 0;
     double *_neighboring_energies = 0;
     std::vector<double> _normalized_exit_rates;
-    std::exponential_distribution<long double> total_exit_rate_dist;
+    std::exponential_distribution<double> total_exit_rate_dist;
 
     // Fills the exit_rates and delta_E arrays and returns the total exit
     // rate.
@@ -46,7 +46,7 @@ protected:
 
 
     // Initialize some objects for storing the previous and current values of
-    // things:
+    // things. This is required for some of the 2-point observables.
     parameters::StateProperties _prev, _curr;
 
     /**
