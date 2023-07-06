@@ -222,7 +222,7 @@ double SpinSystem::_step_gillespie()
 
     // Calculate the waiting time
     total_exit_rate_dist.param(
-        std::exponential_distribution<long double>::param_type(total_exit_rate));
+        std::exponential_distribution<double>::param_type(total_exit_rate));
 
     // Return the waiting time which is generally != 1
     sim_stats.acceptances += 1;  // Gillespie always accepts! =)

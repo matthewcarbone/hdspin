@@ -94,10 +94,10 @@ int main(int argc, char *argv[])
     MPI_Barrier(MPI_COMM_WORLD);
 
     // Get the information for this MPI rank
-    const int n_tracers_per_MPI_rank = p.n_tracers_per_MPI_rank;
-    const int resume_at = 0;
-    const int start = resume_at + MPI_RANK * n_tracers_per_MPI_rank;
-    const int end = resume_at + (MPI_RANK + 1) * n_tracers_per_MPI_rank;
+    const unsigned int n_tracers_per_MPI_rank = p.n_tracers_per_MPI_rank;
+    const unsigned int resume_at = 0;
+    const unsigned int start = resume_at + MPI_RANK * n_tracers_per_MPI_rank;
+    const unsigned int end = resume_at + (MPI_RANK + 1) * n_tracers_per_MPI_rank;
 
     // So everything prints cleanly
     printf("RANK %i/%i ID's %i -> %i\n", MPI_RANK, MPI_WORLD_SIZE, start, end);
@@ -122,14 +122,14 @@ int main(int argc, char *argv[])
     MPI_Barrier(MPI_COMM_WORLD);
 
     // Define some helpers to be used to track progress.
-    const int total_steps = end - start;
-    int step_size = total_steps / 50; // Print at 50 percent steps
+    const unsigned int total_steps = end - start;
+    unsigned int step_size = total_steps / 10; // Print at 10 percent steps
     if (step_size == 0){step_size = 1;}
-    int loop_count = 0;
+    unsigned int loop_count = 0;
 
     auto global_start = std::chrono::high_resolution_clock::now();
 
-    const int starting_seed = p.seed;
+    const unsigned int starting_seed = p.seed;
 
     for(int ii=start; ii<end; ii++)
     {
@@ -146,7 +146,7 @@ int main(int argc, char *argv[])
         execute(fnames, p);
         // Run dynamics END ---------------------------------------------------
 
-        const int duration = time_utils::get_time_delta(t_start);
+        const double duration = time_utils::get_time_delta(t_start);
 
         loop_count++;
 
@@ -158,7 +158,7 @@ int main(int argc, char *argv[])
                 const double global_duration = time_utils::get_time_delta(global_start);
                 
                 printf(
-                    "%s ~ %s done in %i s (%i/%i) total elapsed %.01f s\n", dt_string.c_str(), fnames.ii_str.c_str(), duration, loop_count, total_steps, global_duration
+                    "%s ~ %s done in %.01f s (%i/%i) total elapsed %.01f s\n", dt_string.c_str(), fnames.ii_str.c_str(), duration, loop_count, total_steps, global_duration
                 );
                 fflush(stdout);
             }
