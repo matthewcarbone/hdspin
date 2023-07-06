@@ -114,10 +114,10 @@ int main(int argc, char *argv[])
             if (loop_count % step_size == 0 | loop_count == 1)
             {
                 const std::string dt_string = time_utils::get_datetime();
-                const int global_duration = time_utils::get_time_delta(global_start);
+                const double global_duration = time_utils::get_time_delta(global_start);
                 
                 printf(
-                    "%s ~ %s done in %i s (%i/%i) total elapsed %i s\n", dt_string.c_str(), fnames.ii_str.c_str(), duration, loop_count, total_steps, global_duration
+                    "%s ~ %s done in %i s (%i/%i) total elapsed %.01f s\n", dt_string.c_str(), fnames.ii_str.c_str(), duration, loop_count, total_steps, global_duration
                 );
                 fflush(stdout);
             }
