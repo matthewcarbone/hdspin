@@ -1,3 +1,4 @@
+#include <unistd.h>
 #include <cstring>
 #include <random>
 
@@ -296,13 +297,25 @@ void SpinSystem::summarize()
 
 double SpinSystem::step()
 {
-    sim_stats.total_steps += 1;
-    if (params.dynamics == "standard"){return _step_standard();}
-    else if (params.dynamics == "gillespie"){return _step_gillespie();}
+    auto t_start = std::chrono::high_resolution_clock::now();    
+    double waiting_time;
+    if (params.dynamics == "standard")
+    {
+        waiting_time = _step_standard();
+    }
+    else if (params.dynamics == "gillespie")
+    {
+        waiting_time = _step_gillespie();
+    }
     else
     {
         throw std::runtime_error("Uknown dynamics during step");
     }
+    const double duration = time_utils::get_time_delta(t_start);
+    sim_stats.total_wall_time += duration;
+    sim_stats.total_waiting_time += waiting_time;
+    sim_stats.total_steps += 1;
+    return waiting_time;
 }
 
 SpinSystem::~SpinSystem()
