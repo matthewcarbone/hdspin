@@ -11,8 +11,50 @@
 #include <mpi.h>
 
 #include "utils.h"
-#include "simulation.h"
+#include "spin.h"
+#include "obs1.h"
 
+
+void step_all_observables_(const double simulation_clock, OnePointObservables& obs1)
+{
+    obs1.step(simulation_clock);
+}
+
+void execute(const parameters::FileNames fnames,
+    const parameters::SimulationParameters params)
+{
+    EnergyMapping emap(params);
+    SpinSystem sys(params, emap);
+
+    // Special case of the standard spin dynamics: if rtp.loop_dynamics == 2,
+    // then the timestep is divided by rtp.N_spins.
+    double waiting_time;
+
+    // Simulation parameters
+    double simulation_clock = 0.0;
+
+    OnePointObservables obs1(fnames, params, sys);
+
+    // Simulation clock is 0 before entering the while loop
+    while (true)
+    {
+        
+        // Standard step returns a boolean flag which is true if the new
+        // proposed configuration was accepted or not.
+        waiting_time = sys.step();
+
+        // The waiting time is always 1.0 for a standard simulation. We take
+        // the convention that the "prev" structure indexes the state of the
+        // spin system before the step, and that all observables are indexed
+        // by the state after the step. Thus, we step the simulation_clock
+        // before stepping the observables.
+        simulation_clock += waiting_time;
+
+        step_all_observables_(simulation_clock, obs1);
+
+        if (simulation_clock > params.N_timesteps){break;}
+    }
+}
 
 int main(int argc, char *argv[])
 {
@@ -101,8 +143,7 @@ int main(int argc, char *argv[])
         p.seed = starting_seed + ii + MPI_RANK * n_tracers_per_MPI_rank;
 
         // Run dynamics START -------------------------------------------------
-        Simulation sim(fnames, p);
-        sim.execute();
+        execute(fnames, p);
         // Run dynamics END ---------------------------------------------------
 
         const int duration = time_utils::get_time_delta(t_start);
