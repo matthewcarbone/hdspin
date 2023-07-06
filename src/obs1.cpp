@@ -1,7 +1,7 @@
 #include "obs1.h"
 #include "utils.h"
 
-OnePointObservables::OnePointObservables(const parameters::FileNames fnames, parameters::SimulationParameters params, SpinSystem& spin_system) : fnames(fnames), params(params)
+OnePointObservables::OnePointObservables(const parameters::FileNames fnames, const parameters::SimulationParameters params, const SpinSystem& spin_system) : fnames(fnames), params(params)
 {
     const std::string grid_location = fnames.grids_directory + "/energy.txt";
     grids::load_long_long_grid_(grid, grid_location);
@@ -22,6 +22,9 @@ OnePointObservables::OnePointObservables(const parameters::FileNames fnames, par
 
     // Acceptance rate observable
     outfile_inherent_structure_timings = fopen(fnames.inherent_structure_timings.c_str(), "w");
+
+    // Wall time/timestep
+    outfile_walltime_per_waitingtime = fopen(fnames.walltime_per_waitingtime.c_str(), "w");
 }
 
 void OnePointObservables::step(const double simulation_clock)
@@ -52,6 +55,7 @@ void OnePointObservables::step(const double simulation_clock)
         fprintf(outfile_capacity, "%s\n", cache_size_string.c_str());
         fprintf(outfile_acceptance_rate, "%.08f\n", acceptance_rate);
         fprintf(outfile_inherent_structure_timings, "%.08f\n", inherent_structure_time_per_timestep);
+        fprintf(outfile_walltime_per_waitingtime, "%.08f\n", sim_stats.total_wall_time/sim_stats.total_waiting_time);
 
         pointer += 1;
         if (pointer > grid_length - 1){return;}
@@ -64,5 +68,6 @@ OnePointObservables::~OnePointObservables()
     fclose(outfile_capacity);
     fclose(outfile_acceptance_rate);
     fclose(outfile_inherent_structure_timings);
+    fclose(outfile_walltime_per_waitingtime);
 }
 

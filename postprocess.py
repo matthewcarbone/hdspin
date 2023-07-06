@@ -98,6 +98,7 @@ if __name__ == '__main__':
     # Energy is the standard one-point observable
     energy(fnames, "_energy.txt", Path(FINAL_DIRECTORY) / "energy.txt")
     energy(fnames, "_acceptance_rate.txt", Path(FINAL_DIRECTORY) / "acceptance_rate.txt")
+    energy(fnames, "_walltime_per_waitingtime.txt", Path(FINAL_DIRECTORY) / "walltime_per_waitingtime.txt")
 
     # ...
     cache_size(fnames, "_cache_size.txt", Path(FINAL_DIRECTORY) / "cache_size.txt")

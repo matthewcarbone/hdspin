@@ -258,6 +258,7 @@ namespace parameters
         fnames.cache_size = "data/" + ii_str + "_cache_size.txt";
         fnames.acceptance_rate = "data/" + ii_str + "_acceptance_rate.txt";
         fnames.inherent_structure_timings = "data/" + ii_str + "_inherent_structure_timings.txt";
+        fnames.walltime_per_waitingtime = "data/" + ii_str + "_walltime_per_waitingtime.txt";
 
         fnames.ii_str = ii_str;
         fnames.grids_directory = "grids";
@@ -367,7 +368,7 @@ namespace time_utils
     double get_time_delta(const std::chrono::time_point<std::chrono::high_resolution_clock> start)
     {
         std::chrono::time_point<std::chrono::high_resolution_clock> stop = std::chrono::high_resolution_clock::now();
-        const auto dur = std::chrono::duration_cast<std::chrono::seconds>(stop - start);
+        const auto dur = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
         return std::chrono::duration<double>(dur).count();
     }
 }
