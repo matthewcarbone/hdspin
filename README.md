@@ -6,6 +6,13 @@ REM/EREM sandbox
 The `hdspin` repository requires no external libraries whatsoever, everything is self-contained. Building the code should be simple via CMake.
 
 ```bash
+git clone git@github.com:matthewcarbone/hdspin.git
+cd hdspin
+# Checkout to appropriate branch,
+# probably master but could be mc/remove-all-vectors right now 
+git checkout mc/remove-all-vectors
+git submodule init
+git submodule update
 cmake -S . -B build -DPRECISON=256 -DBUILD_TESTS=ON -DSMOKE=ON 
 cd build
 make
