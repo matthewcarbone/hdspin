@@ -90,6 +90,12 @@ TEST_CASE("Test spin emap", "[spin]")
     REQUIRE(test_basic_lru_cache_with_spin());
 }
 
+TEST_CASE("Test inherent structure", "[spin]")
+{
+    // REQUIRE(test_inherent_structure());
+    REQUIRE(test_inherent_structure_min_is_min());
+}
+
 // int main(int argc, char const *argv[])
 // {
 

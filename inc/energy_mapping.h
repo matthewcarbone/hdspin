@@ -9,7 +9,7 @@
 class EnergyMapping
 {
 protected:
-    parameters::SimulationParameters parameters;
+    parameters::SimulationParameters params;
 
     // Initialize the MT random number generator and seed with random_device
     // This is seeded in the constructor
@@ -26,11 +26,18 @@ protected:
 public:
     double sample_energy() const;
     double get_config_energy(const ap_uint<PRECISON>) const;
-    void get_config_energies_array_(const ap_uint<PRECISON> *neighbors, double *neighboring_energies, const unsigned int bitLength);
+    void get_config_energies_array_(const ap_uint<PRECISON> *neighbors, double *neighboring_energies, const unsigned int bitLength) const;
     ap_uint<PRECISON> get_size(){return energy_map.get_size();}
     ap_uint<PRECISON> get_capacity(){return energy_map.get_capacity();}
     void _initialize_distributions();
     EnergyMapping(const parameters::SimulationParameters);
+    /**
+     * @brief Gets the inherent structure only
+     * @details [long description]
+     * @return [description]
+     */
+    ap_uint<PRECISON> get_inherent_structure(const ap_uint<PRECISON> state) const;
+
 };
 
 #endif

@@ -60,7 +60,7 @@ def get_all_results_filenames():
     return [str(f) for f in fnames]
 
 
-def energy(all_filenames, substring, save_path):
+def obs1(all_filenames, substring, save_path):
     """Processes files that have returned energy information."""
 
     files = [f for f in all_filenames if substring in f]
@@ -95,10 +95,12 @@ if __name__ == '__main__':
     Path(FINAL_DIRECTORY).mkdir(exist_ok=True, parents=False)
     fnames = get_all_results_filenames()
 
-    # Energy is the standard one-point observable
-    energy(fnames, "_energy.txt", Path(FINAL_DIRECTORY) / "energy.txt")
-    energy(fnames, "_acceptance_rate.txt", Path(FINAL_DIRECTORY) / "acceptance_rate.txt")
-    energy(fnames, "_walltime_per_waitingtime.txt", Path(FINAL_DIRECTORY) / "walltime_per_waitingtime.txt")
+    # Handle all _standard_ one-point observables
+    obs1(fnames, "_energy.txt", Path(FINAL_DIRECTORY) / "energy.txt")
+    obs1(fnames, "_energy_IS.txt", Path(FINAL_DIRECTORY) / "energy_IS.txt")
+    obs1(fnames, "_acceptance_rate.txt", Path(FINAL_DIRECTORY) / "acceptance_rate.txt")
+    obs1(fnames, "_inherent_structure_timings.txt", Path(FINAL_DIRECTORY) / "inherent_structure_timings.txt")
+    obs1(fnames, "_walltime_per_waitingtime.txt", Path(FINAL_DIRECTORY) / "walltime_per_waitingtime.txt")
 
     # ...
     cache_size(fnames, "_cache_size.txt", Path(FINAL_DIRECTORY) / "cache_size.txt")
