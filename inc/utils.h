@@ -150,8 +150,6 @@ namespace parameters
     {
         unsigned long long rejections = 0;
         unsigned long long acceptances = 0;
-        unsigned long long inherent_structure_calls = 0;
-        double inherent_structure_total_time = 0.0;
         unsigned long long total_steps = 0;
         double total_wall_time = 0.0;
         double total_waiting_time = 0.0;

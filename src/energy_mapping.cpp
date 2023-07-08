@@ -50,8 +50,6 @@ void EnergyMapping::get_config_energies_array_(const ap_uint<PRECISON> *neighbor
     }
 }
 
-
-
 void EnergyMapping::_initialize_distributions()
 {
     if (params.use_manual_seed == true)

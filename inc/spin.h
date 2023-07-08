@@ -103,13 +103,6 @@ public:
      */
     std::string binary_state() const;
 
-    /**
-     * @brief Gets the inherent structure and logs timing information
-     * @details [long description]
-     * @return [description]
-     */
-    ap_uint<PRECISON> get_inherent_structure_();
-
     parameters::StateProperties get_previous_state() const {return _prev;}
     parameters::StateProperties get_current_state() const {return _curr;}
     EnergyMapping* get_emap_ptr() const {return emap_ptr;}

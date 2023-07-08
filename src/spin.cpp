@@ -41,17 +41,6 @@ void SpinSystem::_first_time_state_initialization_()
 
 }
 
-ap_uint<PRECISON> SpinSystem::get_inherent_structure_()
-{
-
-    auto t_start = std::chrono::high_resolution_clock::now();
-    const ap_uint<PRECISON> tmp_state = emap_ptr->get_inherent_structure(current_state);
-    const double duration = time_utils::get_time_delta(t_start);
-    sim_stats.inherent_structure_total_time += duration;
-    sim_stats.inherent_structure_calls += 1;
-    return tmp_state;
-}
-
 void SpinSystem::_init_previous_state_()
 {
     _prev.state = current_state;
