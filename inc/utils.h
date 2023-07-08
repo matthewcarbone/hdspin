@@ -62,12 +62,12 @@ namespace state
      * @details Using binary operations (bit shifts) and arbitrary precision
      * integers, finds all neighbors in the binary bit-shift space.
      * 
-     * @param n ap_uint<PRECISON> * Pointer to an array of neighbors to be populated
-     * @param bitLength ap_uint<PRECISON> The binary representation of the state of which we
+     * @param neighbors ap_uint<PRECISON>* Pointer to an array of neighbors to be populated
+     * @param n ap_uint<PRECISON> The binary representation of the state of which we
      * want to find the neighbors of
-     * @param int The number of spins (bitlength)
+     * @param bitLength int
      */
-    void get_neighbors_(ap_uint<PRECISON> *neighbors, ap_uint<PRECISON> n, int bitLength);
+    void get_neighbors_(ap_uint<PRECISON>* neighbors, ap_uint<PRECISON> n, int bitLength);
 
     /**
      * @brief Flips a specific spin in the bit representation
@@ -120,7 +120,7 @@ namespace parameters
         std::string ii_str, grids_directory;
 
         // observables
-        std::string energy, cache_size, acceptance_rate, inherent_structure_timings, walltime_per_waitingtime;
+        std::string energy, energy_IS, cache_size, acceptance_rate, walltime_per_waitingtime;
     };
 
     struct SimulationParameters

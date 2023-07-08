@@ -17,6 +17,7 @@ protected:
 
     // Output files
     FILE* outfile_energy;
+    FILE* outfile_energy_IS;
     FILE* outfile_capacity;
     FILE* outfile_acceptance_rate;
     FILE* outfile_inherent_structure_timings;

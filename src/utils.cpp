@@ -39,10 +39,10 @@ namespace state
     void get_neighbors_(ap_uint<PRECISON> *neighbors, ap_uint<PRECISON> n,
         int bitLength)
     {   
-        for (int b = 0; b < bitLength; b++)
+        for (int b=0; b<bitLength; b++)
         {
             ap_uint<PRECISON> one = 1;
-            neighbors[b] = n ^ (one << b);
+            neighbors[bitLength - 1 - b] = n ^ (one << b);
         }
     }
 
@@ -129,12 +129,11 @@ namespace parameters
         SimulationParameters p;
 
         // Run assertions
-        const int N_required_parameters = 7;
+        const int N_required_parameters = 6;
         const std::string required_parameters[N_required_parameters] = {
             "log10_N_timesteps",
             "N_spins",
             "landscape",
-            "memory",
             "beta",
             "dynamics",
             "n_tracers_per_MPI_rank"
@@ -190,12 +189,19 @@ namespace parameters
         }
 
         // Memory status
-        p.memory = int(inp["memory"]);
-        if (p.memory < -1 || p.memory == 0)
+        if (_key_exists(inp, "memory"))
         {
-            throw std::runtime_error("Invalid memory value");
+            p.memory = int(inp["memory"]);
+            if (p.memory < -1 || p.memory == 0)
+            {
+                throw std::runtime_error("Invalid memory value");
+            }
         }
-
+        else
+        {
+            p.memory = pow(2, 28);
+        }
+        
         p.n_tracers_per_MPI_rank = int(inp["n_tracers_per_MPI_rank"]);
 
         // Get the energy barrier information
@@ -255,9 +261,9 @@ namespace parameters
         FileNames fnames;
 
         fnames.energy = "data/" + ii_str + "_energy.txt";
+        fnames.energy_IS = "data/" + ii_str + "_energy_IS.txt";
         fnames.cache_size = "data/" + ii_str + "_cache_size.txt";
         fnames.acceptance_rate = "data/" + ii_str + "_acceptance_rate.txt";
-        fnames.inherent_structure_timings = "data/" + ii_str + "_inherent_structure_timings.txt";
         fnames.walltime_per_waitingtime = "data/" + ii_str + "_walltime_per_waitingtime.txt";
 
         fnames.ii_str = ii_str;
@@ -372,3 +378,6 @@ namespace time_utils
         return std::chrono::duration<double>(dur).count();
     }
 }
+
+
+

@@ -15,13 +15,13 @@ protected:
     parameters::SimulationParameters params;
     EnergyMapping* emap_ptr;
     ap_uint<PRECISON> current_state;
-    parameters::SimulationStatistics sim_stats;
+    mutable parameters::SimulationStatistics sim_stats;
 
     // Gillespie only //////////////////////////////////////////////////////
     // Pointer to the delta E and exit rates
-    double *_exit_rates = 0;
-    ap_uint<PRECISON> *_neighbors = 0;
-    double *_neighboring_energies = 0;
+    double* _exit_rates = 0;
+    ap_uint<PRECISON>* _neighbors = 0;
+    double* _neighboring_energies = 0;
     std::vector<double> _normalized_exit_rates;
     std::exponential_distribution<double> total_exit_rate_dist;
 
@@ -59,9 +59,6 @@ protected:
     void _teardown_gillespie();
     void _init_standard();
     void _teardown_standard();
-
-
-    ap_uint<PRECISON> _get_inherent_structure_();
 
     // void _helper_fill_neighboring_energies(int *, int, double *) const;
     // long long _help_get_inherent_structure() const;
@@ -105,6 +102,13 @@ public:
      * @return [description]
      */
     std::string binary_state() const;
+
+    /**
+     * @brief Gets the inherent structure and logs timing information
+     * @details [long description]
+     * @return [description]
+     */
+    ap_uint<PRECISON> get_inherent_structure_();
 
     parameters::StateProperties get_previous_state() const {return _prev;}
     parameters::StateProperties get_current_state() const {return _curr;}
