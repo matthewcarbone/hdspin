@@ -104,8 +104,7 @@ bool test_neighbors_correct(const unsigned int seed, const unsigned int arr_size
     for (int ii=0; ii<arr_size; ii++)
     {
         const ap_uint<PRECISON> val1 = neighbors_method_1[ii];
-        const int jj = arr_size - ii - 1;
-        const ap_uint<PRECISON> val2 = neighbors_method_2[jj];
+        const ap_uint<PRECISON> val2 = neighbors_method_2[ii];
         // std::cout << val1 << " " << val2 << " " << std::string(val1) << " " << std::string(val2) << std::endl;
         if (val1 != val2){return false;}
     }

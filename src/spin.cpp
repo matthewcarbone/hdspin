@@ -41,51 +41,11 @@ void SpinSystem::_first_time_state_initialization_()
 
 }
 
-
-unsigned int _min_element(const double *arr, const unsigned int N)
-{
-    unsigned int min_el = 0;
-    for (int ii=1; ii<N; ii++)
-    {
-        if (arr[ii] < arr[min_el]){min_el = ii;}
-    }
-    return min_el;
-}
-
-
-ap_uint<PRECISON> SpinSystem::_get_inherent_structure_()
+ap_uint<PRECISON> SpinSystem::get_inherent_structure_()
 {
 
     auto t_start = std::chrono::high_resolution_clock::now();
-
-    unsigned int min_el;
-    double tmp_energy;
-    ap_uint<PRECISON> tmp_state = current_state;
-
-    ap_uint<PRECISON>* tmp_neighbors = 0;
-    tmp_neighbors = new ap_uint<PRECISON> [params.N_spins];
-
-    double* tmp_neighbor_energies = 0;
-    tmp_neighbor_energies = new double [params.N_spins];
-
-    while (true)
-    {
-        state::get_neighbors_(tmp_neighbors, current_state, params.N_spins);
-        emap_ptr->get_config_energies_array_(tmp_neighbors, tmp_neighbor_energies, params.N_spins);
-        min_el = _min_element(tmp_neighbor_energies, params.N_spins);
-        tmp_energy = emap_ptr->get_config_energy(tmp_state);
-
-        if (tmp_neighbor_energies[min_el] < tmp_energy)
-        {
-            // flip to new energy
-            tmp_state = tmp_neighbors[min_el];
-        }
-        else{break;}
-    }
-
-    delete[] tmp_neighbors;
-    delete[] tmp_neighbor_energies;
-
+    const ap_uint<PRECISON> tmp_state = emap_ptr->get_inherent_structure(current_state);
     const double duration = time_utils::get_time_delta(t_start);
     sim_stats.inherent_structure_total_time += duration;
     sim_stats.inherent_structure_calls += 1;
