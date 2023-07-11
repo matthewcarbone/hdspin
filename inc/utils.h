@@ -101,6 +101,18 @@ namespace state
      */
     void int_array_from_arbitrary_precision_integer_(int *, const int, const ap_uint<PRECISON> &);
 
+
+    /**
+     * @brief [brief description]
+     * @details [long description]
+     * 
+     * @param current_state [description]
+     * @param int [description]
+     * 
+     * @return [description]
+     */
+    std::string string_rep_from_arbitrary_precision_integer(const ap_uint<PRECISON> current_state, const unsigned int N);
+
 }
 
 namespace parameters
@@ -120,7 +132,15 @@ namespace parameters
         std::string ii_str, grids_directory;
 
         // observables
-        std::string energy, energy_IS, cache_size, acceptance_rate, walltime_per_waitingtime;
+
+        // Energy
+        std::string energy, energy_IS;
+
+        // Ridges
+        std::string ridge_E, ridge_S;
+
+        // Misc
+        std::string cache_size, acceptance_rate, walltime_per_waitingtime;
     };
 
     struct SimulationParameters

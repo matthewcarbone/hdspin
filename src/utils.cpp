@@ -76,6 +76,23 @@ namespace state
             config[N - ii - 1] = int(remainder);
         }
     }
+
+    std::string string_rep_from_arbitrary_precision_integer(const ap_uint<PRECISON> current_state, const unsigned int N)
+    {
+        int* binary_array = 0;
+        binary_array = new int [N];
+        int_array_from_arbitrary_precision_integer_(binary_array, N, current_state);
+
+        std::string s = "";
+        for (int ii=0; ii<N; ii++)
+        {
+            s += std::to_string(binary_array[ii]);
+        }
+
+        delete[] binary_array;
+
+        return s;
+    }
 }
 
 
@@ -260,8 +277,15 @@ namespace parameters
 
         FileNames fnames;
 
+        // Energy
         fnames.energy = "data/" + ii_str + "_energy.txt";
         fnames.energy_IS = "data/" + ii_str + "_energy_IS.txt";
+
+        // Ridges
+        fnames.ridge_E = "data/" + ii_str + "_ridge_E.txt";
+        fnames.ridge_S = "data/" + ii_str + "_ridge_S.txt";
+
+        // Misc
         fnames.cache_size = "data/" + ii_str + "_cache_size.txt";
         fnames.acceptance_rate = "data/" + ii_str + "_acceptance_rate.txt";
         fnames.walltime_per_waitingtime = "data/" + ii_str + "_walltime_per_waitingtime.txt";
