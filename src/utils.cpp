@@ -37,7 +37,7 @@ long long ipow(long long base, long long exp)
 namespace state
 {
     void get_neighbors_(ap_uint<PRECISON> *neighbors, ap_uint<PRECISON> n,
-        int bitLength)
+        const unsigned int bitLength)
     {   
         for (int b=0; b<bitLength; b++)
         {
@@ -46,7 +46,7 @@ namespace state
         }
     }
 
-    ap_uint<PRECISON> flip_bit(const ap_uint<PRECISON> state, const int k, const int bitLength)
+    ap_uint<PRECISON> flip_bit(const ap_uint<PRECISON> state, const unsigned int k, const unsigned int bitLength)
     {
         const int bit = bitLength - k;
         const ap_uint<PRECISON> one = 1;
@@ -54,7 +54,7 @@ namespace state
     }
 
     void arbitrary_precision_integer_from_int_array_(
-        const int *config, const int N, ap_uint<PRECISON> &res)
+        const unsigned int *config, const unsigned int N, ap_uint<PRECISON> &res)
     {
         res = 0;
         for (int ii=N-1; ii>=0; ii--)
@@ -66,10 +66,10 @@ namespace state
     }
 
     void int_array_from_arbitrary_precision_integer_(
-        int *config, const int N, const ap_uint<PRECISON> &integer)
+        unsigned int *config, const unsigned int N, const ap_uint<PRECISON> &integer)
     {
         ap_uint<PRECISON> _integer = integer;
-        for (int ii=0; ii<N; ii++)
+        for (unsigned int ii=0; ii<N; ii++)
         {
             ap_uint<PRECISON> remainder = _integer % 2;
             _integer = _integer / 2;
@@ -79,8 +79,8 @@ namespace state
 
     std::string string_rep_from_arbitrary_precision_integer(const ap_uint<PRECISON> current_state, const unsigned int N)
     {
-        int* binary_array = 0;
-        binary_array = new int [N];
+        unsigned int* binary_array = 0;
+        binary_array = new unsigned int [N];
         int_array_from_arbitrary_precision_integer_(binary_array, N, current_state);
 
         std::string s = "";

@@ -51,7 +51,8 @@ void execute(const parameters::FileNames fnames,
         // the convention that the "prev" structure indexes the state of the
         // spin system before the step, and that all observables are indexed
         // by the state after the step. Thus, we step the simulation_clock
-        // before stepping the observables.
+        // before stepping the observables. Note that the waiting time can
+        // vary for the Gillespie dynamics.
         simulation_clock += waiting_time;
 
         step_all_observables_(
@@ -160,10 +161,10 @@ int main(int argc, char *argv[])
     std::string params_name;
     if (argc == 1){params_name = "config.json";}
     else{params_name = argv[1];}
-    if (MPI_RANK == 0){printf("Loading config from %s", params_name.c_str());}
+    if (MPI_RANK == 0){printf("Loading config from %s\n", params_name.c_str());}
 
     std::ifstream ifs(params_name);
-    json inp = json::parse(ifs);
+    const json inp = json::parse(ifs);
     parameters::SimulationParameters p = parameters::get_parameters(inp);
 
     MPI_Barrier(MPI_COMM_WORLD);
@@ -175,7 +176,7 @@ int main(int argc, char *argv[])
     const unsigned int end = resume_at + (MPI_RANK + 1) * n_tracers_per_MPI_rank;
 
     // So everything prints cleanly
-    printf("RANK %i/%i ID's %i -> %i\n", MPI_RANK, MPI_WORLD_SIZE, start, end);
+    // printf("RANK %i/%i ID's %i -> %i\n", MPI_RANK, MPI_WORLD_SIZE, start, end);
     fflush(stdout);
     MPI_Barrier(MPI_COMM_WORLD);
 
@@ -183,12 +184,6 @@ int main(int argc, char *argv[])
     {
         parameters::log_json(inp);
         parameters::log_parameters(p);
-    }
-    fflush(stdout);
-    MPI_Barrier(MPI_COMM_WORLD);
-
-    if (MPI_RANK == 0)
-    {
         make_directories();
         grids::make_energy_grid_logspace(p.log10_N_timesteps, p.grid_size);
         grids::make_pi_grids(p.log10_N_timesteps, p.dw, p.grid_size);
@@ -238,7 +233,6 @@ int main(int argc, char *argv[])
             {
                 const std::string dt_string = time_utils::get_datetime();
                 const double global_duration = time_utils::get_time_delta(global_start);
-                
                 printf(
                     "%s ~ %s done in %.01f s (%i/%i) total elapsed %.01f s\n", dt_string.c_str(), fnames.ii_str.c_str(), duration, loop_count, total_steps, global_duration
                 );
