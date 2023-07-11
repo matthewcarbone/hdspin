@@ -72,19 +72,7 @@ void SpinSystem::set_state(ap_uint<PRECISON> state)
 
 std::string SpinSystem::binary_state() const
 {
-    int* binary_array = 0;
-    binary_array = new int [params.N_spins];
-    state::int_array_from_arbitrary_precision_integer_(binary_array, params.N_spins, current_state);
-
-    std::string s = "";
-    for (int ii=0; ii<params.N_spins; ii++)
-    {
-        s += std::to_string(binary_array[ii]);
-    }
-
-    delete[] binary_array;
-
-    return s;
+    return state::string_rep_from_arbitrary_precision_integer(current_state, params.N_spins);
 }
 
 
