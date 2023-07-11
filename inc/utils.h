@@ -67,7 +67,7 @@ namespace state
      * want to find the neighbors of
      * @param bitLength int
      */
-    void get_neighbors_(ap_uint<PRECISON>* neighbors, ap_uint<PRECISON> n, int bitLength);
+    void get_neighbors_(ap_uint<PRECISON>* neighbors, ap_uint<PRECISON> n, const unsigned int bitLength);
 
     /**
      * @brief Flips a specific spin in the bit representation
@@ -77,7 +77,7 @@ namespace state
      * 
      * @return ap_uint<PRECISON>
      */
-    ap_uint<PRECISON> flip_bit(const ap_uint<PRECISON> state, const int k, const int bitLength);
+    ap_uint<PRECISON> flip_bit(const ap_uint<PRECISON> state, const unsigned int k, const unsigned int bitLength);
 
     /**
      * @brief Converts an integer array to an arbitrary precision integer
@@ -88,7 +88,7 @@ namespace state
      * @param const int The total number of spins
      * @param ap_uint<PRECISON> & Memory address of the integer to fill
      */
-    void arbitrary_precision_integer_from_int_array_(const int *, const int, ap_uint<PRECISON> &);
+    void arbitrary_precision_integer_from_int_array_(const unsigned int *, const unsigned int, ap_uint<PRECISON> &);
 
     /**
      * @brief Reverses that of arbitrary_precision_integer_from_int_array_
@@ -99,7 +99,7 @@ namespace state
      * @param const int The number of spins
      * @param const ap_uint<PRECISON> The integer to compute
      */
-    void int_array_from_arbitrary_precision_integer_(int *, const int, const ap_uint<PRECISON> &);
+    void int_array_from_arbitrary_precision_integer_(unsigned int *, const unsigned int, const ap_uint<PRECISON> &);
 
 
     /**

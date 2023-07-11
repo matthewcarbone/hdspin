@@ -18,12 +18,12 @@ void SpinSystem::_first_time_state_initialization_()
         generator.seed(seed);
     }
 
-    int* spin_config = 0;
-    spin_config = new int [params.N_spins];
+    unsigned int* spin_config = 0;
+    spin_config = new unsigned int [params.N_spins];
 
     std::bernoulli_distribution _bernoulli_distribution;
 
-    for (int ii=0; ii<params.N_spins; ii++)
+    for (unsigned int ii=0; ii<params.N_spins; ii++)
     {
         spin_config[ii] = _bernoulli_distribution(generator);
     }

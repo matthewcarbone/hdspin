@@ -6,7 +6,7 @@
 #include "utils.h"
 
 
-void _fill_binary_vector(int *arr, const unsigned int arr_size,
+void _fill_binary_vector(unsigned int *arr, const unsigned int arr_size,
     const unsigned int seed)
 {
     std::mt19937 generator;
@@ -36,16 +36,16 @@ void _fill_binary_vector(int *arr, const unsigned int arr_size,
 bool test_array_to_int_to_array_conversion(
     const unsigned int seed, const unsigned int arr_size)
 {
-    int arr[arr_size];
+    unsigned int arr[arr_size];
     _fill_binary_vector(arr, arr_size, seed);
 
     ap_uint<PRECISON> res;
     state::arbitrary_precision_integer_from_int_array_(arr, arr_size, res);
 
-    int arr2[arr_size];
+    unsigned int arr2[arr_size];
     state::int_array_from_arbitrary_precision_integer_(arr2, arr_size, res);
 
-    for (int ii=0; ii<arr_size; ii++)
+    for (unsigned int ii=0; ii<arr_size; ii++)
     {
         if (arr[ii] != arr2[ii]){return false;}
     }
@@ -72,12 +72,12 @@ bool test_array_to_int_to_array_conversion(
  */
 bool test_neighbors_correct(const unsigned int seed, const unsigned int arr_size)
 {
-    int arr[arr_size];
+    unsigned int arr[arr_size];
     _fill_binary_vector(arr, arr_size, seed);
 
     // Get the neighbor values via flipping spins manually
     ap_uint<PRECISON> neighbors_method_1[arr_size];
-    for (int ii=0; ii<arr_size; ii++)
+    for (unsigned int ii=0; ii<arr_size; ii++)
     {
         // Flip the ii'th bit
         if (arr[ii] == 0){arr[ii] = 1;}
@@ -101,7 +101,7 @@ bool test_neighbors_correct(const unsigned int seed, const unsigned int arr_size
 
     // Compare!
     // Note they save the neighbors in opposite order!
-    for (int ii=0; ii<arr_size; ii++)
+    for (unsigned int ii=0; ii<arr_size; ii++)
     {
         const ap_uint<PRECISON> val1 = neighbors_method_1[ii];
         const ap_uint<PRECISON> val2 = neighbors_method_2[ii];
@@ -122,14 +122,14 @@ bool test_flip_bit_small()
 
 bool test_flip_bit_huge(const unsigned int seed, const unsigned int arr_size)
 {
-    int arr[arr_size];
+    unsigned int arr[arr_size];
     _fill_binary_vector(arr, arr_size, seed);
     arr[0] = 1;
     arr[arr_size - 1] = 1;
     ap_uint<PRECISON> v1, v2, ap_rep;
     state::arbitrary_precision_integer_from_int_array_(arr, arr_size, ap_rep);
 
-    for (int ii=0; ii<arr_size; ii++)
+    for (unsigned int ii=0; ii<arr_size; ii++)
     {
         // Flip in the spin representation
         if (arr[ii] == 0){arr[ii] = 1;}
@@ -155,13 +155,13 @@ bool test_flip_bit_huge(const unsigned int seed, const unsigned int arr_size)
 
 bool test_flip_bit_big_number(const unsigned int arr_size)
 {
-    int arr[arr_size];
+    unsigned int arr[arr_size];
     for (int ii=0; ii<arr_size; ii++){arr[ii] = 1;}
     
     ap_uint<PRECISON> v1, v2, ap_rep, v2_prime;
     state::arbitrary_precision_integer_from_int_array_(arr, arr_size, ap_rep);
 
-    for (int ii=0; ii<arr_size; ii++)
+    for (unsigned int ii=0; ii<arr_size; ii++)
     {
         // Flip in the spin representation
         if (arr[ii] == 0){arr[ii] = 1;}
@@ -187,13 +187,13 @@ bool test_flip_bit_big_number(const unsigned int arr_size)
 
 bool test_flip_bit_big_number_self_consistent(const unsigned int arr_size)
 {
-    int arr[arr_size];
+    unsigned int arr[arr_size];
     for (int ii=0; ii<arr_size; ii++){arr[ii] = 1;}
     
     ap_uint<PRECISON> ap_rep, flipped, ap_rep_2;
     state::arbitrary_precision_integer_from_int_array_(arr, arr_size, ap_rep);
 
-    for (int ii=0; ii<arr_size; ii++)
+    for (unsigned int ii=0; ii<arr_size; ii++)
     {
         // Flip a bit
         flipped = state::flip_bit(ap_rep, ii, arr_size);
