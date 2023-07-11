@@ -15,7 +15,7 @@ protected:
     std::vector<long long> grid;
     int grid_length;
     const SpinSystem* spin_system_ptr;
-    
+
     // The pointer to the last-updated point on the grid
     unsigned int pointer = 0;
 
@@ -36,13 +36,6 @@ protected:
     double _last_energy = 0.0;
     double _current_ridge = 0.0;
 
-    // Steps above the ridge energy
-    // int _steps_above = 0;
-    // std::unordered_set<std::string> _unique_configs_above;
-
-    // Time above the ridge energy
-    // double _time_above = 0.0;
-
     // We must handle the case when the tracer STARTS above the threshold. In
     // this situation, we should not log the first time it drops below.
     bool _exited_first_basin = false;
@@ -50,11 +43,7 @@ protected:
     double _threshold;
     bool _threshold_valid = true;
 
-    // void _log_ridge(const double, const double);
-
 public:
-
-    bool get_threshold_valid() const {return _threshold_valid;}
 
     // Constructor: reads in the grid from the specified grid directory
     RidgeBase(const parameters::FileNames fnames, const parameters::SimulationParameters params, const SpinSystem& spin_system);
