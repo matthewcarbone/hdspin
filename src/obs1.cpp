@@ -24,19 +24,11 @@ void RidgeBase::step(const double waiting_time, const double simulation_clock)
     const double _prev_energy = prev.energy;
     const double _curr_energy = curr.energy;
 
-    // std::cout << prev.energy << " " << _threshold << std::endl;
-
     // Just exited a basin, track the previous energy
     if ((prev.energy < _threshold) && (curr.energy >= _threshold))
     {
-        // The energy before exiting the basin is defined as the inherent
-        // structure energy if we are using a system with memory. Else, we just
-        // use the energy itself
-        // _last_energy = (rtp.memory != 0) ? prev.energy_IS : prev.energy
         _last_energy = prev.energy;
         _current_ridge = _curr_energy;
-        // const std::string str_rep = state::string_rep_from_arbitrary_precision_integer(curr.state, params.N_spins);
-        // _unique_configs_above.insert(str_rep);
         _exited_first_basin = true;
     }
 
@@ -44,32 +36,17 @@ void RidgeBase::step(const double waiting_time, const double simulation_clock)
     // maximum energy reached above the threshold.
     else if ((prev.energy >= _threshold) && (curr.energy >= _threshold))
     {
-
         _current_ridge = _curr_energy > _current_ridge ? _curr_energy : _current_ridge;
-        // _current_ridge = curr.energy > _current_ridge ? curr.energy : _current_ridge;
-        // _steps_above += 1;
-        // const std::string str_rep = state::string_rep_from_arbitrary_precision_integer(curr.state, params.N_spins);
-        // _unique_configs_above.insert(str_rep);
-        // _time_above += waiting_time;
     }
 
     // Just dropped back below the threshold: log the current ridge energy
     else if ((prev.energy >= _threshold) && (curr.energy < _threshold))
     {
-        // std::cout << _exited_first_basin << std::endl;
-        // _steps_above += 1;
-        // _time_above += waiting_time;
         if (_exited_first_basin)
         {
-            // const double curr.energy_compare = curr.energy;
-            // _log_ridge(curr.energy_compare, simulation_clock);
-            // std::cout << prev.energy << " " <<  curr.energy << std::endl;
             _ridge_energy_accumulator += _current_ridge;
             _total_steps += 1;
         }
-        // _steps_above = 0;
-        // _time_above = 0.0;
-        // _unique_configs_above.clear();
     }
 
     if (grid[pointer] < simulation_clock)
