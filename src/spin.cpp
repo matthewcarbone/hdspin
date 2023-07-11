@@ -138,7 +138,7 @@ double SpinSystem::_step_gillespie()
 
     const double total_exit_rate = _calculate_exit_rates(current_energy);
 
-    for (int ii=0; ii<params.N_spins; ii++)
+    for (unsigned int ii=0; ii<params.N_spins; ii++)
     {
         _normalized_exit_rates[ii] = _exit_rates[ii] / total_exit_rate;
     }
@@ -149,7 +149,7 @@ double SpinSystem::_step_gillespie()
 
     // The spin to flip is actually on the "opposite side" because of how
     // bits work
-    const int spin_to_flip = _dist(generator);
+    const unsigned int spin_to_flip = _dist(generator);
 
     // And always flip that spin in a Gillespie simulation
     current_state = state::flip_bit(current_state, spin_to_flip, params.N_spins);
@@ -185,7 +185,7 @@ double SpinSystem::_step_standard()
     const double current_energy = _prev.energy;
 
     // Select a random spin to flip
-    const int bit_to_flip = spin_distribution(generator);
+    const unsigned int bit_to_flip = spin_distribution(generator);
 
     // Flip the current state into its new one
     const ap_uint<PRECISON> possible_state = state::flip_bit(current_state, bit_to_flip, params.N_spins);
