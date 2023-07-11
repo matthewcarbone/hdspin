@@ -75,6 +75,35 @@ def obs1(all_filenames, substring, save_path):
     np.savetxt(save_path, final, fmt='%.08e')
 
 
+def weighted_avg_and_std(values, weights):
+    """
+    Return the weighted average and standard deviation.
+    values, weights -- NumPy ndarrays with the same shape.
+    CC by 4.0 International: https://stackoverflow.com/a/2415343
+    Eric O. Lebigot
+    """
+
+    average = np.average(values, weights=weights, axis=0)
+    print(average.shape)
+    # Fast and numerically precise:
+    variance = np.average((values-average)**2, weights=weights, axis=0)
+    return (average, np.sqrt(variance))
+
+
+def ridge(all_filenames, substring, save_path):
+    """Processes files that have returned energy information."""
+
+    files = [f for f in all_filenames if substring in f]
+    if len(files) == 0:
+        return
+    arr = np.array(read_files_via_numpy(files))
+    grid = np.loadtxt("grids/energy.txt")
+    mu = np.ma.average(arr[:, :, 0], axis=0, weights=arr[:, :, 1])
+    var = np.ma.average((mu - arr[:, :, 0])**2, axis=0, weights=arr[:, :, 1])
+    final = np.array([grid, mu, np.sqrt(var)]).T
+    np.savetxt(save_path, final, fmt='%.08e')
+
+
 def cache_size(all_filenames, substring, save_path):
 
     files = [f for f in all_filenames if substring in f]
@@ -98,6 +127,8 @@ if __name__ == '__main__':
     # Handle all _standard_ one-point observables
     obs1(fnames, "_energy.txt", Path(FINAL_DIRECTORY) / "energy.txt")
     obs1(fnames, "_energy_IS.txt", Path(FINAL_DIRECTORY) / "energy_IS.txt")
+    ridge(fnames, "_ridge_E.txt", Path(FINAL_DIRECTORY) / "ridge_E.txt")
+    ridge(fnames, "_ridge_S.txt", Path(FINAL_DIRECTORY) / "ridge_S.txt")
     obs1(fnames, "_acceptance_rate.txt", Path(FINAL_DIRECTORY) / "acceptance_rate.txt")
     obs1(fnames, "_inherent_structure_timings.txt", Path(FINAL_DIRECTORY) / "inherent_structure_timings.txt")
     obs1(fnames, "_walltime_per_waitingtime.txt", Path(FINAL_DIRECTORY) / "walltime_per_waitingtime.txt")

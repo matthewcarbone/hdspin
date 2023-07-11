@@ -15,9 +15,11 @@
 #include "obs1.h"
 
 
-void step_all_observables_(const double simulation_clock, OnePointObservables& obs1)
+void step_all_observables_(const double waiting_time, const double simulation_clock, OnePointObservables& obs1, RidgeE& ridgeE, RidgeS& ridgeS)
 {
-    obs1.step(simulation_clock);
+    obs1.step(waiting_time, simulation_clock);
+    ridgeE.step(waiting_time, simulation_clock);
+    ridgeS.step(waiting_time, simulation_clock);
 }
 
 void execute(const parameters::FileNames fnames,
@@ -33,6 +35,8 @@ void execute(const parameters::FileNames fnames,
     // Simulation parameters
     double simulation_clock = 0.0;
 
+    RidgeE ridgeE(fnames, params, sys);
+    RidgeS ridgeS(fnames, params, sys);
     OnePointObservables obs1(fnames, params, sys);
 
     // Simulation clock is 0 before entering the while loop
@@ -50,7 +54,13 @@ void execute(const parameters::FileNames fnames,
         // before stepping the observables.
         simulation_clock += waiting_time;
 
-        step_all_observables_(simulation_clock, obs1);
+        step_all_observables_(
+            waiting_time,
+            simulation_clock,
+            obs1,
+            ridgeE,
+            ridgeS
+        );
 
         if (simulation_clock > params.N_timesteps){break;}
     }
