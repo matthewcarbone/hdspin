@@ -200,7 +200,11 @@ namespace parameters
 
         // Dynamics
         p.dynamics = inp["dynamics"];
-        if (p.dynamics != "standard" && p.dynamics != "gillespie")
+        if (
+            p.dynamics != "standard" &&
+            p.dynamics != "gillespie" &&
+            p.dynamics != "auto"
+        )
         {
             throw std::runtime_error("Invalid dynamics");
         }
