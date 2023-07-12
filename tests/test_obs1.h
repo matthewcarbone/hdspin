@@ -11,7 +11,7 @@
 namespace test_obs1
 {
 
-    bool test_rolling_median()
+    bool test_streaming_median()
     {
 
         std::default_random_engine generator;
@@ -60,13 +60,13 @@ namespace test_obs1
 
             // Now get the median calculated using the rolling method
             std::shuffle(std::begin(v), std::end(v), generator);
-            RollingMedian rolling_median = RollingMedian();
+            StreamingMedian streaming_median = StreamingMedian();
             for (unsigned int ii=0; ii<vector_size; ii++)
             {
-                rolling_median.update(v[ii]); // Update in random order
+                streaming_median.update(v[ii]); // Update in random order
             }    
 
-            const double calc_median = rolling_median.median();
+            const double calc_median = streaming_median.median();
 
             // printf("%i: True vs. Calc %.04f vs. %.04f\n", vector_size, true_median, calc_median);
             if (calc_median != true_median){return false;}

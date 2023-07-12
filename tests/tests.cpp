@@ -97,9 +97,9 @@ TEST_CASE("Test inherent structure", "[spin]")
     REQUIRE(test_spin::test_inherent_structure_min_is_min());
 }
 
-TEST_CASE("Test rolling median", "[obs1]")
+TEST_CASE("Test streaming median", "[obs1]")
 {
-    REQUIRE(test_obs1::test_rolling_median());
+    REQUIRE(test_obs1::test_streaming_median());
 }
 
 // int main(int argc, char const *argv[])
