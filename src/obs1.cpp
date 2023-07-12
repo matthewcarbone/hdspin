@@ -2,6 +2,47 @@
 #include "utils.h"
 
 
+RollingMedian::RollingMedian(){}
+
+void RollingMedian::update(const double v)
+{
+    if (_left.empty() || v < _left.top())
+    {
+        _left.push(v);
+    }
+    else
+    {
+        _right.push(v);
+    }
+
+    if (_left.size() < _right.size())
+    {
+        double temp = _right.top();
+        _right.pop();
+        _left.push(temp);
+    }
+
+    if (_left.size() - _right.size() > 1)
+    {
+         double temp = _left.top();
+         _left.pop();
+         _right.push(temp);
+    }
+}
+
+double RollingMedian::median() const
+{
+    if (_left.size() > _right.size())
+    {
+        return _left.top();
+    }
+    else
+    {
+        return (_left.top() + _right.top()) / 2.0;
+    }
+}
+
+
 ObsBase::ObsBase(const parameters::FileNames fnames, const parameters::SimulationParameters params, const SpinSystem& spin_system) : fnames(fnames), params(params)
 {
     const std::string grid_location = fnames.grids_directory + "/energy.txt";

@@ -1,11 +1,30 @@
 #ifndef OBS1_H
 #define OBS1_H
 
+#include <queue>
 #include <vector>
 #include <unordered_set>
 
-#include "utils.h"
 #include "spin.h"
+#include "utils.h"
+
+
+class RollingMedian
+{
+protected:
+
+    // Standard  max priority queue
+    std::priority_queue <int> _left;
+
+    // Reverse (min) priority queue
+    std::priority_queue <int, std::vector <int>, std::greater<int>> _right;
+
+public:
+    RollingMedian();
+    double median() const;
+    void update(const double v);
+};
+
 
 class ObsBase
 {
