@@ -9,7 +9,7 @@
 #include "utils.h"
 
 
-class RollingMedian
+class StreamingMedian
 {
 protected:
 
@@ -20,7 +20,7 @@ protected:
     std::priority_queue <double, std::vector <double>, std::greater<double>> min_heap;
 
 public:
-    RollingMedian();
+    StreamingMedian();
     double median() const;
     void update(const double v);
 };

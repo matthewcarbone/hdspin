@@ -2,9 +2,9 @@
 #include "utils.h"
 
 
-RollingMedian::RollingMedian(){}
+StreamingMedian::StreamingMedian(){}
 
-void RollingMedian::update(const double v)
+void StreamingMedian::update(const double v)
 {
     if(max_heap.empty() || max_heap.top() >= v) max_heap.push(v);
     else min_heap.push(v);
@@ -19,7 +19,7 @@ void RollingMedian::update(const double v)
     }
 }
 
-double RollingMedian::median() const
+double StreamingMedian::median() const
 {
     if(max_heap.size() == min_heap.size()){
         return max_heap.top()/2.0 + min_heap.top()/2.0;
