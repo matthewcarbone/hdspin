@@ -75,21 +75,6 @@ def obs1(all_filenames, substring, save_path):
     np.savetxt(save_path, final, fmt='%.08e')
 
 
-def weighted_avg_and_std(values, weights):
-    """
-    Return the weighted average and standard deviation.
-    values, weights -- NumPy ndarrays with the same shape.
-    CC by 4.0 International: https://stackoverflow.com/a/2415343
-    Eric O. Lebigot
-    """
-
-    average = np.average(values, weights=weights, axis=0)
-    print(average.shape)
-    # Fast and numerically precise:
-    variance = np.average((values-average)**2, weights=weights, axis=0)
-    return (average, np.sqrt(variance))
-
-
 def ridge(all_filenames, substring, save_path):
     """Processes files that have returned energy information."""
 
