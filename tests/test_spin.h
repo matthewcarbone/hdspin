@@ -4,6 +4,8 @@
 #include "spin.h"
 #include "utils.h"
 
+namespace test_spin
+{
 bool test_basic_lru_cache_with_spin()
 {
     parameters::SimulationParameters p;
@@ -133,6 +135,6 @@ bool test_inherent_structure_min_is_min()
 
     return true;
 }
-
+}
 
 #endif
