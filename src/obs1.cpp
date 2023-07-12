@@ -6,40 +6,25 @@ RollingMedian::RollingMedian(){}
 
 void RollingMedian::update(const double v)
 {
-    if (_left.empty() || v < _left.top())
-    {
-        _left.push(v);
-    }
-    else
-    {
-        _right.push(v);
-    }
+    if(max_heap.empty() || max_heap.top() >= v) max_heap.push(v);
+    else min_heap.push(v);
 
-    if (_left.size() < _right.size())
-    {
-        double temp = _right.top();
-        _right.pop();
-        _left.push(temp);
+    if(max_heap.size() > min_heap.size() + 1){
+        min_heap.push(max_heap.top());
+        max_heap.pop();
     }
-
-    if (_left.size() - _right.size() > 1)
-    {
-         double temp = _left.top();
-         _left.pop();
-         _right.push(temp);
+    else if(max_heap.size() < min_heap.size()){
+        max_heap.push(min_heap.top());
+        min_heap.pop();
     }
 }
 
 double RollingMedian::median() const
 {
-    if (_left.size() > _right.size())
-    {
-        return _left.top();
+    if(max_heap.size() == min_heap.size()){
+        return max_heap.top()/2.0 + min_heap.top()/2.0;
     }
-    else
-    {
-        return (_left.top() + _right.top()) / 2.0;
-    }
+    return max_heap.top();
 }
 
 

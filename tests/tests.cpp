@@ -6,6 +6,7 @@
 #include "test_utils.h"
 #include "test_energy_mapping.h"
 #include "test_spin.h"
+#include "test_obs1.h"
 
 
 TEST_CASE("Test arbitrary precision interconversion", "[arbitrary_precision]")
@@ -94,6 +95,11 @@ TEST_CASE("Test inherent structure", "[spin]")
 {
     // REQUIRE(test_inherent_structure());
     REQUIRE(test_spin::test_inherent_structure_min_is_min());
+}
+
+TEST_CASE("Test rolling median", "[obs1]")
+{
+    REQUIRE(test_obs1::test_rolling_median());
 }
 
 // int main(int argc, char const *argv[])
