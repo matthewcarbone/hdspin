@@ -14,10 +14,10 @@ class RollingMedian
 protected:
 
     // Standard  max priority queue
-    std::priority_queue <int> _left;
+    std::priority_queue <double> max_heap;
 
     // Reverse (min) priority queue
-    std::priority_queue <int, std::vector <int>, std::greater<int>> _right;
+    std::priority_queue <double, std::vector <double>, std::greater<double>> min_heap;
 
 public:
     RollingMedian();

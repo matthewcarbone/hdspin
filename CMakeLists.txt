@@ -26,6 +26,7 @@ if (${BUILD_TESTS})
         src/energy_mapping.cpp
         src/utils.cpp
         src/spin.cpp
+        src/obs1.cpp
     )
 
     # Handle the smoke tests
