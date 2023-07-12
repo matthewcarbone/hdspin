@@ -21,6 +21,10 @@ void StreamingMedian::update(const double v)
 
 double StreamingMedian::median() const
 {
+    if (max_heap.size() == 0 & min_heap.size() == 0)
+    {
+        return 0.0;
+    }
     if(max_heap.size() == min_heap.size()){
         return max_heap.top()/2.0 + min_heap.top()/2.0;
     }
@@ -70,7 +74,7 @@ void RidgeBase::step(const double waiting_time, const double simulation_clock)
     {
         if (_exited_first_basin)
         {
-            _ridge_energy_accumulator += _current_ridge;
+            streaming_median.update(_current_ridge);
             _total_steps += 1;
         }
     }
@@ -86,10 +90,10 @@ void RidgeBase::step(const double waiting_time, const double simulation_clock)
         {
             total_steps = 1;
         }
-        const double average = _ridge_energy_accumulator / total_steps;
+        const double median = streaming_median.median();
         while (grid[pointer] < simulation_clock)
         {   
-            fprintf(outfile, "%.08f %lli\n", average, _total_steps);
+            fprintf(outfile, "%.08f %lli\n", median, _total_steps);
             pointer += 1;
             if (pointer > grid_length - 1){return;}
         }

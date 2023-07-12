@@ -48,8 +48,9 @@ protected:
 
     FILE* outfile;
 
-    long double _ridge_energy_accumulator = 0.0;
+    // long double _ridge_energy_accumulator = 0.0;
     long long _total_steps = 0;
+    StreamingMedian streaming_median;
 
     // Last energies that were under the threshold
     double _last_energy = 0.0;
