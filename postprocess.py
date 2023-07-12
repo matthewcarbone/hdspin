@@ -100,7 +100,10 @@ def ridge(all_filenames, substring, save_path):
     grid = np.loadtxt("grids/energy.txt")
     mu = np.ma.average(arr[:, :, 0], axis=0, weights=arr[:, :, 1])
     var = np.ma.average((mu - arr[:, :, 0])**2, axis=0, weights=arr[:, :, 1])
-    final = np.array([grid, mu, np.sqrt(var)]).T
+    final = np.array([
+        grid, mu, np.sqrt(var),
+        np.sqrt(var) / arr[:, :, 1].sum(axis=0)
+    ]).T
     np.savetxt(save_path, final, fmt='%.08e')
 
 
