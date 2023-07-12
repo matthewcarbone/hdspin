@@ -1,6 +1,12 @@
+#ifndef TEST_ENERGY_MAPPING_H
+#define TEST_ENERGY_MAPPING_H
+
 #include "energy_mapping.h"
 #include "utils.h"
 #include "utils_testing_suite.h"
+
+namespace test_energy_mapping
+{
 
 bool test_energy_mapping_sampling_EREM_given_beta_critical(const double beta_critical)
 {
@@ -176,3 +182,7 @@ bool test_massive_AP_LRU(const int N_spins)
     }
     return true;
 }
+
+}
+
+#endif

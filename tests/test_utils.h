@@ -5,7 +5,8 @@
 
 #include "utils.h"
 
-
+namespace test_utils
+{
 void _fill_binary_vector(unsigned int *arr, const unsigned int arr_size,
     const unsigned int seed)
 {
@@ -206,6 +207,7 @@ bool test_flip_bit_big_number_self_consistent(const unsigned int arr_size)
     }
 
     return true;
+}
 }
 
 #endif
