@@ -74,12 +74,12 @@ double get_sim_time(parameters::SimulationParameters p, const std::string dynami
     EnergyMapping emap(p);
     SpinSystem sys(p, emap);
     auto t_start = std::chrono::high_resolution_clock::now();
-    while (true)
+    for (unsigned int step=0; step<int(1e7); step++)
     {
         simulation_clock += sys.step();
         if (simulation_clock > p.N_timesteps){break;}
     }
-    return time_utils::get_time_delta(t_start);
+    return time_utils::get_time_delta(t_start) / simulation_clock;
 }
 
 std::string determine_dynamics_automatically(const parameters::SimulationParameters params, const unsigned int mpi_world_size, const unsigned int mpi_rank, MPI_Comm mpi_comm)
@@ -111,7 +111,7 @@ std::string determine_dynamics_automatically(const parameters::SimulationParamet
 
     if (mpi_rank == 0)
     {
-        printf("Gillespie vs. Standard dynamics: %.02e vs. %.02e s/simulation\n", gillespie_time, standard_time);
+        printf("Gillespie vs. Standard dynamics: %.02e vs. %.02e wall/sim\n", gillespie_time, standard_time);
         if (gillespie_time < standard_time)
         {
             printf("Running Gillespie dynamics, faster by factor of %.01f\n", standard_time / gillespie_time);
@@ -166,6 +166,15 @@ int main(int argc, char *argv[])
     std::ifstream ifs(params_name);
     const json inp = json::parse(ifs);
     parameters::SimulationParameters p = parameters::get_parameters(inp);
+
+    if (p.N_spins > PRECISON)
+    {
+        if (MPI_RANK == 0)
+        {
+            std::cout << "[[[ERROR]]]: N_spins " << p.N_spins << " must be <= PRECISON " << PRECISON << std::endl;
+            MPI_Abort(MPI_COMM_WORLD, 123);
+        }
+    }
 
     MPI_Barrier(MPI_COMM_WORLD);
 
