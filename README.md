@@ -20,6 +20,20 @@ There are three options for the user to set:
 * `-DBUILD_TESTS={ON, OFF}` is a boolean flag for telling CMake whether or not to compile the testing suite. Default is `OFF`.
 * `-DSMOKE={ON, OFF}` controls whether or not to use the smoke testing or not. Smoke tests basically run tests using slightly less statistics, and are generally faster. Default is `ON`.
 
+## Running instructions
+
+After running `make` in the previous steps, an executable `build/hdspin` will be created. Running `hdspin` is simple. `hdspin` takes a single optional argument: the path to the `config.json` file to be used. If no argument is provided, then it is assumed that `config.json` is in the current working directory. Note that all results will be saved to the current working directory.
+
+```bash
+mpiexec -n <N_TASKS> /path/to/hdspin [optional config path]
+```
+
+Once simulations are computed, run the postprocessing script from the same working directory to finalize the results into the `final` directory
+
+```bash
+/path/to/postprocess.py
+```
+
 ## License
 
 The `hdspin` code is released under a 3-clause BSD license. Hosted codes are contained locally as per the permissive terms of the associated licenses. This includes nlohmann's [Json](https://github.com/nlohmann/json) header, as well as [Catch2](https://github.com/catchorg/Catch2) and the [Arbitrary Precision](https://www.codeproject.com/Articles/5319814/Arbitrary-Precision-Easy-to-use-Cplusplus-Library) library.
