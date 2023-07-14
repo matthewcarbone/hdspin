@@ -31,7 +31,7 @@ mpiexec -n <N_TASKS> /path/to/hdspin [optional config path]
 Once simulations are computed, run the postprocessing script from the same working directory to finalize the results into the `final` directory
 
 ```bash
-/path/to/postprocess.py
+python3 /path/to/postprocess.py
 ```
 
 ## License
