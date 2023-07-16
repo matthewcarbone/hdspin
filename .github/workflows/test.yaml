@@ -45,3 +45,14 @@ jobs:
       - name: run executable with default config (no MPI)
         run: |
           mpiexec -n 2 ./build/hdspin tests/test_config_standard.json
+
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
+      - name: run postprocess
+        run: |
+          pip install numpy
+          python3 postprocess.py
+

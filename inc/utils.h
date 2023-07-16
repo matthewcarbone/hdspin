@@ -29,8 +29,14 @@ using json = nlohmann::json;
 #endif
 
 
+/**
+ * @brief Computes the average of a vector of doubles.
+ */
 double mean_vector(const std::vector<double> v);
 
+/**
+ * @brief Computes the variance of a vector of doubles.
+ */
 double variance_vector(const std::vector<double> v);
 
 /**
@@ -210,7 +216,7 @@ namespace parameters
      * @param ii [description]
      * @return [description]
      */
-    FileNames get_filenames(const int ii);
+    FileNames get_filenames(const unsigned int ii);
 
 }
 
