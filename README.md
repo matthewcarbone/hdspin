@@ -22,6 +22,8 @@ There are three options for the user to set:
 
 ## Running instructions
 
+### Running the hdspin executable
+
 After running `make` in the previous steps, an executable `build/hdspin` will be created. Running `hdspin` is simple. `hdspin` takes a single optional argument: the path to the `config.json` file to be used. If no argument is provided, then it is assumed that `config.json` is in the current working directory. Note that all results will be saved to the current working directory.
 
 ```bash
@@ -34,6 +36,8 @@ The `config.json` file absolutely requires 4 parameters (the rest are set to def
 * `beta <FLOAT>`: inverse temperature (`beta_critical` is set automatically based on the `landscape`).
 * `landscape {"EREM", "GREM"}`: the type of simulation to run (either exponential or Gaussian REM).
 
+For example,
+
 ```json
 {
     "log10_N_timesteps": 5,
@@ -43,7 +47,25 @@ The `config.json` file absolutely requires 4 parameters (the rest are set to def
 }
 ```
 
-Once simulations are computed, run the postprocessing script from the same working directory to finalize the results into the `final` directory
+Alternatively you can set all parameters explicitly. For example,
+
+```json
+{
+    "log10_N_timesteps": 6,
+    "N_spins": 12,
+    "beta": 1.667,
+    "landscape" : "EREM",
+    "dynamics": "gillespie",
+    "memory": 12,
+    "n_tracers_per_MPI_rank": 1,
+    "use_manual_seed": true,
+    "seed": 123
+}
+```
+
+### Post-processing
+
+Once simulations are computed, run the post-processing script from the same working directory to finalize the results into the `final` directory
 
 ```bash
 python3 /path/to/postprocess.py
