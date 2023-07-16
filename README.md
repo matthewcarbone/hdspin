@@ -3,7 +3,7 @@ REM/EREM sandbox
 
 ## Installation instructions
 
-The `hdspin` repository requires no external libraries whatsoever, everything is self-contained. Building the code should be simple via CMake.
+The `hdspin` repository requires no external libraries whatsoever (except via Git Submodules), everything is self-contained. Downloading and building the code should be simple via CMake.
 
 ```bash
 git clone git@github.com:matthewcarbone/hdspin.git
@@ -31,10 +31,10 @@ mpiexec -n <N_TASKS> /path/to/hdspin [optional config path]
 ```
 
 The `config.json` file absolutely requires 4 parameters (the rest are set to default values):
-* `log10_N_timesteps <INT>`: the log10 number of timesteps to run 
-* `N_spins <INT>`: the number of spins to use in the simulation. Must be `<=PRECISON`.
-* `beta <FLOAT>`: inverse temperature (`beta_critical` is set automatically based on the `landscape`).
-* `landscape {"EREM", "GREM"}`: the type of simulation to run (either exponential or Gaussian REM).
+* `log10_N_timesteps=<INT>`: the log10 number of timesteps to run 
+* `N_spins=<INT>`: the number of spins to use in the simulation. Must be `<=PRECISON`.
+* `beta=<FLOAT>`: inverse temperature (`beta_critical` is set automatically based on the `landscape`).
+* `landscape={"EREM", "GREM"}`: the type of simulation to run (either exponential or Gaussian REM).
 
 For example,
 
@@ -70,6 +70,8 @@ Once simulations are computed, run the post-processing script from the same work
 ```bash
 python3 /path/to/postprocess.py
 ```
+
+Post-processing creates averages and spreads of all observable quantities, such as the energy.
 
 ## License
 

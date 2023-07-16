@@ -25,18 +25,11 @@ jobs:
           mpi: "openmpi"
 
       - name: build
-        uses: threeal/cmake-action@latest
-        with:
-          source-dir: .
-          build-dir: build
-          args: -DPRECISON=256 -DBUILD_TESTS=ON -DSMOKE=OFF
-
-      # - name: build
-      #   run: |
-      #     cmake -S . -B build -DPRECISON=256 -DBUILD_TESTS=ON -DSMOKE=OFF
-      #     cd build
-      #     make
-      #     cd ..
+        run: |
+          cmake -S . -B build -DPRECISON=256 -DBUILD_TESTS=ON -DSMOKE=OFF
+          cd build
+          make
+          cd ..
 
       - name: run tests
         run: |
