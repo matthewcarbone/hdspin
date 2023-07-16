@@ -24,6 +24,16 @@ jobs:
         with:
           mpi: "openmpi"
 
+      - name: set up Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
+      - name: install python dependencies
+        run: |
+          pip install numpy
+          pip install scipy
+
       - name: build
         run: |
           cmake -S . -B build -DPRECISON=256 -DBUILD_TESTS=ON -DSMOKE=OFF
@@ -38,15 +48,12 @@ jobs:
       - name: run executable with default config (no MPI)
         run: |
           mpiexec -n 2 ./build/hdspin tests/test_config_standard.json
-
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.9
+          rm -r data grids
+          mpiexec -n 2 ./build/hdspin tests/test_config_gillespie.json
+          rm -r data grids
+          mpiexec -n 10 ./build/hdspin tests/test_config_auto.json
 
       - name: run postprocess
         run: |
-          pip install numpy
-          pip install scipy
           python3 postprocess.py
 
