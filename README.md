@@ -28,6 +28,21 @@ After running `make` in the previous steps, an executable `build/hdspin` will be
 mpiexec -n <N_TASKS> /path/to/hdspin [optional config path]
 ```
 
+The `config.json` file absolutely requires 4 parameters (the rest are set to default values):
+* `log10_N_timesteps <INT>`: the log10 number of timesteps to run 
+* `N_spins <INT>`: the number of spins to use in the simulation. Must be `<=PRECISON`.
+* `beta <FLOAT>`: inverse temperature (`beta_critical` is set automatically based on the `landscape`).
+* `landscape {"EREM", "GREM"}`: the type of simulation to run (either exponential or Gaussian REM).
+
+```json
+{
+    "log10_N_timesteps": 5,
+    "N_spins": 20,
+    "beta": 2.8,
+    "landscape" : "EREM",
+}
+```
+
 Once simulations are computed, run the postprocessing script from the same working directory to finalize the results into the `final` directory
 
 ```bash
