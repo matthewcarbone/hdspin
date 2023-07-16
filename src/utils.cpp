@@ -3,6 +3,20 @@
 #include "utils.h"
 #include "ArbitraryPrecision/ap/ap.hpp"
 
+
+double mean_vector(const std::vector<double> v)
+{
+    const double sum = std::accumulate(v.begin(), v.end(), 0.0);
+    return sum / v.size();
+}
+
+double variance_vector(const std::vector<double> v)
+{
+    const double mean = mean_vector(v);
+    const double sq_sum = std::inner_product(v.begin(), v.end(), v.begin(), 0.0);
+    return sq_sum / v.size() - mean * mean;
+}
+
 ap_uint<PRECISON> arbitrary_precision_integer_pow(
     const int base, const int exponent)
 {

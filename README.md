@@ -41,7 +41,7 @@ The `hdspin` code is released under a 3-clause BSD license. Hosted codes are con
 
 ## Funding acknowledgement
 
-This software is also based upon work supported by the
+This software is based upon work supported by the
 * U.S. Department of Energy, Office of Science, Office of Advanced Scientific Computing Research, Department of Energy Computational Science Graduate Fellowship under Award Number DE-FG02-97ER25308;
 *  U.S. Department of Energy, Office of Science, Office of Basic Energy Sciences under Contract No. DE-SC0012704; 
 * U.S. Department of Energy, Office of Science, Office of Workforce Development for Teachers and Scientists (WDTS) under the Visiting Faculty Program (VFP).

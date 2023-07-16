@@ -36,8 +36,8 @@ bool test_energy_mapping_sampling_EREM_given_beta_critical(const double beta_cri
         v.push_back(emap.sample_energy());
     }
 
-    const double num_mean = _mean_vector(v);
-    const double num_var = _variance_vector(v);
+    const double num_mean = mean_vector(v);
+    const double num_var = variance_vector(v);
 
     // std::cout << num_mean << " " << mean << std::endl;
     // std::cout << num_var << " " << variance << std::endl; 
@@ -79,8 +79,8 @@ bool test_energy_mapping_sampling_REM_given_N_spins(const int N_spins)
         v.push_back(emap.sample_energy());
     }
 
-    const double num_mean = _mean_vector(v);
-    const double num_var = _variance_vector(v);
+    const double num_mean = mean_vector(v);
+    const double num_var = variance_vector(v);
 
     // std::cout << num_mean << " " << mean << std::endl;
     // std::cout << num_var << " " << variance << std::endl;
