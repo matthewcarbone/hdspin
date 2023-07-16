@@ -28,6 +28,11 @@ using json = nlohmann::json;
 #define SMOKE 1
 #endif
 
+
+double mean_vector(const std::vector<double> v);
+
+double variance_vector(const std::vector<double> v);
+
 /**
  * @brief Defines arbitrary precision integer powers
  * @details Using the Arbitrary Precision library, defines custom code for

@@ -84,34 +84,81 @@ double get_sim_time(parameters::SimulationParameters p, const std::string dynami
 
 std::string determine_dynamics_automatically(const parameters::SimulationParameters params, const unsigned int mpi_world_size, const unsigned int mpi_rank, MPI_Comm mpi_comm)
 {
-    double standard_time, gillespie_time, simulation_clock;
+    double standard_time = 0.0;
+    double gillespie_time = 0.0;
+    double standard_std = 0.0;
+    double gillespie_std = 0.0;
     parameters::SimulationParameters p = params;
     unsigned int result_int = 2;
 
-    // Run both on rank 1
+    // Run both on rank 1 if we only have a single process
     if (mpi_world_size == 1)
     {
         standard_time = get_sim_time(p, "standard");
         gillespie_time = get_sim_time(p, "gillespie");
     }
+
+    // Otherwise, we actually want to divide up the work a bit
+    // Let all even ranks (including 0) run the standard simulation
+    // and all odd ranks run the Gillespie simulation
+    // The results can then be averaged at the end by ranks 0 and 1.
     else
     {
-        if (mpi_rank == 0)
+        double times[mpi_world_size];
+        if (mpi_rank % 2 == 0)
         {
-            standard_time = get_sim_time(p, "standard");
-            MPI_Recv(&gillespie_time, 1, MPI_DOUBLE, 1, 0, mpi_comm, MPI_STATUS_IGNORE);
+            times[mpi_rank] = get_sim_time(p, "standard");
+            // MPI_Recv(&gillespie_time, 1, MPI_DOUBLE, 1, 0, mpi_comm, MPI_STATUS_IGNORE);
         }
-        else if (mpi_rank == 1)
+        else if (mpi_rank % 2 != 0)
         {
-            gillespie_time = get_sim_time(p, "gillespie");
-            MPI_Send(&gillespie_time, 1, MPI_DOUBLE, 0, 0, mpi_comm);
+            times[mpi_rank] = get_sim_time(p, "gillespie");
+            // MPI_Send(&gillespie_time, 1, MPI_DOUBLE, 0, 0, mpi_comm);
         }
         MPI_Barrier(mpi_comm);
+
+        // Now, we send everything to rank 0
+        if (mpi_rank != 0)
+        {
+            MPI_Send(&times[mpi_rank], 1, MPI_DOUBLE, 0, 0, mpi_comm);
+        }
+        else
+        {
+            for (unsigned int ii=1; ii<mpi_world_size; ii++)
+            {
+                MPI_Recv(&times[ii], 1, MPI_DOUBLE, ii, 0, mpi_comm, MPI_STATUS_IGNORE);
+            }
+        }
+        MPI_Barrier(mpi_comm);
+
+        // And let rank 0 deal with the rest
+        if (mpi_rank == 0)
+        {
+            std::vector<double> standard_times;
+            std::vector<double> gillespie_times;
+            for (unsigned int ii=0; ii<mpi_world_size; ii++)
+            {
+                if (ii % 2 == 0)
+                {
+                    standard_times.push_back(times[ii]);
+                }
+                else
+                {
+                    gillespie_times.push_back(times[ii]);
+                }
+            }
+
+            // Calculate the mean and standard deviation
+            standard_time = mean_vector(standard_times);
+            standard_std = sqrt(variance_vector(standard_times));
+            gillespie_time = mean_vector(gillespie_times);
+            gillespie_std = sqrt(variance_vector(gillespie_times));
+        }
     }
 
     if (mpi_rank == 0)
     {
-        printf("Gillespie vs. Standard dynamics: %.02e vs. %.02e wall/sim\n", gillespie_time, standard_time);
+        printf("Gillespie vs. Standard dynamics: %.02e +/- %.02e vs. %.02e +/- %.02e wall/sim\n", gillespie_time, gillespie_std, standard_time, standard_std);
         if (gillespie_time < standard_time)
         {
             printf("Running Gillespie dynamics, faster by factor of %.01f\n", standard_time / gillespie_time);
