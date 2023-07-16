@@ -9,7 +9,7 @@ on:
 
 jobs:
 
-  unit tests and full workflow:
+  unit_tests_and_full_workflow:
 
     runs-on: ubuntu-latest
 
