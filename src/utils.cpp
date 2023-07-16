@@ -141,8 +141,8 @@ namespace parameters
         printf("landscape                \t\t\t= %s\n", p.landscape.c_str());
         printf("dynamics                 \t\t\t= %s\n", p.dynamics.c_str());
         printf("memory                   \t\t\t= %lli\n", p.memory);
-        printf("energetic threshold      \t\t\t= %.05f\n", p.energetic_threshold);
-        printf("entropic attractor       \t\t\t= %.05f\n", p.entropic_attractor);
+        printf("energetic threshold      \t\t\t= %.03e\n", p.energetic_threshold);
+        printf("entropic attractor       \t\t\t= %.03e\n", p.entropic_attractor);
         printf("valid_entropic_attractor \t\t\t= %i\n", p.valid_entropic_attractor);
         printf("grid_size                \t\t\t= %i\n", p.grid_size);
         printf("dw                       \t\t\t= %.05f\n", p.dw);
@@ -160,17 +160,15 @@ namespace parameters
         SimulationParameters p;
 
         // Run assertions
-        const int N_required_parameters = 6;
+        const unsigned int N_required_parameters = 4;
         const std::string required_parameters[N_required_parameters] = {
             "log10_N_timesteps",
             "N_spins",
             "landscape",
             "beta",
-            "dynamics",
-            "n_tracers_per_MPI_rank"
         };
         bool error = false;
-        for (int ii=0; ii<N_required_parameters; ii++)
+        for (unsigned int ii=0; ii<N_required_parameters; ii++)
         {
             if (!_key_exists(inp, required_parameters[ii]))
             {
@@ -213,16 +211,23 @@ namespace parameters
         p.beta = float(inp["beta"]) * p.beta_critical;
 
         // Dynamics
-        p.dynamics = inp["dynamics"];
-        if (
-            p.dynamics != "standard" &&
-            p.dynamics != "gillespie" &&
-            p.dynamics != "auto"
-        )
+        if (_key_exists(inp, "dynamics"))
         {
-            throw std::runtime_error("Invalid dynamics");
+            p.dynamics = inp["dynamics"];
+            if (
+                p.dynamics != "standard" &&
+                p.dynamics != "gillespie" &&
+                p.dynamics != "auto"
+            )
+            {
+                throw std::runtime_error("Invalid dynamics");
+            }   
         }
-
+        else
+        {
+            p.dynamics = "auto";
+        }
+        
         // Memory status
         if (_key_exists(inp, "memory"))
         {
@@ -234,10 +239,21 @@ namespace parameters
         }
         else
         {
-            p.memory = pow(2, 28);
+            p.memory = pow(2, 25);
         }
+
+        // Tracers per rank
+        if (_key_exists(inp, "n_tracers_per_MPI_rank"))
+        {
+            p.n_tracers_per_MPI_rank = int(inp["n_tracers_per_MPI_rank"]);
+        }
+        else
+        {
+            p.n_tracers_per_MPI_rank = 100;
+        }
+
         
-        p.n_tracers_per_MPI_rank = int(inp["n_tracers_per_MPI_rank"]);
+        
 
         // Get the energy barrier information
         double et, ea;
@@ -267,7 +283,6 @@ namespace parameters
         p.entropic_attractor = ea;
 
         // Not-required parameters
-
         if (_key_exists(inp, "seed"))
         {
             p.seed = inp["seed"];
@@ -288,7 +303,7 @@ namespace parameters
         return p;
     }
 
-    FileNames get_filenames(const int ii)
+    FileNames get_filenames(const unsigned int ii)
     {
         std::string ii_str = std::to_string(ii);
         ii_str.insert(ii_str.begin(), 8 - ii_str.length(), '0');

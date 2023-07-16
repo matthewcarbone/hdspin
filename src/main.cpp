@@ -124,9 +124,9 @@ std::string determine_dynamics_automatically(const parameters::SimulationParamet
         }
         else
         {
-            for (unsigned int ii=1; ii<mpi_world_size; ii++)
+            for (unsigned int rank=1; rank<mpi_world_size; rank++)
             {
-                MPI_Recv(&times[ii], 1, MPI_DOUBLE, ii, 0, mpi_comm, MPI_STATUS_IGNORE);
+                MPI_Recv(&times[rank], 1, MPI_DOUBLE, rank, 0, mpi_comm, MPI_STATUS_IGNORE);
             }
         }
         MPI_Barrier(mpi_comm);
@@ -138,14 +138,8 @@ std::string determine_dynamics_automatically(const parameters::SimulationParamet
             std::vector<double> gillespie_times;
             for (unsigned int ii=0; ii<mpi_world_size; ii++)
             {
-                if (ii % 2 == 0)
-                {
-                    standard_times.push_back(times[ii]);
-                }
-                else
-                {
-                    gillespie_times.push_back(times[ii]);
-                }
+                if (ii % 2 == 0){standard_times.push_back(times[ii]);}
+                else{gillespie_times.push_back(times[ii]);}
             }
 
             // Calculate the mean and standard deviation
@@ -158,15 +152,15 @@ std::string determine_dynamics_automatically(const parameters::SimulationParamet
 
     if (mpi_rank == 0)
     {
-        printf("Gillespie vs. Standard dynamics: %.02e +/- %.02e vs. %.02e +/- %.02e wall/sim\n", gillespie_time, gillespie_std, standard_time, standard_std);
+        printf("Gillespie vs. Standard dynamics:\n\t%.02e +/- %.02e vs. %.02e +/- %.02e wall/sim\n", gillespie_time, gillespie_std, standard_time, standard_std);
         if (gillespie_time < standard_time)
         {
-            printf("Running Gillespie dynamics, faster by factor of %.01f\n", standard_time / gillespie_time);
+            printf("\tRunning Gillespie dynamics, faster by factor of %.01f\n", standard_time / gillespie_time);
             result_int = 1;
         }
         else
         {
-            printf("Running standard dynamics, faster by factor of %.01f\n", gillespie_time / standard_time);   
+            printf("\tRunning standard dynamics, faster by factor of %.01f\n", gillespie_time / standard_time);   
             result_int = 0;
         }
     }
