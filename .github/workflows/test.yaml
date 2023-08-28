@@ -45,13 +45,13 @@ jobs:
         run: |
           ./build/tests -d yes
 
-      - name: run executable with default config (no MPI)
+      - name: test executables
         run: |
-          mpiexec -n 2 ./build/hdspin tests/test_config_standard.json
+          mpiexec -n 2 ./build/hdspin -t 6 -N 128 -l EREM -b 2.4 -d gillespie --seed=123
           rm -r data grids
-          mpiexec -n 2 ./build/hdspin tests/test_config_gillespie.json
+          mpiexec -n 2 ./build/hdspin -t 6 -N 128 -l EREM -b 2.2 -d standard --seed=123
           rm -r data grids
-          mpiexec -n 10 ./build/hdspin tests/test_config_auto.json
+          mpiexec -n 10 ./build/hdspin -t 6 -N 128 -l EREM -b 2.3 --seed=123
 
       - name: run postprocess
         run: |
