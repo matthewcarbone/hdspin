@@ -10,7 +10,7 @@ git clone git@github.com:matthewcarbone/hdspin.git
 cd hdspin
 git submodule init
 git submodule update
-cmake -S . -B build -DPRECISON=256 -DBUILD_TESTS=ON -DSMOKE=ON 
+cmake -S . -B build -DPRECISON=256 -DBUILD_TESTS=ON -DSMOKE=ON
 cd build
 make
 ```
@@ -24,44 +24,14 @@ There are three options for the user to set:
 
 ### Running the hdspin executable
 
-After running `make` in the previous steps, an executable `build/hdspin` will be created. Running `hdspin` is simple. `hdspin` takes a single optional argument: the path to the `config.json` file to be used. If no argument is provided, then it is assumed that `config.json` is in the current working directory. Note that all results will be saved to the current working directory.
+After running `make` in the previous steps, an executable `build/hdspin` will be created. Running `hdspin` is simple. `hdspin` uses a command line parser called [CLI11](https://github.com/CLIUtils/CLI11). Use `hdspin -h` to see a list of options. A `config.json` is always saved to the working directory with all of the command line inputs.
 
-```bash
-mpiexec -n <N_TASKS> /path/to/hdspin [optional config path]
-```
-
-The `config.json` file absolutely requires 4 parameters (the rest are set to default values):
+Four parameters are absolutely required:
 * `log10_N_timesteps=<INT>`: the log10 number of timesteps to run 
 * `N_spins=<INT>`: the number of spins to use in the simulation. Must be `<=PRECISON`.
 * `beta=<FLOAT>`: inverse temperature (`beta_critical` is set automatically based on the `landscape`).
 * `landscape={"EREM", "GREM"}`: the type of simulation to run (either exponential or Gaussian REM).
 
-For example,
-
-```json
-{
-    "log10_N_timesteps": 5,
-    "N_spins": 20,
-    "beta": 2.8,
-    "landscape" : "EREM",
-}
-```
-
-Alternatively you can set all parameters explicitly. For example,
-
-```json
-{
-    "log10_N_timesteps": 6,
-    "N_spins": 12,
-    "beta": 1.667,
-    "landscape" : "EREM",
-    "dynamics": "gillespie",
-    "memory": 12,
-    "n_tracers_per_MPI_rank": 1,
-    "use_manual_seed": true,
-    "seed": 123
-}
-```
 
 ### Post-processing
 
