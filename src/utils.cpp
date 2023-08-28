@@ -155,152 +155,78 @@ namespace parameters
         printf("----------------------------------------------------------\n");
     }
 
-    SimulationParameters get_parameters(const json inp)
+    /**
+     * @brief [brief description]
+     * @details Updates the simulation parameters with more values.
+     * 
+     * @param p [description]
+     * @return [description]
+     */
+    void update_parameters_(SimulationParameters* p)
     {
-        SimulationParameters p;
 
-        // Run assertions
-        const unsigned int N_required_parameters = 4;
-        const std::string required_parameters[N_required_parameters] = {
-            "log10_N_timesteps",
-            "N_spins",
-            "landscape",
-            "beta",
-        };
-        bool error = false;
-        for (unsigned int ii=0; ii<N_required_parameters; ii++)
-        {
-            if (!_key_exists(inp, required_parameters[ii]))
-            {
-                printf("Key %s not found", required_parameters[ii].c_str());
-                error = true;
-            }
-        }
-        if (error){throw std::runtime_error("At least one required config key not provided");}
-
-        // Required parameters
-
-        p.log10_N_timesteps = inp["log10_N_timesteps"];
-        p.N_timesteps = ipow(10, int(p.log10_N_timesteps));
-
-        // Assert N_timesteps
-        if (p.N_timesteps < 0)
-        {
-            throw std::runtime_error("Somehow N_timesteps is negative");
-        }
-
-        p.N_spins = int(inp["N_spins"]);
-        p.landscape = inp["landscape"];
-
-        // Assert landscape
-        if (
-            p.landscape != "EREM"
-            && p.landscape != "GREM"
-        )
-        {
-            throw std::runtime_error("Invalid landscape");
-        }
+        p->N_timesteps = ipow(10, int(p->log10_N_timesteps));
 
         // Set beta critical
-        if (p.landscape == "EREM"){p.beta_critical = 1.0;}
+        if (p->landscape == "EREM"){p->beta_critical = 1.0;}
 
         // This is ~sqrt(2 ln 2)
-        else{p.beta_critical = 1.177410022515475;}
-
-        // The provided beta is actually beta/betac
-        p.beta = float(inp["beta"]) * p.beta_critical;
-
-        // Dynamics
-        if (_key_exists(inp, "dynamics"))
-        {
-            p.dynamics = inp["dynamics"];
-            if (
-                p.dynamics != "standard" &&
-                p.dynamics != "gillespie" &&
-                p.dynamics != "auto"
-            )
-            {
-                throw std::runtime_error("Invalid dynamics");
-            }   
-        }
-        else
-        {
-            p.dynamics = "auto";
-        }
-        
-        // Memory status
-        if (_key_exists(inp, "memory"))
-        {
-            p.memory = int(inp["memory"]);
-            if (p.memory < -1 || p.memory == 0)
-            {
-                throw std::runtime_error("Invalid memory value");
-            }
-        }
-        else
-        {
-            p.memory = pow(2, 25);
-        }
-
-        // Tracers per rank
-        if (_key_exists(inp, "n_tracers_per_MPI_rank"))
-        {
-            p.n_tracers_per_MPI_rank = int(inp["n_tracers_per_MPI_rank"]);
-        }
-        else
-        {
-            p.n_tracers_per_MPI_rank = 100;
-        }
-
-        
-        
+        else{p->beta_critical = 1.177410022515475;}
 
         // Get the energy barrier information
         double et, ea;
-        if (p.landscape == "EREM")
+        if (p->landscape == "EREM")
         {
-            et = -1.0 / p.beta_critical * log(p.N_spins);
-            ea = 1.0 / (p.beta - p.beta_critical)
-                * log((2.0 * p.beta_critical - p.beta) / p.beta_critical);
+            et = -1.0 / p->beta_critical * log(p->N_spins);
+            ea = 1.0 / (p->beta - p->beta_critical)
+                * log((2.0 * p->beta_critical - p->beta) / p->beta_critical);
 
-            if (p.beta >= 2.0 * p.beta_critical | p.beta <= p.beta_critical)
+            if (p->beta >= 2.0 * p->beta_critical | p->beta <= p->beta_critical)
             {
                 ea = 1e16;  // Set purposefully invalid value instead of nan or inf
-                p.valid_entropic_attractor = false;
+                p->valid_entropic_attractor = false;
             }
         }
-        else if (p.landscape == "GREM")
+        else if (p->landscape == "GREM")
         {
-            et = -sqrt(2.0 * p.N_spins * log(p.N_spins));
-            ea = -p.N_spins * p.beta / 2.0;
+            et = -sqrt(2.0 * p->N_spins * log(p->N_spins));
+            ea = -p->N_spins * p->beta / 2.0;
         }
         else
         {
             throw std::runtime_error("Invalid landscape");
         }
 
-        p.energetic_threshold = et;
-        p.entropic_attractor = ea;
+        p->energetic_threshold = et;
+        p->entropic_attractor = ea;
 
-        // Not-required parameters
-        if (_key_exists(inp, "seed"))
-        {
-            p.seed = inp["seed"];
-            p.use_manual_seed = true;
-        }
+        // handle the manual seeding
+        if (p->seed > 0){p->use_manual_seed = true;}
+    }
 
-        p.grid_size = inp.value("grid_size", p.grid_size);
-        p.dw = inp.value("dw", p.dw);
+    json parameters_to_json(const SimulationParameters p)
+    {
+        json j = {
+            {"log10_N_timesteps", p.log10_N_timesteps},
+            {"N_timesteps", p.N_timesteps},
+            {"N_spins", p.N_spins},
+            {"beta", p.beta},
+            {"beta_critical", p.beta_critical},
+            {"landscape", p.landscape},
+            {"dynamics", p.dynamics},
+            {"memory", p.memory},
+            {"energetic_threshold", p.energetic_threshold},
+            {"entropic_attractor", p.entropic_attractor},
+            {"valid_entropic_attractor", p.valid_entropic_attractor},
+            {"grid_size", p.grid_size},
+            {"dw", p.dw},
+            {"n_tracers_per_MPI_rank", p.n_tracers_per_MPI_rank},
+            {"use_manual_seed", p.use_manual_seed},
+            {"seed", p.seed},
+            {"PRECISON", PRECISON}
+        };
 
-        p.seed = inp.value("seed", 0);
-        p.use_manual_seed = inp.value("use_manual_seed", false);
-
-        if (_key_exists(inp, "calculate_inherent_structure_observables"))
-        {
-            p.calculate_inherent_structure_observables = inp["calculate_inherent_structure_observables"];
-        }
-
-        return p;
+        return j;
     }
 
     FileNames get_filenames(const unsigned int ii)

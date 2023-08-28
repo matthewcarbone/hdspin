@@ -13,6 +13,7 @@
 #include "utils.h"
 #include "spin.h"
 #include "obs1.h"
+#include "CLI11/CLI11.hpp"
 
 
 void step_all_observables_(const double waiting_time, const double simulation_clock, OnePointObservables& obs1, RidgeE& ridgeE, RidgeS& ridgeS)
@@ -198,24 +199,74 @@ int main(int argc, char *argv[])
     fflush(stdout);
     MPI_Barrier(MPI_COMM_WORLD);
 
-    // Load the parameters
-    std::string params_name;
-    if (argc == 1){params_name = "config.json";}
-    else{params_name = argv[1];}
-    if (MPI_RANK == 0){printf("Loading config from %s\n", params_name.c_str());}
+    // Define the defaults
+    parameters::SimulationParameters p;
 
-    std::ifstream ifs(params_name);
-    const json inp = json::parse(ifs);
-    parameters::SimulationParameters p = parameters::get_parameters(inp);
+    // PARSER ----------------------------------------------------------------
+    // -----------------------------------------------------------------------
+    // -----------------------------------------------------------------------
+    CLI::App app{
+        "hdspin is an application for simulating binary spin systems"
+    };
 
-    if (p.N_spins > PRECISON)
-    {
-        if (MPI_RANK == 0)
-        {
-            std::cout << "[[[ERROR]]]: N_spins " << p.N_spins << " must be <= PRECISON " << PRECISON << std::endl;
-            MPI_Abort(MPI_COMM_WORLD, 123);
-        }
-    }
+    app.add_option(
+        "-N, --N_spins", p.N_spins,
+        "Number of binary spins to use in the simulation. Must be bounded "
+        "between 1 and the PRECISON option set at compile time."
+    )->check(CLI::Range(1, PRECISON))->required();
+
+    app.add_option(
+        "-l, --landscape", p.landscape,
+        "Choice of landscape, either the exponential random energy model "
+        "(EREM) or the Gaussian random energy model (GREM)."
+    )->check(CLI::IsMember({"EREM", "GREM"}))->required();
+
+    app.add_option(
+        "-b, --beta", p.beta,
+        "Inverse temperature."
+    )->check(CLI::PositiveNumber)->required();
+
+    app.add_option(
+        "-t, --log10_N_timesteps", p.log10_N_timesteps,
+        "The number of timesteps to run on a log10 scale. For example, if "
+        "'t=7', then a simulation of length 10^7 will be run."
+    )->check(CLI::PositiveNumber)->required();
+
+    app.add_option(
+        "-m, --memory", p.memory,
+        "The size of the memory cache. If -1, will attempt to use a cache "
+        "size equal to 2^N_spins, which might cause memory issues. The "
+        "default is 2^25."
+    )->check(CLI::PositiveNumber|CLI::IsMember({-1}));
+
+    app.add_option(
+        "-d, --dynamics", p.dynamics,
+        "The type of dynamics to run. Defaults to 'auto'. Standard dynamics "
+        "attempts to flip one spin every timestep, with the Metropolis "
+        "acceptance/rejection criterion. Gillespie dynamics calculates all "
+        "exit rates at once and flips a spin every iteration of the "
+        "algorithm, but with a waiting time not necessarily equal to 1. The "
+        "auto selection runs quick simulations of both types to see which "
+        "is faster, and selects that one."
+    )->check(CLI::IsMember({"standard", "gillespie", "auto"}));
+
+    app.add_option(
+        "-n, --n_tracers_per_MPI_rank", p.n_tracers_per_MPI_rank,
+        "The number of simulations per MPI rank to run. Defaults to 10."
+    )->check(CLI::PositiveNumber);
+
+    app.add_option(
+        "--seed", p.seed,
+        "Seeds for the random number generators for reproducible runs. Leave "
+        "unset for un-reproducible, random seeds."
+    )->check(CLI::PositiveNumber);
+
+    CLI11_PARSE(app, argc, argv);
+    // -----------------------------------------------------------------------
+    // -----------------------------------------------------------------------
+    // PARSER ----------------------------------------------------------------
+
+    update_parameters_(&p);
 
     MPI_Barrier(MPI_COMM_WORLD);
 
@@ -225,18 +276,19 @@ int main(int argc, char *argv[])
     const unsigned int start = resume_at + MPI_RANK * n_tracers_per_MPI_rank;
     const unsigned int end = resume_at + (MPI_RANK + 1) * n_tracers_per_MPI_rank;
 
-    // So everything prints cleanly
-    // printf("RANK %i/%i ID's %i -> %i\n", MPI_RANK, MPI_WORLD_SIZE, start, end);
     fflush(stdout);
     MPI_Barrier(MPI_COMM_WORLD);
 
     if (MPI_RANK == 0)
     {
-        parameters::log_json(inp);
+        // parameters::log_json(inp);
         parameters::log_parameters(p);
         make_directories();
         grids::make_energy_grid_logspace(p.log10_N_timesteps, p.grid_size);
         grids::make_pi_grids(p.log10_N_timesteps, p.dw, p.grid_size);
+        json j = parameters::parameters_to_json(p);
+        std::ofstream o("config.json");
+        o << std::setw(4) << j << std::endl;
     }
     fflush(stdout);
     MPI_Barrier(MPI_COMM_WORLD);
