@@ -156,16 +156,19 @@ namespace parameters
 
     struct SimulationParameters
     {
-        int log10_N_timesteps;
+        // None of these should have defaults
+        unsigned int log10_N_timesteps;
         unsigned int N_spins;
         std::string landscape;
-        long long memory;
         double beta;
-        std::string dynamics;
-        int n_tracers_per_MPI_rank;
+
+        // Some come along with defaults
+        long long memory = pow(2, 25);
+        std::string dynamics = "auto";
+        unsigned int n_tracers_per_MPI_rank = 10;
+        unsigned int seed = 0;  // 0 is special, meaning no seed
 
         // Some defaults which are not required to be explicitly set by the user
-        unsigned int seed;
         long long N_timesteps;
         double beta_critical;
         double energetic_threshold;
@@ -207,7 +210,9 @@ namespace parameters
      * @details [long description]
      * @return [description]
      */
-    SimulationParameters get_parameters(const json inp);
+    void update_parameters_(SimulationParameters* p);
+
+    json parameters_to_json(const SimulationParameters p);
 
     /**
      * @brief [brief description]
