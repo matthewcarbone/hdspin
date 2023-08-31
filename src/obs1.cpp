@@ -75,6 +75,7 @@ void RidgeBase::step(const double waiting_time, const double simulation_clock)
         if (_exited_first_basin)
         {
             streaming_median.update(_current_ridge);
+            streaming_mean.update(_current_ridge);
             _total_steps += 1;
         }
     }
@@ -90,10 +91,11 @@ void RidgeBase::step(const double waiting_time, const double simulation_clock)
         {
             total_steps = 1;
         }
-        const double median = streaming_median.median();
+        const double _median = streaming_median.median();
+        const double _mean = streaming_mean.mean();
         while (grid[pointer] < simulation_clock)
         {   
-            fprintf(outfile, "%.08f %lli\n", median, _total_steps);
+            fprintf(outfile, "%.08f %.08f %lli\n", _mean, _median, _total_steps);
             pointer += 1;
             if (pointer > grid_length - 1){return;}
         }

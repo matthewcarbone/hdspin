@@ -83,11 +83,27 @@ def ridge(all_filenames, substring, save_path):
         return
     arr = np.array(read_files_via_numpy(files))
     grid = np.loadtxt("grids/energy.txt")
-    mu = np.ma.average(arr[:, :, 0], axis=0, weights=arr[:, :, 1])
-    var = np.ma.average((mu - arr[:, :, 0])**2, axis=0, weights=arr[:, :, 1])
+
+    # This is for the mean median
+    weights = arr[:, :, 2]
+    dat = arr[:, :, 0]
+    mu = np.ma.average(dat, axis=0, weights=weights)
+    var = np.ma.average((mu - dat)**2, axis=0, weights=weights)
+
+    # This is for the mean mean
+    weights = arr[:, :, 2]
+    dat = arr[:, :, 1]
+    mu2 = np.ma.average(dat, axis=0, weights=weights)
+    var2 = np.ma.average((mu - dat)**2, axis=0, weights=weights)
+
     final = np.array([
-        grid, mu, np.sqrt(var),
-        np.sqrt(var) / arr[:, :, 1].sum(axis=0)
+        grid,
+        mu,
+        np.sqrt(var),
+        np.sqrt(var) / np.sqrt(weights.sum(axis=0)),
+        mu2,
+        np.sqrt(var2),
+        np.sqrt(var2) / np.sqrt(weights.sum(axis=0))
     ]).T
     np.savetxt(save_path, final, fmt='%.08e')
 

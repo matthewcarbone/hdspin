@@ -25,6 +25,32 @@ public:
     void update(const double v);
 };
 
+class StreamingMean
+{
+protected:
+    double value = 0.0;
+    double counts = 0.0;
+
+public:
+    StreamingMean(){};
+    double mean() const
+    {
+        if (counts > 0.0)
+        {
+            return value / counts;    
+        }
+        else
+        {
+            return 0.0;
+        }
+    }
+    void update(const double v)
+    {
+        value += v;
+        counts += 1.0;
+    }
+};
+
 
 class ObsBase
 {
@@ -51,6 +77,7 @@ protected:
     // long double _ridge_energy_accumulator = 0.0;
     long long _total_steps = 0;
     StreamingMedian streaming_median;
+    StreamingMean streaming_mean;
 
     // Last energies that were under the threshold
     double _last_energy = 0.0;
