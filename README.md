@@ -1,5 +1,6 @@
 # hdspin
-REM/EREM sandbox
+
+Sandbox for the Exponential and Gaussian Random Energy Models. If you use this code, please consider citing our [work](https://doi.org/10.1103/PhysRevE.106.024603).
 
 ## Installation instructions
 
@@ -45,7 +46,7 @@ Post-processing creates averages and spreads of all observable quantities, such 
 
 # License
 
-The `hdspin` code is released under a 3-clause BSD license. Hosted codes are contained locally as per the permissive terms of the associated licenses. This includes nlohmann's [Json](https://github.com/nlohmann/json) header, as well as [Catch2](https://github.com/catchorg/Catch2) and the [Arbitrary Precision](https://www.codeproject.com/Articles/5319814/Arbitrary-Precision-Easy-to-use-Cplusplus-Library) library.
+The `hdspin` code is released under a 3-clause BSD license. Hosted codes are contained locally as per the permissive terms of the associated licenses. This includes nlohmann's [Json](https://github.com/nlohmann/json) header, as well as [Catch2](https://github.com/catchorg/Catch2), [CLI11](https://github.com/CLIUtils/CLI11) and the [Arbitrary Precision](https://www.codeproject.com/Articles/5319814/Arbitrary-Precision-Easy-to-use-Cplusplus-Library) library.
 
 
 # Funding acknowledgement
