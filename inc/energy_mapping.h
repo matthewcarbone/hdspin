@@ -21,7 +21,7 @@ protected:
     mutable std::normal_distribution<double> normal_distribution;
 
     // One must set the capacity using `set_capacity(int)`
-    mutable LRUCache energy_map;
+    mutable cache::lru_cache<std::string, double> energy_map;
 
 public:
     double sample_energy() const;

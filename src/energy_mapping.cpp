@@ -30,7 +30,7 @@ double EnergyMapping::get_config_energy(const ap_uint<PRECISON> state) const
     // If our key exists in the LRU cache, simply return the value
     if (energy_map.key_exists(state_string))
     {
-        return energy_map.get_fast(state_string);
+        return energy_map.get(state_string);
     }
 
     // Otherwise, we sample a new value
