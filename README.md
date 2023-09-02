@@ -1,6 +1,14 @@
+<div align=center>
+
 # hdspin
 
-Sandbox for the Exponential and Gaussian Random Energy Models. If you use this code, please consider citing our [work](https://doi.org/10.1103/PhysRevE.106.024603).
+[![image](https://github.com/matthewcarbone/hdspin/actions/workflows/test.yaml/badge.svg)](https://github.com/matthewcarbone/hdspin/actions/workflows/test.yaml)
+
+**Sandbox for the Exponential and Gaussian Random Energy Models**
+
+_If you use this code, please consider citing our [work](https://doi.org/10.1103/PhysRevE.106.024603)._ <br>
+
+</div>
 
 ## Installation instructions
 
