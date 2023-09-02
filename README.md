@@ -25,7 +25,7 @@ There are three options for the user to set:
 
 ### Running the hdspin executable
 
-After running `make` in the previous steps, an executable `build/hdspin` will be created. Running `hdspin` is simple. `hdspin` uses a command line parser called [CLI11](https://github.com/CLIUtils/CLI11). Use `hdspin -h` to see a list of options. A `config.json` is always saved to the working directory with all of the command line inputs.
+After running `make` in the previous steps, an executable `build/hdspin` will be created. Running hdspin is simple. hdspin uses a command line parser called [CLI11](https://github.com/CLIUtils/CLI11). Use `hdspin -h` to see a list of options. A `config.json` is always saved to the working directory with all of the command line inputs.
 
 Four parameters are absolutely required:
 * `log10_N_timesteps=<INT>`: the log10 number of timesteps to run 
@@ -46,7 +46,7 @@ Post-processing creates averages and spreads of all observable quantities, such 
 
 # License
 
-The `hdspin` code is released under a 3-clause BSD license. Hosted codes are contained locally as per the permissive terms of the associated licenses. This includes nlohmann's [Json](https://github.com/nlohmann/json) header, as well as [Catch2](https://github.com/catchorg/Catch2), [CLI11](https://github.com/CLIUtils/CLI11) and the [Arbitrary Precision](https://www.codeproject.com/Articles/5319814/Arbitrary-Precision-Easy-to-use-Cplusplus-Library) library.
+The hdspin code is released under a 3-clause BSD license. Hosted codes are contained locally as per the permissive terms of the associated licenses. This includes nlohmann's [Json](https://github.com/nlohmann/json) header, as well as [Catch2](https://github.com/catchorg/Catch2), [CLI11](https://github.com/CLIUtils/CLI11) and the [Arbitrary Precision](https://www.codeproject.com/Articles/5319814/Arbitrary-Precision-Easy-to-use-Cplusplus-Library) library.
 
 
 # Funding acknowledgement
