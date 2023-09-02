@@ -12,7 +12,7 @@ _If you use this code, please consider citing our [work](https://doi.org/10.1103
 
 ## Installation instructions
 
-The hdspin repository requires no external libraries whatsoever (except via Git Submodules), (mostly) everything is self-contained. Downloading and building the code should be simple via CMake. Note, it is required you have MPI available on your system in order to build hdspin. You can do this via your system's package managers (such as Homebrew or apt). hdspin is tested with openmpi. See [here](https://github.com/mpi4py/setup-mpi/blob/master/setup-mpi.sh) for how hdspin's CI system installs MPI (you can emulate this).
+Aside from MPI, the hdspin repository requires no external libraries whatsoever (except via Git Submodules). Downloading and building the code should be simple via CMake.
 
 ```bash
 git clone git@github.com:matthewcarbone/hdspin.git
@@ -23,6 +23,8 @@ cmake -S . -B build -DPRECISON=256 -DBUILD_TESTS=ON -DSMOKE=ON
 cd build
 make
 ```
+
+Note, it is required you have MPI available on your system in order to build hdspin. You can do this via your system's package managers (such as Homebrew or apt). hdspin is tested with openmpi. See [here](https://github.com/mpi4py/setup-mpi/blob/master/setup-mpi.sh) for how hdspin's CI system installs MPI (you can emulate this).
 
 There are three options for the user to set:
 * `-DPRECISON=<INT>` is the maximum number of spins you can use during the simulation. Should be a power of 2 (as recommended by the Arbitrary Precision library). Default is `256`. Note that this is the _maximum_ value you can use for `N_spins` in the simulation.
