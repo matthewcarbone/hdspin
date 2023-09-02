@@ -2,7 +2,7 @@
 
 # hdspin
 
-[![image](https://github.com/matthewcarbone/hdspin/actions/workflows/test.yaml/badge.svg)](https://github.com/matthewcarbone/hdspin/actions/workflows/test.yaml)
+[![image](https://github.com/matthewcarbone/hdspin/actions/workflows/ci.yml/badge.svg)](https://github.com/matthewcarbone/hdspin/actions/workflows/ci.yml)
 
 **Sandbox for the Exponential and Gaussian Random Energy Models**
 
