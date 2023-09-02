@@ -9,9 +9,15 @@ on:
 
 jobs:
 
-  unit_tests_and_full_workflow:
+  build:
 
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        mpi: ['mpich', 'openmpi', 'intelmpi']
+        os: ['ubuntu-latest', 'macos-latest']
+
+    name: ${{ matrix.mpi }} example
+    runs-on: ${{ matrix.os }}
 
     steps:
       - name: checkout
@@ -22,7 +28,7 @@ jobs:
       - name: install MPI
         uses: mpi4py/setup-mpi@v1
         with:
-          mpi: "openmpi"
+          mpi: ${{ matrix.mpi }}
 
       - name: set up Python 3.9
         uses: actions/setup-python@v2
