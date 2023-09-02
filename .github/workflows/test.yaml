@@ -16,7 +16,7 @@ jobs:
         mpi: ['mpich', 'openmpi', 'intelmpi']
         os: ['ubuntu-latest', 'macos-latest']
 
-    name: ${{ matrix.mpi }} example
+    name: ${{ matrix.os }} ${{ matrix.mpi }}
     runs-on: ${{ matrix.os }}
 
     steps:
