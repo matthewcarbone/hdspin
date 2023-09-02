@@ -4,7 +4,7 @@ Sandbox for the Exponential and Gaussian Random Energy Models. If you use this c
 
 ## Installation instructions
 
-The `hdspin` repository requires no external libraries whatsoever (except via Git Submodules), everything is self-contained. Downloading and building the code should be simple via CMake.
+The hdspin repository requires no external libraries whatsoever (except via Git Submodules), (mostly) everything is self-contained. Downloading and building the code should be simple via CMake. Note, it is required you have MPI available on your system in order to build hdspin. You can do this via your system's package managers (such as Homebrew or apt). hdspin is tested with openmpi. See [here](https://github.com/mpi4py/setup-mpi/blob/master/setup-mpi.sh) for how hdspin's CI system installs MPI (you can emulate this).
 
 ```bash
 git clone git@github.com:matthewcarbone/hdspin.git
