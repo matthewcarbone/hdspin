@@ -4,7 +4,7 @@ Sandbox for the Exponential and Gaussian Random Energy Models. If you use this c
 
 ## Installation instructions
 
-The `hdspin` repository requires no external libraries whatsoever (except via Git Submodules), everything is self-contained. Downloading and building the code should be simple via CMake.
+The hdspin repository requires no external libraries whatsoever (except via Git Submodules), (mostly) everything is self-contained. Downloading and building the code should be simple via CMake. Note, it is required you have MPI available on your system in order to build hdspin. You can do this via your system's package managers (such as Homebrew or apt). hdspin is tested with openmpi. See [here](https://github.com/mpi4py/setup-mpi/blob/master/setup-mpi.sh) for how hdspin's CI system installs MPI (you can emulate this).
 
 ```bash
 git clone git@github.com:matthewcarbone/hdspin.git
@@ -25,7 +25,7 @@ There are three options for the user to set:
 
 ### Running the hdspin executable
 
-After running `make` in the previous steps, an executable `build/hdspin` will be created. Running `hdspin` is simple. `hdspin` uses a command line parser called [CLI11](https://github.com/CLIUtils/CLI11). Use `hdspin -h` to see a list of options. A `config.json` is always saved to the working directory with all of the command line inputs.
+After running `make` in the previous steps, an executable `build/hdspin` will be created. Running hdspin is simple. hdspin uses a command line parser called [CLI11](https://github.com/CLIUtils/CLI11). Use `hdspin -h` to see a list of options. A `config.json` is always saved to the working directory with all of the command line inputs.
 
 Four parameters are absolutely required:
 * `log10_N_timesteps=<INT>`: the log10 number of timesteps to run 
@@ -46,7 +46,7 @@ Post-processing creates averages and spreads of all observable quantities, such 
 
 # License
 
-The `hdspin` code is released under a 3-clause BSD license. Hosted codes are contained locally as per the permissive terms of the associated licenses. This includes nlohmann's [Json](https://github.com/nlohmann/json) header, as well as [Catch2](https://github.com/catchorg/Catch2), [CLI11](https://github.com/CLIUtils/CLI11) and the [Arbitrary Precision](https://www.codeproject.com/Articles/5319814/Arbitrary-Precision-Easy-to-use-Cplusplus-Library) library.
+The hdspin code is released under a 3-clause BSD license. Hosted codes are contained locally as per the permissive terms of the associated licenses. This includes nlohmann's [Json](https://github.com/nlohmann/json) header, as well as [Catch2](https://github.com/catchorg/Catch2), [CLI11](https://github.com/CLIUtils/CLI11) and the [Arbitrary Precision](https://www.codeproject.com/Articles/5319814/Arbitrary-Precision-Easy-to-use-Cplusplus-Library) library.
 
 
 # Funding acknowledgement
