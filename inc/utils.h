@@ -177,7 +177,7 @@ namespace parameters
         bool valid_entropic_attractor = true;
         int grid_size = 100;
         double dw = 0.5;
-        bool calculate_inherent_structure_observables = false;
+        bool calculate_inherent_structure_observables = true;
     };
 
     struct SimulationStatistics

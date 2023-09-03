@@ -151,6 +151,7 @@ namespace parameters
         {
             printf("manual seed              \t\t\t= %i\n", p.seed);
         }
+        printf("calculate_IS             \t\t\t= %i\n", p.calculate_inherent_structure_observables);
         printf("PRECISON                 \t\t\t= %i\n", PRECISON);
         printf("----------------------------------------------------------\n");
     }
