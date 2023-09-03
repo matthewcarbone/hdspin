@@ -372,7 +372,7 @@ int main(int argc, char* argv[]) {
         for (const auto& fn : filenames) {
             max_filename_length = std::max(max_filename_length, static_cast<int>(fn.length()));
         }
-        max_filename_length++;  // For the null-terminator
+        max_filename_length++;
     }
 
     // Broadcast the maximum filename length
@@ -385,7 +385,7 @@ int main(int argc, char* argv[]) {
     if (world_rank == 0) {
         for (int i = 0; i < filenames.size(); ++i) {
             strncpy(filenames_buffer + i * max_filename_length, filenames[i].c_str(), max_filename_length - 1);
-            filenames_buffer[i * max_filename_length + filenames[i].length()] = '\0';  // Null-terminate
+            filenames_buffer[i * max_filename_length + filenames[i].length()] = '\0';
         }
     }
 
