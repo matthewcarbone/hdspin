@@ -7,6 +7,8 @@
 #include <cmath>
 #include <iomanip>
 #include <numeric>
+#include <cstring>
+#include <mpi.h>
 
 namespace fs = std::filesystem;
 
@@ -325,39 +327,106 @@ void cache_size(const std::vector<std::string>& all_filenames, const std::string
     save_matrices_to_file(save_path, mu);
 }
 
-int main() {
+void mpi_error_handler(MPI_Comm *comm, int *err_code, ...) {
+    char err_string[MPI_MAX_ERROR_STRING];
+    int err_length;
+    MPI_Error_string(*err_code, err_string, &err_length);
+    std::cerr << "MPI Error: " << std::string(err_string, err_length) << std::endl;
+    MPI_Abort(MPI_COMM_WORLD, *err_code);
+}
+
+
+int main(int argc, char* argv[]) {
+    // Initialize the MPI environment
+    MPI_Init(&argc, &argv);
+
+    // Create a custom error handler
+    MPI_Errhandler custom_errhandler;
+    MPI_Comm_create_errhandler(mpi_error_handler, &custom_errhandler);
+    MPI_Comm_set_errhandler(MPI_COMM_WORLD, custom_errhandler);
+
+    // Get the number of processes
+    int world_size;
+    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+
+    // Get the rank of the process
+    int world_rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+
     std::string RESULTS_DIRECTORY = "data";
     std::string FINAL_DIRECTORY = "final";
 
-    // Check if RESULTS_DIRECTORY exists and is a directory
-    if (!fs::exists(RESULTS_DIRECTORY) || !fs::is_directory(RESULTS_DIRECTORY)) {
-        std::cerr << "Error: Directory " << RESULTS_DIRECTORY << " does not exist or is not a directory." << std::endl;
-        return 1; 
+    // Root process handles directory checking and file listing
+    std::vector<std::string> filenames;
+    if (world_rank == 0) {
+        filenames = get_all_results_filenames(RESULTS_DIRECTORY);
+        if (filenames.empty()) {
+            std::cerr << "Error: No files found in directory " << RESULTS_DIRECTORY << std::endl;
+            MPI_Abort(MPI_COMM_WORLD, 1);
+        }
     }
 
-    // Attempt to create FINAL_DIRECTORY; check for failure
-    std::error_code ec;
-    if (!fs::create_directory(FINAL_DIRECTORY, ec) && ec) {
-        std::cerr << "Error: Could not create directory " << FINAL_DIRECTORY << ". Error code: " << ec.message() << std::endl;
-        return 1;
+    // Determine the maximum filename length to create a buffer
+    int max_filename_length = 0;
+    if (world_rank == 0) {
+        for (const auto& fn : filenames) {
+            max_filename_length = std::max(max_filename_length, static_cast<int>(fn.length()));
+        }
+        max_filename_length++;
     }
 
-    std::vector<std::string> filenames = get_all_results_filenames(RESULTS_DIRECTORY);
+    // Broadcast the maximum filename length
+    MPI_Bcast(&max_filename_length, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    
+    // Create the filenames buffer based on the maximum length and size
+    char* filenames_buffer = new char[max_filename_length * filenames.size()];
 
-    // Check if any filenames were obtained
-    if (filenames.empty()) {
-        std::cerr << "Error: No files found in directory " << RESULTS_DIRECTORY << std::endl;
-        return 1;
+    // Fill the buffer with filenames and null-terminate each
+    if (world_rank == 0) {
+        for (int i = 0; i < filenames.size(); ++i) {
+            strncpy(filenames_buffer + i * max_filename_length, filenames[i].c_str(), max_filename_length - 1);
+            filenames_buffer[i * max_filename_length + filenames[i].length()] = '\0';
+        }
     }
 
-    obs1(filenames, "_energy.txt", FINAL_DIRECTORY + "/energy.txt");
-    obs1(filenames, "_energy_IS.txt", FINAL_DIRECTORY + "/energy_IS.txt");
-    ridge(filenames, "_ridge_E.txt", FINAL_DIRECTORY + "/ridge_E.txt");
-    ridge(filenames, "_ridge_S.txt", FINAL_DIRECTORY + "/ridge_S.txt");
-    obs1(filenames, "_acceptance_rate.txt", FINAL_DIRECTORY + "/acceptance_rate.txt");
-    obs1(filenames, "_inherent_structure_timings.txt", FINAL_DIRECTORY + "/inherent_structure_timings.txt");
-    obs1(filenames, "_walltime_per_waitingtime.txt", FINAL_DIRECTORY + "/walltime_per_waitingtime.txt");
-    cache_size(filenames, "_cache_size.txt", FINAL_DIRECTORY + "/cache_size.txt");
+    // Broadcast the filenames buffer to all processes
+    MPI_Bcast(filenames_buffer, max_filename_length * filenames.size(), MPI_CHAR, 0, MPI_COMM_WORLD);
 
-    return 0; 
+    // Fill the filenames vector for non-root processes
+    if (world_rank != 0) {
+        filenames.clear();
+        for (int i = 0; i < filenames.size(); ++i) {
+            filenames.push_back(std::string(filenames_buffer + i * max_filename_length));
+        }
+    }
+
+    // Deallocate dynamic buffer
+    delete[] filenames_buffer;
+
+    // Synchronize before starting tasks
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    // Assign tasks based on world_rank
+    std::vector<std::string> tasks = {"_energy.txt", "_energy_IS.txt", "_ridge_E.txt", "_ridge_S.txt",
+                                      "_acceptance_rate.txt", "_inherent_structure_timings.txt",
+                                      "_walltime_per_waitingtime.txt", "_cache_size.txt"};
+
+    if (world_rank < tasks.size()) {
+        std::string task = tasks[world_rank];
+        if (task.find("ridge") != std::string::npos) {
+            ridge(filenames, task, FINAL_DIRECTORY + "/" + task);
+        } else if (task.find("cache_size") != std::string::npos) {
+            cache_size(filenames, task, FINAL_DIRECTORY + "/" + task);
+        } else {
+            obs1(filenames, task, FINAL_DIRECTORY + "/" + task);
+        }
+    }
+
+    // Synchronize after completing tasks
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    // Finalize the MPI environment
+    MPI_Finalize();
+
+    return 0;
 }
