@@ -7,6 +7,7 @@
 #include <cmath>
 #include <iomanip>
 #include <numeric>
+#include <postprocess.h>
 
 namespace fs = std::filesystem;
 
