@@ -57,7 +57,7 @@ jobs:
           rm -r data grids
           mpiexec -n 2 ./build/hdspin -t 6 -N 128 -l EREM -b 2.2 -d standard --seed=123
           rm -r data grids
-          mpiexec -n 10 ./build/hdspin -t 6 -N 128 -l EREM -b 2.3 --seed=123
+          mpiexec -n 2 ./build/hdspin -t 6 -N 128 -l EREM -b 2.3 --seed=123
 
       - name: run postprocess
         run: |
