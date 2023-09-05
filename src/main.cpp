@@ -296,8 +296,6 @@ int main(int argc, char *argv[])
     fflush(stdout);
     MPI_Barrier(MPI_COMM_WORLD);
 
-    exit(0);
-
     // Define some helpers to be used to track progress.
     const unsigned int total_steps = end - start;
     unsigned int step_size = total_steps / 10; // Print at 10 percent steps
