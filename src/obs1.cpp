@@ -73,18 +73,30 @@ OnePointObservables::OnePointObservables(const parameters::FileNames fnames, con
     }
 }
 
-void OnePointObservables::_step_ridge(const double waiting_time, const double simulation_clock, const bool step_E)
-{
 
+_RidgeEnergyObjects* OnePointObservables::_get_ridge_pointer(const std::string which_ridge)
+{
     _RidgeEnergyObjects* ridge_ptr;
-    if (step_E) // This is the energy threshold ridge step
+    if (which_ridge == "E") // This is the energy threshold ridge step
     {
         ridge_ptr = &ridge_E_objects;
     }
-    else  // This is the entropic attractor ridge step
+    else if (which_ridge == "S") // This is the entropic attractor ridge step
     {
         ridge_ptr = &ridge_S_objects;
     }
+    else
+    {
+        throw std::runtime_error("Unknown ridge threshold");
+    }
+    return ridge_ptr;
+}
+
+
+void OnePointObservables::_step_ridge(const double waiting_time, const double simulation_clock, const std::string which_ridge)
+{
+
+    _RidgeEnergyObjects* ridge_ptr = _get_ridge_pointer(which_ridge);
 
     if (!ridge_ptr->threshold_valid){return;}
 
@@ -121,18 +133,10 @@ void OnePointObservables::_step_ridge(const double waiting_time, const double si
     }
 }
 
-void OnePointObservables::_ridge_writeout(const bool step_E)
+void OnePointObservables::_ridge_writeout(const std::string which_ridge)
 {
 
-    _RidgeEnergyObjects* ridge_ptr;
-    if (step_E) // This is the energy threshold ridge step
-    {
-        ridge_ptr = &ridge_E_objects;
-    }
-    else  // This is the entropic attractor ridge step
-    {
-        ridge_ptr = &ridge_S_objects;
-    }
+    _RidgeEnergyObjects* ridge_ptr = _get_ridge_pointer(which_ridge);
 
     if (!ridge_ptr->threshold_valid){return;}
 
@@ -153,6 +157,11 @@ void OnePointObservables::_ridge_writeout(const bool step_E)
 void OnePointObservables::step(const double waiting_time, const double simulation_clock)
 {
 
+    // No matter what we step the ridge energies
+    _step_ridge(waiting_time, simulation_clock, "E");
+    _step_ridge(waiting_time, simulation_clock, "S");
+
+    // And then continue on...
     const parameters::StateProperties prev = spin_system_ptr->get_previous_state(); 
 
     // No updates necessary
@@ -194,8 +203,8 @@ void OnePointObservables::step(const double waiting_time, const double simulatio
         fprintf(outfile_capacity, "%s\n", cache_size_string.c_str());
         fprintf(outfile_acceptance_rate, "%.08f\n", acceptance_rate);
         fprintf(outfile_walltime_per_waitingtime, "%.08f\n", sim_stats.total_wall_time/sim_stats.total_waiting_time);
-        _ridge_writeout(true);
-        _ridge_writeout(false);
+        _ridge_writeout("E");
+        _ridge_writeout("S");
 
         pointer += 1;
         if (pointer > grid_length - 1){return;}

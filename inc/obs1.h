@@ -99,9 +99,10 @@ protected:
     _RidgeEnergyObjects ridge_E_objects;
     _RidgeEnergyObjects ridge_S_objects;
 
-    // Other private methods
-    void _step_ridge(const double waiting_time, const double simulation_clock, const bool step_E);
-    void _ridge_writeout(const bool step_E);
+    // Other private methods. These are for ridge energies
+    _RidgeEnergyObjects* _get_ridge_pointer(const std::string which_ridge);
+    void _step_ridge(const double waiting_time, const double simulation_clock, const std::string which_ridge);
+    void _ridge_writeout(const std::string which_ridge);
 
 public:
 
