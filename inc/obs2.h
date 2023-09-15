@@ -26,13 +26,12 @@ protected:
     // trajectory and the inherent structure
     long double _waiting_time = 0.0;
 
-    // Helper methods
-    void _help_step();
+    int _out_of_counter = 0;
 
 public:
 
     PsiConfig(const parameters::FileNames fnames, const parameters::SimulationParameters params, const SpinSystem& spin_system);
-    void step(const double waiting_time);
+    void step(const double current_waiting_time);
     ~PsiConfig();
 
 };

@@ -150,6 +150,9 @@ namespace parameters
         // Ridges
         std::string ridge_E, ridge_S;
 
+        // Psi
+        std::string psi_config;
+
         // Misc
         std::string cache_size, acceptance_rate, walltime_per_waitingtime;
     };

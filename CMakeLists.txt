@@ -27,6 +27,7 @@ if (${BUILD_TESTS})
         src/utils.cpp
         src/spin.cpp
         src/obs1.cpp
+        src/obs2.cpp
     )
 
     # Handle the smoke tests
@@ -73,6 +74,7 @@ add_executable(
     src/utils.cpp
     src/spin.cpp
     src/obs1.cpp
+    src/obs2.cpp
 )
 
 target_compile_definitions(hdspin PUBLIC -DPRECISON=${PRECISON})

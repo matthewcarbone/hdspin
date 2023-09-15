@@ -224,6 +224,7 @@ namespace parameters
             {"n_tracers_per_MPI_rank", p.n_tracers_per_MPI_rank},
             {"use_manual_seed", p.use_manual_seed},
             {"seed", p.seed},
+            {"calculate_IS", p.calculate_inherent_structure_observables},
             {"PRECISON", PRECISON}
         };
 
@@ -244,6 +245,9 @@ namespace parameters
         // Ridges
         fnames.ridge_E = "data/" + ii_str + "_ridge_E.txt";
         fnames.ridge_S = "data/" + ii_str + "_ridge_S.txt";
+
+        // Psi
+        fnames.psi_config = "data/" + ii_str + "_psi_config.txt";
 
         // Misc
         fnames.cache_size = "data/" + ii_str + "_cache_size.txt";

@@ -13,14 +13,16 @@
 #include "utils.h"
 #include "spin.h"
 #include "obs1.h"
+#include "obs2.h"
 #include "CLI11/CLI11.hpp"
 
 
-void step_all_observables_(const double waiting_time, const double simulation_clock, OnePointObservables& obs1, RidgeE& ridgeE, RidgeS& ridgeS)
+void step_all_observables_(const double waiting_time, const double simulation_clock, OnePointObservables& obs1, RidgeE& ridgeE, RidgeS& ridgeS, PsiConfig& psiConfig)
 {
     obs1.step(waiting_time, simulation_clock);
     ridgeE.step(waiting_time, simulation_clock);
     ridgeS.step(waiting_time, simulation_clock);
+    psiConfig.step(waiting_time);
 }
 
 void execute(const parameters::FileNames fnames,
@@ -39,6 +41,7 @@ void execute(const parameters::FileNames fnames,
     RidgeE ridgeE(fnames, params, sys);
     RidgeS ridgeS(fnames, params, sys);
     OnePointObservables obs1(fnames, params, sys);
+    PsiConfig psiConfig(fnames, params, sys);
 
     // Simulation clock is 0 before entering the while loop
     while (true)
@@ -61,7 +64,8 @@ void execute(const parameters::FileNames fnames,
             simulation_clock,
             obs1,
             ridgeE,
-            ridgeS
+            ridgeS,
+            psiConfig
         );
 
         if (simulation_clock > params.N_timesteps){break;}
