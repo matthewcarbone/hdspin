@@ -51,10 +51,33 @@ public:
     }
 };
 
+struct _RidgeEnergyObjects
+{
+    FILE* outfile;
 
-class ObsBase
+    // long double _ridge_energy_accumulator = 0.0;
+    long long total_steps = 0;
+    StreamingMedian streaming_median;
+    StreamingMean streaming_mean;
+
+    // Last energies that were under the threshold
+    double last_energy = 0.0;
+    double current_ridge = 0.0;
+
+    // We must handle the case when the tracer STARTS above the threshold. In
+    // this situation, we should not log the first time it drops below.
+    bool exited_first_basin = false;
+
+    double threshold;
+    bool threshold_valid = true;
+};
+
+
+class OnePointObservables
 {
 protected:
+
+    // Base objects we need
     const parameters::FileNames fnames;
     const parameters::SimulationParameters params;
     std::vector<long long> grid;
@@ -64,65 +87,6 @@ protected:
     // The pointer to the last-updated point on the grid
     unsigned int pointer = 0;
 
-public:
-    ObsBase(const parameters::FileNames fnames, const parameters::SimulationParameters params, const SpinSystem& spin_system);
-};
-
-class RidgeBase : public ObsBase
-{
-protected:
-
-    FILE* outfile;
-
-    // long double _ridge_energy_accumulator = 0.0;
-    long long _total_steps = 0;
-    StreamingMedian streaming_median;
-    StreamingMean streaming_mean;
-
-    // Last energies that were under the threshold
-    double _last_energy = 0.0;
-    double _current_ridge = 0.0;
-
-    // We must handle the case when the tracer STARTS above the threshold. In
-    // this situation, we should not log the first time it drops below.
-    bool _exited_first_basin = false;
-
-    double _threshold;
-    bool _threshold_valid = true;
-
-public:
-
-    // Constructor: reads in the grid from the specified grid directory
-    RidgeBase(const parameters::FileNames fnames, const parameters::SimulationParameters params, const SpinSystem& spin_system);
-
-    // Step the grid by performing the following steps:
-    // 1) Stepping the pointer
-    // 2) Saving the configuration/energy information to disk
-    void step(const double waiting_time, const double simulation_clock);
-
-    ~RidgeBase();
-};
-
-
-
-class RidgeE : public RidgeBase
-{
-public:
-    RidgeE(const parameters::FileNames fnames, const parameters::SimulationParameters params, const SpinSystem& spin_system);
-};
-
-class RidgeS : public RidgeBase
-{
-public:
-    RidgeS(const parameters::FileNames fnames, const parameters::SimulationParameters params, const SpinSystem& spin_system);
-};
-
-
-
-class OnePointObservables : public ObsBase
-{
-protected:
-
     // Output files and pointers
     FILE* outfile_energy;
     FILE* outfile_energy_IS;
@@ -130,6 +94,14 @@ protected:
     FILE* outfile_acceptance_rate;
     FILE* outfile_inherent_structure_timings;
     FILE* outfile_walltime_per_waitingtime;
+
+    // Define the ridge energy objects
+    _RidgeEnergyObjects ridge_E_objects;
+    _RidgeEnergyObjects ridge_S_objects;
+
+    // Other private methods
+    void _step_ridge(const double waiting_time, const double simulation_clock, const bool step_E);
+    void _ridge_writeout(const bool step_E);
 
 public:
 

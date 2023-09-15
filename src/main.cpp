@@ -17,11 +17,9 @@
 #include "CLI11/CLI11.hpp"
 
 
-void step_all_observables_(const double waiting_time, const double simulation_clock, OnePointObservables& obs1, RidgeE& ridgeE, RidgeS& ridgeS, PsiConfig& psiConfig)
+void step_all_observables_(const double waiting_time, const double simulation_clock, OnePointObservables& obs1, PsiConfig& psiConfig)
 {
     obs1.step(waiting_time, simulation_clock);
-    ridgeE.step(waiting_time, simulation_clock);
-    ridgeS.step(waiting_time, simulation_clock);
     psiConfig.step(waiting_time);
 }
 
@@ -38,8 +36,6 @@ void execute(const parameters::FileNames fnames,
     // Simulation parameters
     double simulation_clock = 0.0;
 
-    RidgeE ridgeE(fnames, params, sys);
-    RidgeS ridgeS(fnames, params, sys);
     OnePointObservables obs1(fnames, params, sys);
     PsiConfig psiConfig(fnames, params, sys);
 
@@ -63,8 +59,6 @@ void execute(const parameters::FileNames fnames,
             waiting_time,
             simulation_clock,
             obs1,
-            ridgeE,
-            ridgeS,
             psiConfig
         );
 

@@ -31,102 +31,16 @@ double StreamingMedian::median() const
     return max_heap.top();
 }
 
-
-ObsBase::ObsBase(const parameters::FileNames fnames, const parameters::SimulationParameters params, const SpinSystem& spin_system) : fnames(fnames), params(params)
+OnePointObservables::OnePointObservables(const parameters::FileNames fnames, const parameters::SimulationParameters params, const SpinSystem& spin_system) : fnames(fnames), params(params)
 {
+
+    spin_system_ptr = &spin_system;
+
     const std::string grid_location = fnames.grids_directory + "/energy.txt";
     grids::load_long_long_grid_(grid, grid_location);
     grid_length = grid.size();
     spin_system_ptr = &spin_system;
-};
 
-RidgeBase::RidgeBase(const parameters::FileNames fnames,
-    const parameters::SimulationParameters params, const SpinSystem& spin_system) : ObsBase(fnames, params, spin_system){}
-
-void RidgeBase::step(const double waiting_time, const double simulation_clock)
-{
-
-    if (!_threshold_valid){return;}
-
-    const parameters::StateProperties prev = spin_system_ptr->get_previous_state();
-    const parameters::StateProperties curr = spin_system_ptr->get_current_state();
-
-    const double _prev_energy = prev.energy;
-    const double _curr_energy = curr.energy;
-
-    // Just exited a basin, track the previous energy
-    if ((prev.energy < _threshold) && (curr.energy >= _threshold))
-    {
-        _last_energy = prev.energy;
-        _current_ridge = _curr_energy;
-        _exited_first_basin = true;
-    }
-
-    // Still above the basin. The current ridge energy is defined as the
-    // maximum energy reached above the threshold.
-    else if ((prev.energy >= _threshold) && (curr.energy >= _threshold))
-    {
-        _current_ridge = _curr_energy > _current_ridge ? _curr_energy : _current_ridge;
-    }
-
-    // Just dropped back below the threshold: log the current ridge energy
-    else if ((prev.energy >= _threshold) && (curr.energy < _threshold))
-    {
-        if (_exited_first_basin)
-        {
-            streaming_median.update(_current_ridge);
-            streaming_mean.update(_current_ridge);
-            _total_steps += 1;
-        }
-    }
-
-    if (grid[pointer] < simulation_clock)
-    {
-        double total_steps;
-        if (_total_steps > 0)
-        {
-            total_steps = ((double) _total_steps);
-        }
-        else
-        {
-            total_steps = 1;
-        }
-        const double _median = streaming_median.median();
-        const double _mean = streaming_mean.mean();
-        while (grid[pointer] < simulation_clock)
-        {   
-            fprintf(outfile, "%.08f %.08f %lli\n", _mean, _median, _total_steps);
-            pointer += 1;
-            if (pointer > grid_length - 1){return;}
-        }
-    }
-}
-
-RidgeBase::~RidgeBase()
-{
-    if (_threshold_valid){fclose(outfile);}
-}
-
-
-RidgeE::RidgeE(const parameters::FileNames fnames, const parameters::SimulationParameters params, const SpinSystem& spin_system) : RidgeBase(fnames, params, spin_system)
-{
-    outfile = fopen(fnames.ridge_E.c_str(), "w");
-    _threshold = params.energetic_threshold;
-}
-
-
-RidgeS::RidgeS(const parameters::FileNames fnames, const parameters::SimulationParameters params, const SpinSystem& spin_system) : RidgeBase(fnames, params, spin_system)
-{
-    _threshold_valid = params.valid_entropic_attractor;
-    _threshold = params.entropic_attractor;
-    if (_threshold_valid)
-    {
-        outfile = fopen(fnames.ridge_S.c_str(), "w");
-    }
-}
-
-OnePointObservables::OnePointObservables(const parameters::FileNames fnames, const parameters::SimulationParameters params, const SpinSystem& spin_system) : ObsBase(fnames, params, spin_system)
-{
     // Energy
     outfile_energy = fopen(fnames.energy.c_str(), "w");
 
@@ -147,6 +61,93 @@ OnePointObservables::OnePointObservables(const parameters::FileNames fnames, con
 
     // Wall time/timestep
     outfile_walltime_per_waitingtime = fopen(fnames.walltime_per_waitingtime.c_str(), "w");
+
+    // Ridge energy
+    ridge_E_objects.outfile = fopen(fnames.ridge_E.c_str(), "w");
+    ridge_E_objects.threshold = params.energetic_threshold;
+    ridge_S_objects.threshold_valid = params.valid_entropic_attractor;
+    ridge_S_objects.threshold = params.entropic_attractor;
+    if (ridge_S_objects.threshold_valid)
+    {
+        ridge_S_objects.outfile = fopen(fnames.ridge_S.c_str(), "w");
+    }
+}
+
+void OnePointObservables::_step_ridge(const double waiting_time, const double simulation_clock, const bool step_E)
+{
+
+    _RidgeEnergyObjects* ridge_ptr;
+    if (step_E) // This is the energy threshold ridge step
+    {
+        ridge_ptr = &ridge_E_objects;
+    }
+    else  // This is the entropic attractor ridge step
+    {
+        ridge_ptr = &ridge_S_objects;
+    }
+
+    if (!ridge_ptr->threshold_valid){return;}
+
+    const parameters::StateProperties prev = spin_system_ptr->get_previous_state();
+    const parameters::StateProperties curr = spin_system_ptr->get_current_state();
+
+    const double _prev_energy = prev.energy;
+    const double _curr_energy = curr.energy;
+
+    // Just exited a basin, track the previous energy
+    if ((prev.energy < ridge_ptr->threshold) && (curr.energy >= ridge_ptr->threshold))
+    {
+        ridge_ptr->last_energy = prev.energy;
+        ridge_ptr->current_ridge = _curr_energy;
+        ridge_ptr->exited_first_basin = true;
+    }
+
+    // Still above the basin. The current ridge energy is defined as the
+    // maximum energy reached above the threshold.
+    else if ((prev.energy >= ridge_ptr->threshold) && (curr.energy >= ridge_ptr->threshold))
+    {
+        ridge_ptr->current_ridge = _curr_energy > ridge_ptr->current_ridge ? _curr_energy : ridge_ptr->current_ridge;
+    }
+
+    // Just dropped back below the threshold: log the current ridge energy
+    else if ((prev.energy >= ridge_ptr->threshold) && (curr.energy < ridge_ptr->threshold))
+    {
+        if (ridge_ptr->exited_first_basin)
+        {
+            ridge_ptr->streaming_median.update(ridge_ptr->current_ridge);
+            ridge_ptr->streaming_mean.update(ridge_ptr->current_ridge);
+            ridge_ptr->total_steps += 1;
+        }
+    }
+}
+
+void OnePointObservables::_ridge_writeout(const bool step_E)
+{
+
+    _RidgeEnergyObjects* ridge_ptr;
+    if (step_E) // This is the energy threshold ridge step
+    {
+        ridge_ptr = &ridge_E_objects;
+    }
+    else  // This is the entropic attractor ridge step
+    {
+        ridge_ptr = &ridge_S_objects;
+    }
+
+    if (!ridge_ptr->threshold_valid){return;}
+
+    double total_steps;
+    if (ridge_ptr->total_steps > 0)
+    {
+        total_steps = ((double) ridge_ptr->total_steps);
+    }
+    else
+    {
+        total_steps = 1;
+    }
+    const double _median = ridge_ptr->streaming_median.median();
+    const double _mean = ridge_ptr->streaming_mean.mean();
+    fprintf(ridge_ptr->outfile, "%.08f %.08f %lli\n", _mean, _median, ridge_ptr->total_steps);
 }
 
 void OnePointObservables::step(const double waiting_time, const double simulation_clock)
@@ -193,6 +194,8 @@ void OnePointObservables::step(const double waiting_time, const double simulatio
         fprintf(outfile_capacity, "%s\n", cache_size_string.c_str());
         fprintf(outfile_acceptance_rate, "%.08f\n", acceptance_rate);
         fprintf(outfile_walltime_per_waitingtime, "%.08f\n", sim_stats.total_wall_time/sim_stats.total_waiting_time);
+        _ridge_writeout(true);
+        _ridge_writeout(false);
 
         pointer += 1;
         if (pointer > grid_length - 1){return;}
@@ -209,5 +212,9 @@ OnePointObservables::~OnePointObservables()
     fclose(outfile_capacity);
     fclose(outfile_acceptance_rate);
     fclose(outfile_walltime_per_waitingtime);
+    if (ridge_S_objects.threshold_valid)
+    {
+        fclose(ridge_S_objects.outfile);
+    }
 }
 
