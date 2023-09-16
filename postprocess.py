@@ -124,11 +124,30 @@ def cache_size(all_filenames, substring, save_path):
     np.savetxt(save_path, final, fmt='%.08e')
 
 
+def psi_config(all_filenames, substring, save_path):
+    """Process all of the config information."""
+
+    files = [f for f in all_filenames if substring in f]
+    if len(files) == 0:
+        return
+    files = read_files_via_numpy(files)
+    arr = np.array([np.array(f) for f in files if len(f) > 0])
+    grid = np.array([2**ii for ii in range(arr.shape[1])])
+    psi = arr.mean(axis=0)
+    psi = psi / psi.sum()
+    sd = arr.std(axis=0)
+    stderr = sem(arr, axis=0)
+    final = np.array([grid, psi, sd, stderr]).T
+    where = np.where(final[:, 1] != 0)[0]
+    final = final[where, :]
+    np.savetxt(save_path, final, fmt='%.08e')
+
+
 if __name__ == '__main__':
     Path(FINAL_DIRECTORY).mkdir(exist_ok=True, parents=False)
     fnames = get_all_results_filenames()
 
-    # Handle all _standard_ one-point observables
+    # Handle all standard one-point observables
     obs1(fnames, "_energy.txt", Path(FINAL_DIRECTORY) / "energy.txt")
     obs1(fnames, "_energy_IS.txt", Path(FINAL_DIRECTORY) / "energy_IS.txt")
     ridge(fnames, "_ridge_E.txt", Path(FINAL_DIRECTORY) / "ridge_E.txt")
@@ -136,6 +155,9 @@ if __name__ == '__main__':
     obs1(fnames, "_acceptance_rate.txt", Path(FINAL_DIRECTORY) / "acceptance_rate.txt")
     obs1(fnames, "_inherent_structure_timings.txt", Path(FINAL_DIRECTORY) / "inherent_structure_timings.txt")
     obs1(fnames, "_walltime_per_waitingtime.txt", Path(FINAL_DIRECTORY) / "walltime_per_waitingtime.txt")
+
+    # All two point observables
+    psi_config(fnames, "_psi_config.txt", Path(FINAL_DIRECTORY) / "psi_config.txt")
 
     # ...
     cache_size(fnames, "_cache_size.txt", Path(FINAL_DIRECTORY) / "cache_size.txt")
