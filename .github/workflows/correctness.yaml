@@ -15,6 +15,7 @@ jobs:
       matrix:
         beta: [2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 3.0]
 
+    name: beta=${{ matrix.beta }}
     runs-on: ubuntu-latest
 
     steps:
@@ -36,6 +37,7 @@ jobs:
       - name: install python dependencies
         run: |
           pip install numpy
+          pip install scipy
 
       - name: build
         run: |

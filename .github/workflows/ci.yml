@@ -38,6 +38,7 @@ jobs:
       - name: install python dependencies
         run: |
           pip install numpy
+          pip install scipy
 
       - name: build
         run: |
