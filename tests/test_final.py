@@ -33,6 +33,10 @@ def add_check_2_args(ap):
         '-t', '--threshold', dest="threshold", type=float, default=0.95,
         help='Threshold for comparisons.'
     )
+    ap.add_argument(
+        '-f', '--files', dest="files", type=str, nargs="+", default=["energy.txt"],
+        help='Tiles to run.'
+    )
 
 
 def global_parser(sys_argv):
@@ -107,7 +111,7 @@ def run_all_check_both_similar(args):
 
     # Load results for standard things
     problems = []
-    for file in ["energy.txt", "energy_IS.txt", "ridge_E.txt"]:
+    for file in args.files:
 
         path1 = df1 / file
         if not path1.exists():
@@ -119,12 +123,6 @@ def run_all_check_both_similar(args):
 
         x1 = np.loadtxt(path1)
         x2 = np.loadtxt(path2)
-
-        if "ridge" in file:
-            # Adjust for ridge energy
-            L = x1.shape[0] // 10
-            x1 = x1[L:, :]
-            x2 = x2[L:, :]
 
         similarity = check_both_similar(x1, x2, scale=args.scale)
 

@@ -64,5 +64,6 @@ jobs:
 
       - name: assert they produced the same results
         run: |
-          python3 tests/test_final.py compare -d1 ${{ matrix.beta }}-s -d2 ${{ matrix.beta }}-g --scale=1.0 --threshold=0.95
+          python3 tests/test_final.py compare -d1 ${{ matrix.beta }}-s -d2 ${{ matrix.beta }}-g --scale=1.0 --threshold=0.95 -f energy.txt energy_IS.txt
+          python3 tests/test_final.py compare -d1 ${{ matrix.beta }}-s -d2 ${{ matrix.beta }}-g --scale=1.0 --threshold=0.8 -f ridge_E.txt
 
