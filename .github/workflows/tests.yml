@@ -1,4 +1,4 @@
-name: correctness
+name: tests
 
 on:
   pull_request:
@@ -9,7 +9,7 @@ on:
 
 jobs:
 
-  correctness:
+  tests:
 
     strategy:
       matrix:
