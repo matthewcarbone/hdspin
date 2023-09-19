@@ -37,6 +37,11 @@ def add_check_2_args(ap):
         '-f', '--files', dest="files", type=str, nargs="+", default=["energy.txt"],
         help='Tiles to run.'
     )
+    ap.add_argument(
+        "--take-last-prop", dest="take_last_prop", type=float, default=1.0,
+        help='Take the last proportion of the simulation average, '
+        'allowing one to disregard short-time effects.'
+    )
 
 
 def global_parser(sys_argv):
@@ -123,6 +128,9 @@ def run_all_check_both_similar(args):
 
         x1 = np.loadtxt(path1)
         x2 = np.loadtxt(path2)
+        L = int(x1.shape[0] * args.take_last_prop)
+        x1 = x1[-L:, :]
+        x2 = x2[-L:, :]
 
         similarity = check_both_similar(x1, x2, scale=args.scale)
 
