@@ -73,7 +73,7 @@ double get_sim_time(parameters::SimulationParameters p, const std::string dynami
     EnergyMapping emap(p);
     SpinSystem sys(p, emap);
     auto t_start = std::chrono::high_resolution_clock::now();
-    for (unsigned int step=0; step<int(1e7); step++)
+    for (unsigned int step=0; step<uint(1e7); step++)
     {
         simulation_clock += sys.step();
         if (simulation_clock > p.N_timesteps){break;}
@@ -172,6 +172,7 @@ std::string determine_dynamics_automatically(const parameters::SimulationParamet
     else{MPI_Abort(mpi_comm, 1); return "error";}
 }
 
+
 int main(int argc, char *argv[])
 {
     // Initialize the MPI environment
@@ -187,6 +188,7 @@ int main(int argc, char *argv[])
     // PARSER ----------------------------------------------------------------
     // -----------------------------------------------------------------------
     // -----------------------------------------------------------------------
+    // Note that it appears this must be handled directly in main().
     CLI::App app{
         "hdspin is an application for simulating binary spin systems"
     };
@@ -251,6 +253,7 @@ int main(int argc, char *argv[])
     // -----------------------------------------------------------------------
     // PARSER ----------------------------------------------------------------
 
+    // This helper completes all missing fields in the input parameters
     update_parameters_(&p);
 
     MPI_Barrier(MPI_COMM_WORLD);
