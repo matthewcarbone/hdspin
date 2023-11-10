@@ -248,6 +248,8 @@ namespace parameters
 
         // Psi
         fnames.psi_config = "data/" + ii_str + "_psi_config.txt";
+        fnames.psi_basin_E = "data/" + ii_str + "_psi_basin_E.txt";
+        fnames.psi_basin_S = "data/" + ii_str + "_psi_basin_S.txt";
 
         // Misc
         fnames.cache_size = "data/" + ii_str + "_cache_size.txt";

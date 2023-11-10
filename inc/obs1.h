@@ -85,6 +85,7 @@ protected:
     const SpinSystem* spin_system_ptr;
 
     // The pointer to the last-updated point on the grid
+    // Note that this is not actually a pointer =]
     unsigned int pointer = 0;
 
     // Output files and pointers

@@ -17,10 +17,11 @@
 #include "CLI11/CLI11.hpp"
 
 
-void step_all_observables_(const double waiting_time, const double simulation_clock, OnePointObservables& obs1, PsiConfig& psiConfig)
+void step_all_observables_(const double waiting_time, const double simulation_clock, OnePointObservables& obs1, PsiConfig& psiConfig, PsiBasin& psiBasin)
 {
     obs1.step(waiting_time, simulation_clock);
     psiConfig.step(waiting_time);
+    psiBasin.step(waiting_time);
 }
 
 void execute(const parameters::FileNames fnames,
@@ -38,6 +39,7 @@ void execute(const parameters::FileNames fnames,
 
     OnePointObservables obs1(fnames, params, sys);
     PsiConfig psiConfig(fnames, params, sys);
+    PsiBasin psiBasin(fnames, params, sys);
 
     // Simulation clock is 0 before entering the while loop
     while (true)
@@ -59,7 +61,8 @@ void execute(const parameters::FileNames fnames,
             waiting_time,
             simulation_clock,
             obs1,
-            psiConfig
+            psiConfig,
+            psiBasin
         );
 
         if (simulation_clock > params.N_timesteps){break;}
