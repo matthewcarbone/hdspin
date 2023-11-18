@@ -231,3 +231,57 @@ PsiBasin::~PsiBasin()
     _dump_outfile("E");
     _dump_outfile("S");
 }
+
+
+
+void AgingConfig::_help_step(const double simulation_clock, const std::vector<long long> grid, std::vector<std::string>& results, int& pointer)
+{
+
+    // Two break conditions
+    if (grid[pointer] >= simulation_clock) {return;}
+    if (pointer > length - 1) {return;}
+
+    const std::string state = spin_system_ptr->binary_state();
+
+    while (grid[pointer] < simulation_clock)
+    {
+        results.push_back(state);
+        pointer += 1;
+        if (pointer > length - 1){break;}
+    }
+}
+
+
+AgingConfig::AgingConfig(const parameters::FileNames fnames, const parameters::SimulationParameters params, const SpinSystem& spin_system) : fnames(fnames), params(params)
+{
+
+    outfile = fopen(fnames.Pi_config.c_str(), "w");
+
+    spin_system_ptr = &spin_system;
+
+    const std::string pi_1_grid_location = fnames.grids_directory + "/pi1.txt";
+    grids::load_long_long_grid_(grid_pi1, pi_1_grid_location);
+    length = grid_pi1.size();
+
+    const std::string pi_2_grid_location = fnames.grids_directory + "/pi2.txt";
+    grids::load_long_long_grid_(grid_pi2, pi_2_grid_location);
+    const int grid_length2 = grid_pi2.size();
+
+    assert(length == grid_length2);
+}
+
+
+void AgingConfig::step(const double simulation_clock)
+{
+    _help_step(simulation_clock, grid_pi1, results1, pointer1);
+    _help_step(simulation_clock, grid_pi2, results2, pointer2);
+}
+
+AgingConfig::~AgingConfig()
+{
+    for (int ii = 0; ii < length; ii++)
+    {
+        fprintf(outfile, "%s %s\n", results1[ii].c_str(), results2[ii].c_str());
+    }
+    fclose(outfile);   
+}

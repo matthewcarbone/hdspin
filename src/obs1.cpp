@@ -39,7 +39,6 @@ OnePointObservables::OnePointObservables(const parameters::FileNames fnames, con
     const std::string grid_location = fnames.grids_directory + "/energy.txt";
     grids::load_long_long_grid_(grid, grid_location);
     grid_length = grid.size();
-    spin_system_ptr = &spin_system;
 
     // Energy
     outfile_energy = fopen(fnames.energy.c_str(), "w");

@@ -75,5 +75,43 @@ public:
 };
 
 
+class AgingConfig
+{
+protected:
+
+    const SpinSystem* spin_system_ptr;
+
+    const parameters::FileNames fnames;
+    const parameters::SimulationParameters params;
+
+    // The pi 1 and 2 grids
+    std::vector<long long> grid_pi1;
+    std::vector<long long> grid_pi2;
+    int length;
+
+    // Results
+    std::vector<std::string> results1;
+    std::vector<std::string> results2;
+
+    // Define the pointers
+    int pointer1 = 0;
+    int pointer2 = 0;
+
+    // The outstream for this tracker
+    FILE* outfile;
+
+    // Helpers
+    void _help_step(const double simulation_clock, const std::vector<long long> grid, std::vector<std::string>& results, int& pointer);
+    // void _help_step_2(const long double, const long long);
+
+    // void _dump_outfile();
+
+public:
+    AgingConfig(const parameters::FileNames fnames, const parameters::SimulationParameters params, const SpinSystem& spin_system);
+    void step(const double simulation_clock);
+    ~AgingConfig();
+};
+
+
 
 #endif
