@@ -111,6 +111,7 @@ void PsiBasin::_init_S_objects()
 {
     _fill_counter(_max_counter, S_objects._counter);
     _fill_counter(_max_counter, S_objects._counter_unique_configs_per_basin);
+    if (!params.valid_entropic_attractor){S_objects.threshold_valid = false;}
     S_objects.threshold = params.entropic_attractor;
     if (S_objects.threshold_valid)
     {
@@ -130,20 +131,18 @@ PsiBasin::PsiBasin(const parameters::FileNames fnames, const parameters::Simulat
 
 _PsiBasinObjects* PsiBasin::_get_psi_basin_object_pointer(const std::string which)
 {
-    _PsiBasinObjects* psi_basin_object_pointer;
     if (which == "E") // This is the energy threshold ridge step
     {
-        psi_basin_object_pointer = &E_objects;
+        return &E_objects;
     }
     else if (which == "S") // This is the entropic attractor ridge step
     {
-        psi_basin_object_pointer = &S_objects;
+        return &S_objects;
     }
     else
     {
         throw std::runtime_error("Unknown 'which' (should be S, E)");
     }
-    return psi_basin_object_pointer;
 }
 
 

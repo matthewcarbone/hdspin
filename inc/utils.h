@@ -153,6 +153,9 @@ namespace parameters
         // Psi
         std::string psi_config, psi_basin_E, psi_basin_S;
 
+        // Pi
+        std::string Pi_config, Pi_basin_E, Pi_basin_S;
+
         // Misc
         std::string cache_size, acceptance_rate, walltime_per_waitingtime;
     };

@@ -143,6 +143,39 @@ def psi_config(all_filenames, substring, save_path):
     np.savetxt(save_path, final, fmt='%.08e')
 
 
+def psi_basin(all_filenames, substring, save_path):
+    files = [f for f in all_filenames if substring in f]
+    if len(files) == 0:
+        return
+    arr = np.array(read_files_via_numpy(files))
+    arr = arr[:, :, 0].squeeze()  # ignore unique configs/basin
+    grid = np.array([2**ii for ii in range(arr.shape[1])])
+    mu = arr.mean(axis=0)
+    sd = arr.std(axis=0)
+    stderr = sem(arr, axis=0)
+    final = np.array([grid, mu, sd, stderr]).T
+    where = np.where(final[:, 1] != 0)[0]
+    final = final[where, :]
+    np.savetxt(save_path, final, fmt='%.08e')
+
+
+# def aging_config(all_filenames, substring, save_path):
+#     """Process all the aging config results."""
+
+#     files = [f for f in all_filenames if substring in f]
+#     if len(files) == 0:
+#         return
+#     arr = np.array(read_files_via_numpy(files))
+#     eq = arr[:, :, 0] == arr[:, :, 1]
+#     mu = eq.mean(axis=0)
+#     sd = eq.std(axis=0)
+#     stderr = sem(eq, axis=0)
+#     # grid = np.loadtxt("grids/pi1.txt")
+#     grid = np.array([2**ii for ii in range(arr.shape[1])])
+#     final = np.array([grid, mu, sd, stderr]).T
+#     np.savetxt(save_path, final, fmt='%.08e')
+
+
 if __name__ == '__main__':
     Path(FINAL_DIRECTORY).mkdir(exist_ok=True, parents=False)
     fnames = get_all_results_filenames()
@@ -158,6 +191,8 @@ if __name__ == '__main__':
 
     # All two point observables
     psi_config(fnames, "_psi_config.txt", Path(FINAL_DIRECTORY) / "psi_config.txt")
+    psi_basin(fnames, "_psi_basin_E.txt", Path(FINAL_DIRECTORY) / "psi_basin_E.txt")
+    psi_basin(fnames, "_psi_basin_S.txt", Path(FINAL_DIRECTORY) / "psi_basin_S.txt")
 
     # ...
     cache_size(fnames, "_cache_size.txt", Path(FINAL_DIRECTORY) / "cache_size.txt")
