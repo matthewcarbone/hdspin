@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from pathlib import Path
+import warnings
 
 import numpy as np
 from scipy.stats import sem
@@ -159,21 +160,51 @@ def psi_basin(all_filenames, substring, save_path):
     np.savetxt(save_path, final, fmt='%.08e')
 
 
-# def aging_config(all_filenames, substring, save_path):
-#     """Process all the aging config results."""
+def Pi_config(all_filenames, substring, save_path):
+    """Process all the aging config results."""
 
-#     files = [f for f in all_filenames if substring in f]
-#     if len(files) == 0:
-#         return
-#     arr = np.array(read_files_via_numpy(files))
-#     eq = arr[:, :, 0] == arr[:, :, 1]
-#     mu = eq.mean(axis=0)
-#     sd = eq.std(axis=0)
-#     stderr = sem(eq, axis=0)
-#     # grid = np.loadtxt("grids/pi1.txt")
-#     grid = np.array([2**ii for ii in range(arr.shape[1])])
-#     final = np.array([grid, mu, sd, stderr]).T
-#     np.savetxt(save_path, final, fmt='%.08e')
+    files = [f for f in all_filenames if substring in f]
+    if len(files) == 0:
+        return
+    arr = np.array(read_files_via_numpy(files))
+    eq = arr[:, :, 0] == arr[:, :, 1]
+    mu = eq.mean(axis=0)
+    sd = eq.std(axis=0)
+    stderr = sem(eq, axis=0)
+    grid = np.loadtxt("grids/pi1.txt")
+    final = np.array([grid, mu, sd, stderr]).T
+    np.savetxt(save_path, final, fmt='%.08e')
+
+
+def Pi_basin(all_filenames, substring, save_path):
+    """"""
+
+    files = [f for f in all_filenames if substring in f]
+    if len(files) == 0:
+        return
+
+    with warnings.catch_warnings():
+        warnings.filterwarnings('ignore')
+        arr = np.array(read_files_via_numpy(files))
+
+    mu = []
+    sd = []
+    stderr = []
+
+    for gridpoint in range(arr.shape[1]):
+        subarr = arr[:, gridpoint, :]
+
+        # Indexes are vec idx 1, in basin 1, vec idx 2, in basin 2
+        in_basin_1 = np.where(subarr[:, 1] == 1)[0]
+        eq = subarr[in_basin_1, 0] == subarr[in_basin_1, 2]
+
+        mu.append(np.mean(eq))
+        sd.append(np.std(eq))
+        stderr.append(sem(eq))
+
+    grid = np.loadtxt("grids/pi1.txt")
+    final = np.array([grid, mu, sd, stderr]).T
+    np.savetxt(save_path, final, fmt='%.08e')
 
 
 if __name__ == '__main__':
@@ -193,6 +224,10 @@ if __name__ == '__main__':
     psi_config(fnames, "_psi_config.txt", Path(FINAL_DIRECTORY) / "psi_config.txt")
     psi_basin(fnames, "_psi_basin_E.txt", Path(FINAL_DIRECTORY) / "psi_basin_E.txt")
     psi_basin(fnames, "_psi_basin_S.txt", Path(FINAL_DIRECTORY) / "psi_basin_S.txt")
+
+    Pi_config(fnames, "_Pi_config.txt", Path(FINAL_DIRECTORY) / "Pi_config.txt")
+    Pi_basin(fnames, "_Pi_basin_E.txt", Path(FINAL_DIRECTORY) / "Pi_basin_E.txt")
+    Pi_basin(fnames, "_Pi_basin_S.txt", Path(FINAL_DIRECTORY) / "Pi_basin_S.txt")
 
     # ...
     cache_size(fnames, "_cache_size.txt", Path(FINAL_DIRECTORY) / "cache_size.txt")
