@@ -96,6 +96,9 @@ public:
      */
     void set_state(ap_uint<PRECISON> state);
 
+    std::string get_previous_state_string_rep() const;
+    std::string get_current_state_string_rep() const;
+
     /**
      * @brief [brief description]
      * @details [long description]

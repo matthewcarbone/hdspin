@@ -101,7 +101,8 @@ protected:
     FILE* outfile;
 
     // Helpers
-    void _help_step(const double simulation_clock, const std::vector<long long> grid, std::vector<std::string>& results, int& pointer);
+    void _help_step_1(const double simulation_clock);
+    void _help_step_2(const double simulation_clock);
     // void _help_step_2(const long double, const long long);
 
     // void _dump_outfile();

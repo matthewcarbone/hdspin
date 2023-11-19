@@ -167,7 +167,7 @@ void PsiBasin::_step(const double current_waiting_time, const std::string which)
 
     // Get the previous binary state representation as a string so that it's
     // compatible with our dictionaries
-    const std::string state = spin_system_ptr->binary_state();
+    const std::string state = spin_system_ptr->get_previous_state_string_rep();
 
     // Insert this into the temporary configurations tracker- this is a set
     // which will not include duplicates
@@ -234,22 +234,43 @@ PsiBasin::~PsiBasin()
 
 
 
-void AgingConfig::_help_step(const double simulation_clock, const std::vector<long long> grid, std::vector<std::string>& results, int& pointer)
+void AgingConfig::_help_step_1(const double simulation_clock)
 {
 
     // Two break conditions
-    if (grid[pointer] >= simulation_clock) {return;}
-    if (pointer > length - 1) {return;}
+    if (grid_pi1[pointer1] >= simulation_clock) {return;}
+    if (pointer1 > length - 1) {return;}
 
-    const std::string state = spin_system_ptr->binary_state();
+    const std::string state = spin_system_ptr->get_previous_state_string_rep();
+    // std::cout << "state(1) " << state << std::endl;
 
-    while (grid[pointer] < simulation_clock)
+    while (grid_pi1[pointer1] < simulation_clock)
     {
-        results.push_back(state);
-        pointer += 1;
-        if (pointer > length - 1){break;}
+        results1.push_back(state);
+        pointer1 += 1;
+        if (pointer1 > length - 1){break;}
     }
 }
+
+
+void AgingConfig::_help_step_2(const double simulation_clock)
+{
+
+    // Two break conditions
+    if (grid_pi2[pointer2] >= simulation_clock) {return;}
+    if (pointer2 > length - 1) {return;}
+
+    const std::string state = spin_system_ptr->get_previous_state_string_rep();
+    // std::cout << "state(2) " << state << std::endl;
+
+    while (grid_pi2[pointer2] < simulation_clock)
+    {
+        results2.push_back(state);
+        pointer2 += 1;
+        if (pointer2 > length - 1){break;}
+    }
+}
+
 
 
 AgingConfig::AgingConfig(const parameters::FileNames fnames, const parameters::SimulationParameters params, const SpinSystem& spin_system) : fnames(fnames), params(params)
@@ -273,15 +294,20 @@ AgingConfig::AgingConfig(const parameters::FileNames fnames, const parameters::S
 
 void AgingConfig::step(const double simulation_clock)
 {
-    _help_step(simulation_clock, grid_pi1, results1, pointer1);
-    _help_step(simulation_clock, grid_pi2, results2, pointer2);
+    // std::cout << fnames.Pi_config.c_str() << " " << pointer1 << " " << pointer2 << std::endl;
+    _help_step_1(simulation_clock);
+    _help_step_2(simulation_clock);
 }
 
 AgingConfig::~AgingConfig()
 {
+    assert(length == results1.size());
+    assert(length == results2.size());
     for (int ii = 0; ii < length; ii++)
     {
-        fprintf(outfile, "%s %s\n", results1[ii].c_str(), results2[ii].c_str());
+        const std::string s1 = results1[ii];
+        const std::string s2 = results2[ii];
+        fprintf(outfile, "%s %s\n", s1.c_str(), s2.c_str());
     }
     fclose(outfile);   
 }

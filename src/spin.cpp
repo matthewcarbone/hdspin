@@ -47,10 +47,21 @@ void SpinSystem::_init_previous_state_()
     _prev.energy = energy();
 }
 
+std::string SpinSystem::get_previous_state_string_rep() const
+{
+    return state::string_rep_from_arbitrary_precision_integer(_prev.state, params.N_spins);
+}
+
+
 void SpinSystem::_init_current_state_()
 {
     _curr.state = current_state;
     _curr.energy = energy();
+}
+
+std::string SpinSystem::get_current_state_string_rep() const
+{
+    return state::string_rep_from_arbitrary_precision_integer(_curr.state, params.N_spins);
 }
 
 SpinSystem::SpinSystem(const parameters::SimulationParameters params,

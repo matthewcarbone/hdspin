@@ -22,7 +22,7 @@ void step_all_observables_(const double waiting_time, const double simulation_cl
     obs1.step(waiting_time, simulation_clock);
     psiConfig.step(waiting_time);
     psiBasin.step(waiting_time);
-    agingConfig.step(waiting_time);
+    agingConfig.step(simulation_clock);
 }
 
 void execute(const parameters::FileNames fnames,
