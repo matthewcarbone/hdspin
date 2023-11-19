@@ -180,6 +180,7 @@ namespace parameters
         double energetic_threshold;
         double entropic_attractor;
         bool use_manual_seed = false;
+        // bool valid_energetic_threshold = true;
         bool valid_entropic_attractor = true;
         int grid_size = 100;
         double dw = 0.5;
