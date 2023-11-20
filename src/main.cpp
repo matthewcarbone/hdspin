@@ -7,9 +7,6 @@
 int main(int argc, char *argv[])
 {
     MPI_Init(&argc, &argv);
-    int MPI_WORLD_SIZE, MPI_RANK;
-    MPI_Comm_size(MPI_COMM_WORLD, &MPI_WORLD_SIZE);
-    MPI_Comm_rank(MPI_COMM_WORLD, &MPI_RANK);
 
     utils::SimulationParameters p;
 
