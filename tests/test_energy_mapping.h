@@ -10,7 +10,7 @@ namespace test_energy_mapping
 
 bool test_energy_mapping_sampling_EREM_given_beta_critical(const double beta_critical)
 {
-    parameters::SimulationParameters sp;
+    utils::SimulationParameters sp;
     sp.landscape = "EREM";
     sp.beta_critical = beta_critical;
     sp.use_manual_seed = true;
@@ -36,8 +36,8 @@ bool test_energy_mapping_sampling_EREM_given_beta_critical(const double beta_cri
         v.push_back(emap.sample_energy());
     }
 
-    const double num_mean = mean_vector(v);
-    const double num_var = variance_vector(v);
+    const double num_mean = utils::mean_vector(v);
+    const double num_var = utils::variance_vector(v);
 
     // std::cout << num_mean << " " << mean << std::endl;
     // std::cout << num_var << " " << variance << std::endl; 
@@ -51,7 +51,7 @@ bool test_energy_mapping_sampling_EREM_given_beta_critical(const double beta_cri
 
 bool test_energy_mapping_sampling_REM_given_N_spins(const int N_spins)
 {
-    parameters::SimulationParameters sp;
+    utils::SimulationParameters sp;
     sp.landscape = "GREM";
     sp.N_spins = N_spins;
     sp.use_manual_seed = true;
@@ -79,8 +79,8 @@ bool test_energy_mapping_sampling_REM_given_N_spins(const int N_spins)
         v.push_back(emap.sample_energy());
     }
 
-    const double num_mean = mean_vector(v);
-    const double num_var = variance_vector(v);
+    const double num_mean = utils::mean_vector(v);
+    const double num_var = utils::variance_vector(v);
 
     // std::cout << num_mean << " " << mean << std::endl;
     // std::cout << num_var << " " << variance << std::endl;
@@ -94,7 +94,7 @@ bool test_energy_mapping_sampling_REM_given_N_spins(const int N_spins)
 
 bool test_small_cache(const int N_spins)
 {
-    parameters::SimulationParameters sp;
+    utils::SimulationParameters sp;
     sp.landscape = "GREM";
     sp.N_spins = N_spins;
     sp.use_manual_seed = true;
@@ -138,7 +138,7 @@ bool test_small_cache(const int N_spins)
 
 bool test_memory_minus_one(const int N_spins)
 {
-    parameters::SimulationParameters sp;
+    utils::SimulationParameters sp;
     sp.landscape = "GREM";
     sp.N_spins = N_spins;
     sp.use_manual_seed = true;
@@ -160,7 +160,7 @@ bool test_memory_minus_one(const int N_spins)
 
 bool test_massive_AP_LRU(const int N_spins)
 {
-    parameters::SimulationParameters sp;
+    utils::SimulationParameters sp;
     sp.landscape = "GREM";
     sp.N_spins = N_spins;
     sp.use_manual_seed = true;
@@ -168,7 +168,7 @@ bool test_massive_AP_LRU(const int N_spins)
     sp.memory = 1000;
     EnergyMapping emap = EnergyMapping(sp);
 
-    ap_uint<PRECISON> large_number = arbitrary_precision_integer_pow(2, N_spins-1);
+    ap_uint<PRECISON> large_number = utils::arbitrary_precision_integer_pow(2, N_spins-1);
 
     double e;
     for (int ii=0; ii<10; ii++)

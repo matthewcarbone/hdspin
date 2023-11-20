@@ -41,10 +41,10 @@ bool test_array_to_int_to_array_conversion(
     _fill_binary_vector(arr, arr_size, seed);
 
     ap_uint<PRECISON> res;
-    state::arbitrary_precision_integer_from_int_array_(arr, arr_size, res);
+    utils::arbitrary_precision_integer_from_int_array_(arr, arr_size, res);
 
     unsigned int arr2[arr_size];
-    state::int_array_from_arbitrary_precision_integer_(arr2, arr_size, res);
+    utils::int_array_from_arbitrary_precision_integer_(arr2, arr_size, res);
 
     for (unsigned int ii=0; ii<arr_size; ii++)
     {
@@ -85,7 +85,7 @@ bool test_neighbors_correct(const unsigned int seed, const unsigned int arr_size
         else{arr[ii] = 0;}
 
         // Get the decimal representation of this binary vector
-        state::arbitrary_precision_integer_from_int_array_(arr, arr_size, neighbors_method_1[ii]);
+        utils::arbitrary_precision_integer_from_int_array_(arr, arr_size, neighbors_method_1[ii]);
 
         // Flip the ii'th bit back
         if (arr[ii] == 0){arr[ii] = 1;}
@@ -95,10 +95,10 @@ bool test_neighbors_correct(const unsigned int seed, const unsigned int arr_size
     // Now we do the opposite: first convert the array to decimal
     // representation, and find its neighbors from that directly.
     ap_uint<PRECISON> decimal_rep;
-    state::arbitrary_precision_integer_from_int_array_(arr, arr_size, decimal_rep);
+    utils::arbitrary_precision_integer_from_int_array_(arr, arr_size, decimal_rep);
 
     ap_uint<PRECISON> neighbors_method_2[arr_size];
-    state::get_neighbors_(neighbors_method_2, decimal_rep, arr_size);
+    utils::get_neighbors_(neighbors_method_2, decimal_rep, arr_size);
 
     // Compare!
     // Note they save the neighbors in opposite order!
@@ -116,7 +116,7 @@ bool test_neighbors_correct(const unsigned int seed, const unsigned int arr_size
 bool test_flip_bit_small()
 {
     ap_uint<PRECISON> thirteen = 13;
-    ap_uint<PRECISON> v2 = state::flip_bit(thirteen, 1, 4);
+    ap_uint<PRECISON> v2 = utils::flip_bit(thirteen, 1, 4);
     if (v2 == 9){return true;}
     return false;
 }
@@ -128,7 +128,7 @@ bool test_flip_bit_huge(const unsigned int seed, const unsigned int arr_size)
     arr[0] = 1;
     arr[arr_size - 1] = 1;
     ap_uint<PRECISON> v1, v2, ap_rep;
-    state::arbitrary_precision_integer_from_int_array_(arr, arr_size, ap_rep);
+    utils::arbitrary_precision_integer_from_int_array_(arr, arr_size, ap_rep);
 
     for (unsigned int ii=0; ii<arr_size; ii++)
     {
@@ -137,14 +137,14 @@ bool test_flip_bit_huge(const unsigned int seed, const unsigned int arr_size)
         else{arr[ii] = 0;}
 
         // Calculate the value
-        state::arbitrary_precision_integer_from_int_array_(arr, arr_size, v1);
+        utils::arbitrary_precision_integer_from_int_array_(arr, arr_size, v1);
 
         // Flip back
         if (arr[ii] == 0){arr[ii] = 1;}
         else{arr[ii] = 0;}
 
         // Calculate the value by flipping bits
-        v2 = state::flip_bit(ap_rep, ii, arr_size);
+        v2 = utils::flip_bit(ap_rep, ii, arr_size);
 
         // std::cout << v1 << " " << v2 << std::endl;
         if (v1 != v2){return false;}
@@ -160,7 +160,7 @@ bool test_flip_bit_big_number(const unsigned int arr_size)
     for (int ii=0; ii<arr_size; ii++){arr[ii] = 1;}
     
     ap_uint<PRECISON> v1, v2, ap_rep, v2_prime;
-    state::arbitrary_precision_integer_from_int_array_(arr, arr_size, ap_rep);
+    utils::arbitrary_precision_integer_from_int_array_(arr, arr_size, ap_rep);
 
     for (unsigned int ii=0; ii<arr_size; ii++)
     {
@@ -169,14 +169,14 @@ bool test_flip_bit_big_number(const unsigned int arr_size)
         else{arr[ii] = 0;}
 
         // Calculate the value
-        state::arbitrary_precision_integer_from_int_array_(arr, arr_size, v1);
+        utils::arbitrary_precision_integer_from_int_array_(arr, arr_size, v1);
 
         // Flip back
         if (arr[ii] == 0){arr[ii] = 1;}
         else{arr[ii] = 0;}
 
         // Calculate the value by flipping bits
-        v2 = state::flip_bit(ap_rep, ii, arr_size);
+        v2 = utils::flip_bit(ap_rep, ii, arr_size);
 
         // std::cout << v1 << " " << v2 << std::endl;
         if (v1 != v2){return false;}
@@ -192,15 +192,15 @@ bool test_flip_bit_big_number_self_consistent(const unsigned int arr_size)
     for (int ii=0; ii<arr_size; ii++){arr[ii] = 1;}
     
     ap_uint<PRECISON> ap_rep, flipped, ap_rep_2;
-    state::arbitrary_precision_integer_from_int_array_(arr, arr_size, ap_rep);
+    utils::arbitrary_precision_integer_from_int_array_(arr, arr_size, ap_rep);
 
     for (unsigned int ii=0; ii<arr_size; ii++)
     {
         // Flip a bit
-        flipped = state::flip_bit(ap_rep, ii, arr_size);
+        flipped = utils::flip_bit(ap_rep, ii, arr_size);
 
         // Flip it back
-        ap_rep_2 = state::flip_bit(flipped, ii, arr_size);
+        ap_rep_2 = utils::flip_bit(flipped, ii, arr_size);
 
         // std::cout << v1 << " " << v2 << std::endl;
         if (ap_rep != ap_rep_2){return false;}

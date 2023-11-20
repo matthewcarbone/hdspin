@@ -17,7 +17,7 @@
 #include "CLI11/CLI11.hpp"
 
 
-void step_all_observables_(const double waiting_time, const double simulation_clock, OnePointObservables& obs1, PsiConfig& psiConfig, PsiBasin& psiBasin, AgingConfig& agingConfig, AgingBasin& agingBasin)
+void step_all_(const double waiting_time, const double simulation_clock, OnePointObservables& obs1, PsiConfig& psiConfig, PsiBasin& psiBasin, AgingConfig& agingConfig, AgingBasin& agingBasin)
 {
     obs1.step(waiting_time, simulation_clock);
     psiConfig.step(waiting_time);
@@ -26,8 +26,8 @@ void step_all_observables_(const double waiting_time, const double simulation_cl
     agingBasin.step(simulation_clock);
 }
 
-void execute(const parameters::FileNames fnames,
-    const parameters::SimulationParameters params)
+void execute(const utils::FileNames fnames,
+    const utils::SimulationParameters params)
 {
     EnergyMapping emap(params);
     SpinSystem sys(params, emap);
@@ -61,7 +61,7 @@ void execute(const parameters::FileNames fnames,
         // vary for the Gillespie dynamics.
         simulation_clock += waiting_time;
 
-        step_all_observables_(
+        step_all_(
             waiting_time,
             simulation_clock,
             obs1,
@@ -75,28 +75,28 @@ void execute(const parameters::FileNames fnames,
     }
 }
 
-double get_sim_time(parameters::SimulationParameters p, const std::string dynamics)
+double get_sim_time(utils::SimulationParameters p, const std::string dynamics)
 {
     double simulation_clock = 0.0;
     p.dynamics = dynamics;
     EnergyMapping emap(p);
     SpinSystem sys(p, emap);
     auto t_start = std::chrono::high_resolution_clock::now();
-    for (unsigned int step=0; step<uint(1e7); step++)
+    for (size_t cc=0; cc<1e7; cc++)
     {
         simulation_clock += sys.step();
         if (simulation_clock > p.N_timesteps){break;}
     }
-    return time_utils::get_time_delta(t_start) / simulation_clock;
+    return utils::get_time_delta(t_start) / simulation_clock;
 }
 
-std::string determine_dynamics_automatically(const parameters::SimulationParameters params, const unsigned int mpi_world_size, const unsigned int mpi_rank, MPI_Comm mpi_comm)
+std::string determine_dynamics_automatically(const utils::SimulationParameters params, const unsigned int mpi_world_size, const unsigned int mpi_rank, MPI_Comm mpi_comm)
 {
     double standard_time = 0.0;
     double gillespie_time = 0.0;
     double standard_std = 0.0;
     double gillespie_std = 0.0;
-    parameters::SimulationParameters p = params;
+    utils::SimulationParameters p = params;
     unsigned int result_int = 2;
 
     // Run both on rank 1 if we only have a single process
@@ -151,10 +151,10 @@ std::string determine_dynamics_automatically(const parameters::SimulationParamet
             }
 
             // Calculate the mean and standard deviation
-            standard_time = mean_vector(standard_times);
-            standard_std = sqrt(variance_vector(standard_times));
-            gillespie_time = mean_vector(gillespie_times);
-            gillespie_std = sqrt(variance_vector(gillespie_times));
+            standard_time = utils::mean_vector(standard_times);
+            standard_std = sqrt(utils::variance_vector(standard_times));
+            gillespie_time = utils::mean_vector(gillespie_times);
+            gillespie_std = sqrt(utils::variance_vector(gillespie_times));
         }
     }
 
@@ -182,17 +182,51 @@ std::string determine_dynamics_automatically(const parameters::SimulationParamet
 }
 
 
+/**
+ * @brief Prints information about the current processor that is running
+ * the job on the provided rank
+ * 
+ * @param mpi_rank
+ * @param mpi_world_size
+ */
+void print_processor_information(const int mpi_rank, const int mpi_world_size)
+{
+    // Get the name of the processor
+    char processor_name[MPI_MAX_PROCESSOR_NAME];
+    int name_len;
+    // Replace name_len with NULL?
+    MPI_Get_processor_name(processor_name, &name_len);
+
+    // Print off a hello world message
+    printf("Ready: processor %s, rank %d/%d\n", processor_name, mpi_rank, mpi_world_size);
+}
+
+
+void initialize_grids_and_config(const utils::SimulationParameters p, const int mpi_rank)
+{
+    if (mpi_rank == 0)
+    {
+        utils::log_parameters(p);
+        utils::make_directories();
+        utils::make_energy_grid_logspace(p.log10_N_timesteps, p.grid_size);
+        utils::make_pi_grids(p.log10_N_timesteps, p.dw, p.grid_size);
+        json j = utils::parameters_to_json(p);
+        std::ofstream o("config.json");
+        o << std::setw(4) << j << std::endl;
+    }
+    fflush(stdout);
+    MPI_Barrier(MPI_COMM_WORLD);
+}
+
+
 int main(int argc, char *argv[])
 {
-    // Initialize the MPI environment
     MPI_Init(NULL, NULL);
-
-    // Get the number of processes
-    int MPI_WORLD_SIZE;
+    int MPI_WORLD_SIZE, MPI_RANK;
     MPI_Comm_size(MPI_COMM_WORLD, &MPI_WORLD_SIZE);
+    MPI_Comm_rank(MPI_COMM_WORLD, &MPI_RANK);
 
-    // Define the defaults
-    parameters::SimulationParameters p;
+    utils::SimulationParameters p;
 
     // PARSER ----------------------------------------------------------------
     // -----------------------------------------------------------------------
@@ -263,21 +297,11 @@ int main(int argc, char *argv[])
     // PARSER ----------------------------------------------------------------
 
     // This helper completes all missing fields in the input parameters
-    update_parameters_(&p);
+    utils::update_parameters_(&p);
 
     MPI_Barrier(MPI_COMM_WORLD);
 
-    // Get the rank of the process
-    int MPI_RANK;
-    MPI_Comm_rank(MPI_COMM_WORLD, &MPI_RANK);
-
-    // Get the name of the processor
-    char processor_name[MPI_MAX_PROCESSOR_NAME];
-    int name_len;
-    MPI_Get_processor_name(processor_name, &name_len);
-
-    // Print off a hello world message
-    printf("Ready: processor %s, rank %d/%d\n", processor_name, MPI_RANK, MPI_WORLD_SIZE);
+    print_processor_information(MPI_RANK, MPI_WORLD_SIZE);
 
     // Quick barrier to make sure the printing works out cleanly
     fflush(stdout);
@@ -292,19 +316,7 @@ int main(int argc, char *argv[])
     fflush(stdout);
     MPI_Barrier(MPI_COMM_WORLD);
 
-    if (MPI_RANK == 0)
-    {
-        // parameters::log_json(inp);
-        parameters::log_parameters(p);
-        make_directories();
-        grids::make_energy_grid_logspace(p.log10_N_timesteps, p.grid_size);
-        grids::make_pi_grids(p.log10_N_timesteps, p.dw, p.grid_size);
-        json j = parameters::parameters_to_json(p);
-        std::ofstream o("config.json");
-        o << std::setw(4) << j << std::endl;
-    }
-    fflush(stdout);
-    MPI_Barrier(MPI_COMM_WORLD);
+    initialize_grids_and_config(p, MPI_RANK);
 
     // Define some helpers to be used to track progress.
     const unsigned int total_steps = end - start;
@@ -328,7 +340,7 @@ int main(int argc, char *argv[])
 
         auto t_start = std::chrono::high_resolution_clock::now();
 
-        const parameters::FileNames fnames = parameters::get_filenames(ii);
+        const utils::FileNames fnames = utils::get_filenames(ii);
 
         // Change the seed based on the MPI rank, very important for seeded runs!
         // This will be ignored later if p.use_manual_seed is false
@@ -338,7 +350,7 @@ int main(int argc, char *argv[])
         execute(fnames, p);
         // Run dynamics END ---------------------------------------------------
 
-        const double duration = time_utils::get_time_delta(t_start);
+        const double duration = utils::get_time_delta(t_start);
 
         loop_count++;
 
@@ -346,8 +358,8 @@ int main(int argc, char *argv[])
         {
             if (loop_count % step_size == 0 | loop_count == 1)
             {
-                const std::string dt_string = time_utils::get_datetime();
-                const double global_duration = time_utils::get_time_delta(global_start);
+                const std::string dt_string = utils::get_datetime();
+                const double global_duration = utils::get_time_delta(global_start);
                 printf(
                     "%s ~ %s done in %.01f s (%i/%i) total elapsed %.01f s\n", dt_string.c_str(), fnames.ii_str.c_str(), duration, loop_count, total_steps, global_duration
                 );

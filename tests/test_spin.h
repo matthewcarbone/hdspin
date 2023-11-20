@@ -8,9 +8,9 @@ namespace test_spin
 {
 bool test_basic_lru_cache_with_spin()
 {
-    parameters::SimulationParameters p;
+    utils::SimulationParameters p;
     p.log10_N_timesteps = 4;
-    p.N_timesteps = ipow(10, int(p.log10_N_timesteps));
+    p.N_timesteps = utils::ipow(10, int(p.log10_N_timesteps));
     p.N_spins = 4;
     p.landscape = "EREM";
     p.beta = 2.4;
@@ -82,9 +82,9 @@ bool test_basic_lru_cache_with_spin()
 bool test_inherent_structure_min_is_min()
 {
     const unsigned int N = 12;
-    parameters::SimulationParameters p;
+    utils::SimulationParameters p;
     p.log10_N_timesteps = 4;
-    p.N_timesteps = ipow(10, int(p.log10_N_timesteps));
+    p.N_timesteps = utils::ipow(10, int(p.log10_N_timesteps));
     p.N_spins = N;
     p.landscape = "EREM";
     p.beta = 2.4;
@@ -119,7 +119,7 @@ bool test_inherent_structure_min_is_min()
         // assertion
         if (s == inherent_structure)
         {
-            state::get_neighbors_(neighbors, s, p.N_spins);
+            utils::get_neighbors_(neighbors, s, p.N_spins);
             emap.get_config_energies_array_(neighbors, neighboring_energies, p.N_spins);
             for (int jj=0; jj<p.N_spins; jj++)
             {

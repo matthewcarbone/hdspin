@@ -9,7 +9,7 @@
 class EnergyMapping
 {
 protected:
-    parameters::SimulationParameters params;
+    utils::SimulationParameters params;
 
     // Initialize the MT random number generator and seed with random_device
     // This is seeded in the constructor
@@ -30,7 +30,7 @@ public:
     ap_uint<PRECISON> get_size(){return energy_map.get_size();}
     ap_uint<PRECISON> get_capacity(){return energy_map.get_capacity();}
     void _initialize_distributions();
-    EnergyMapping(const parameters::SimulationParameters);
+    EnergyMapping(const utils::SimulationParameters);
     /**
      * @brief Gets the inherent structure only
      * @details [long description]

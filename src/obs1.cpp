@@ -31,13 +31,13 @@ double StreamingMedian::median() const
     return max_heap.top();
 }
 
-OnePointObservables::OnePointObservables(const parameters::FileNames fnames, const parameters::SimulationParameters params, const SpinSystem& spin_system) : fnames(fnames), params(params)
+OnePointObservables::OnePointObservables(const utils::FileNames fnames, const utils::SimulationParameters params, const SpinSystem& spin_system) : fnames(fnames), params(params)
 {
 
     spin_system_ptr = &spin_system;
 
     const std::string grid_location = fnames.grids_directory + "/energy.txt";
-    grids::load_long_long_grid_(grid, grid_location);
+    utils::load_long_long_grid_(grid, grid_location);
     grid_length = grid.size();
 
     // Energy
@@ -99,8 +99,8 @@ void OnePointObservables::_step_ridge(const double waiting_time, const double si
 
     if (!ridge_ptr->threshold_valid){return;}
 
-    const parameters::StateProperties prev = spin_system_ptr->get_previous_state();
-    const parameters::StateProperties curr = spin_system_ptr->get_current_state();
+    const utils::StateProperties prev = spin_system_ptr->get_previous_state();
+    const utils::StateProperties curr = spin_system_ptr->get_current_state();
 
     const double _prev_energy = prev.energy;
     const double _curr_energy = curr.energy;
@@ -161,7 +161,7 @@ void OnePointObservables::step(const double waiting_time, const double simulatio
     _step_ridge(waiting_time, simulation_clock, "S");
 
     // And then continue on...
-    const parameters::StateProperties prev = spin_system_ptr->get_previous_state(); 
+    const utils::StateProperties prev = spin_system_ptr->get_previous_state(); 
 
     // No updates necessary
     if (simulation_clock <= grid[pointer]){return;}
@@ -184,7 +184,7 @@ void OnePointObservables::step(const double waiting_time, const double simulatio
     
 
     // Get the current simulation statistics for some of the observables
-    const parameters::SimulationStatistics sim_stats = spin_system_ptr->get_sim_stats();
+    const utils::SimulationStatistics sim_stats = spin_system_ptr->get_sim_stats();
 
     // Write to the outfile_capacity
     const std::string cache_size_string = std::string(spin_system_ptr->get_emap_ptr()->get_size());

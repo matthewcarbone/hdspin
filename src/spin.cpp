@@ -28,7 +28,7 @@ void SpinSystem::_first_time_state_initialization_()
         spin_config[ii] = _bernoulli_distribution(generator);
     }
 
-    state::arbitrary_precision_integer_from_int_array_(spin_config, params.N_spins, current_state);
+    utils::arbitrary_precision_integer_from_int_array_(spin_config, params.N_spins, current_state);
 
     delete[] spin_config;
 
@@ -49,7 +49,7 @@ void SpinSystem::_init_previous_state_()
 
 std::string SpinSystem::get_previous_state_string_rep() const
 {
-    return state::string_rep_from_arbitrary_precision_integer(_prev.state, params.N_spins);
+    return utils::string_rep_from_arbitrary_precision_integer(_prev.state, params.N_spins);
 }
 
 
@@ -61,10 +61,10 @@ void SpinSystem::_init_current_state_()
 
 std::string SpinSystem::get_current_state_string_rep() const
 {
-    return state::string_rep_from_arbitrary_precision_integer(_curr.state, params.N_spins);
+    return utils::string_rep_from_arbitrary_precision_integer(_curr.state, params.N_spins);
 }
 
-SpinSystem::SpinSystem(const parameters::SimulationParameters params,
+SpinSystem::SpinSystem(const utils::SimulationParameters params,
     EnergyMapping& emap) : params(params)
 {
     emap_ptr = &emap;
@@ -83,7 +83,7 @@ void SpinSystem::set_state(ap_uint<PRECISON> state)
 
 std::string SpinSystem::binary_state() const
 {
-    return state::string_rep_from_arbitrary_precision_integer(current_state, params.N_spins);
+    return utils::string_rep_from_arbitrary_precision_integer(current_state, params.N_spins);
 }
 
 
@@ -142,7 +142,7 @@ double SpinSystem::_step_gillespie()
     const double current_energy = _prev.energy;
 
     // Get the neighboring states
-    state::get_neighbors_(_neighbors, current_state, params.N_spins);
+    utils::get_neighbors_(_neighbors, current_state, params.N_spins);
 
     // Populate the neighboring energies
     emap_ptr->get_config_energies_array_(_neighbors, _neighboring_energies, params.N_spins);
@@ -163,7 +163,7 @@ double SpinSystem::_step_gillespie()
     const unsigned int spin_to_flip = _dist(generator);
 
     // And always flip that spin in a Gillespie simulation
-    current_state = state::flip_bit(current_state, spin_to_flip, params.N_spins);
+    current_state = utils::flip_bit(current_state, spin_to_flip, params.N_spins);
 
     // Initialize the current state
     _init_current_state_();
@@ -199,7 +199,7 @@ double SpinSystem::_step_standard()
     const unsigned int bit_to_flip = spin_distribution(generator);
 
     // Flip the current state into its new one
-    const ap_uint<PRECISON> possible_state = state::flip_bit(current_state, bit_to_flip, params.N_spins);
+    const ap_uint<PRECISON> possible_state = utils::flip_bit(current_state, bit_to_flip, params.N_spins);
 
     // Get the proposed energy (energy of the new configuration)
     const double proposed_energy = emap_ptr->get_config_energy(possible_state);
@@ -259,7 +259,7 @@ double SpinSystem::step()
     {
         throw std::runtime_error("Uknown dynamics during step");
     }
-    const double duration = time_utils::get_time_delta(t_start);
+    const double duration = utils::get_time_delta(t_start);
     sim_stats.total_wall_time += duration;
     sim_stats.total_waiting_time += waiting_time;
     sim_stats.total_steps += 1;

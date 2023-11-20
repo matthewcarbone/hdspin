@@ -5,11 +5,12 @@
 #include <math.h>
 
 #include "obs2.h"
+#include "utils.h"
 
 
-long long _get_max_counter(const parameters::SimulationParameters params)
+long long _get_max_counter(const utils::SimulationParameters params)
 {
-    long long mc = (long long) log2l(ipow(10, params.log10_N_timesteps));
+    long long mc = (long long) log2l(utils::ipow(10, params.log10_N_timesteps));
     mc += 10;  // Give the max counter a lot of space
     return mc;
 }
@@ -43,7 +44,7 @@ long long _get_key(const long double local_waiting_time)
 
 // PSI CONFIG -----------------------------------------------------------------
 
-PsiConfig::PsiConfig(const parameters::FileNames fnames, const parameters::SimulationParameters params, const SpinSystem& spin_system) : fnames(fnames), params(params)
+PsiConfig::PsiConfig(const utils::FileNames fnames, const utils::SimulationParameters params, const SpinSystem& spin_system) : fnames(fnames), params(params)
 {
     spin_system_ptr = &spin_system;
     _max_counter = _get_max_counter(params);
@@ -53,8 +54,8 @@ PsiConfig::PsiConfig(const parameters::FileNames fnames, const parameters::Simul
 void PsiConfig::step(const double current_waiting_time)
 {
 
-    const parameters::StateProperties prev = spin_system_ptr->get_previous_state();
-    const parameters::StateProperties curr = spin_system_ptr->get_current_state();
+    const utils::StateProperties prev = spin_system_ptr->get_previous_state();
+    const utils::StateProperties curr = spin_system_ptr->get_current_state();
 
     // No matter what, we update the internal states. If the configs are logged
     // to the counters they are reset in the helper functions.
@@ -119,21 +120,8 @@ void PsiBasin::_init_S_data()
     }
 }
 
-// void PsiBasin::_init_data_objects(PsiBasinData &data)
-// {
-//     PsiBasinData* data_ptr = &data;
-//     _fill_counter(_max_counter, data_ptr->_counter);
-//     _fill_counter(_max_counter, data_ptr->_counter_unique_configs_per_basin);
-//     if (!params.valid_entropic_attractor){data_ptr->threshold_valid = false;}
-//     data_ptr->threshold = params.entropic_attractor;
-//     if (data_ptr->threshold_valid)
-//     {
-//         data_ptr->outfile = fopen(fnames.psi_basin_S.c_str(), "w");
-//     }
-// }
 
-
-PsiBasin::PsiBasin(const parameters::FileNames fnames, const parameters::SimulationParameters params, const SpinSystem& spin_system) : fnames(fnames), params(params)
+PsiBasin::PsiBasin(const utils::FileNames fnames, const utils::SimulationParameters params, const SpinSystem& spin_system) : fnames(fnames), params(params)
 {
     spin_system_ptr = &spin_system;
     _max_counter = _get_max_counter(params);
@@ -165,8 +153,8 @@ void PsiBasin::_step(const double current_waiting_time, const std::string which)
     PsiBasinData* data_ptr = _get_psi_basin_data_pointer(which);
     if (!data_ptr->threshold_valid){return;}
 
-    const parameters::StateProperties prev = spin_system_ptr->get_previous_state();
-    const parameters::StateProperties curr = spin_system_ptr->get_current_state();
+    const utils::StateProperties prev = spin_system_ptr->get_previous_state();
+    const utils::StateProperties curr = spin_system_ptr->get_current_state();
 
     const double prev_energy = prev.energy;
     const double curr_energy = curr.energy;
@@ -251,16 +239,16 @@ PsiBasin::~PsiBasin()
 
 
 
-Aging::Aging(const parameters::FileNames fnames, const parameters::SimulationParameters params, const SpinSystem& spin_system) : fnames(fnames), params(params)
+Aging::Aging(const utils::FileNames fnames, const utils::SimulationParameters params, const SpinSystem& spin_system) : fnames(fnames), params(params)
 {
     spin_system_ptr = &spin_system;
 
     const std::string pi_1_grid_location = fnames.grids_directory + "/pi1.txt";
-    grids::load_long_long_grid_(grid_pi1, pi_1_grid_location);
+    utils::load_long_long_grid_(grid_pi1, pi_1_grid_location);
     length = grid_pi1.size();
 
     const std::string pi_2_grid_location = fnames.grids_directory + "/pi2.txt";
-    grids::load_long_long_grid_(grid_pi2, pi_2_grid_location);
+    utils::load_long_long_grid_(grid_pi2, pi_2_grid_location);
     const int grid_length2 = grid_pi2.size();
 
     assert(length == grid_length2);
@@ -308,7 +296,7 @@ void AgingConfig::_help_step_2(const double simulation_clock)
 
 
 
-AgingConfig::AgingConfig(const parameters::FileNames fnames, const parameters::SimulationParameters params, const SpinSystem& spin_system) : Aging(fnames, params, spin_system)
+AgingConfig::AgingConfig(const utils::FileNames fnames, const utils::SimulationParameters params, const SpinSystem& spin_system) : Aging(fnames, params, spin_system)
 {
     outfile = fopen(fnames.Pi_config.c_str(), "w");
 }
@@ -374,7 +362,7 @@ AgingBasinData* AgingBasin::_get_psi_basin_data_pointer(const std::string which)
 }
 
 
-AgingBasin::AgingBasin(const parameters::FileNames fnames, const parameters::SimulationParameters params, const SpinSystem& spin_system) : Aging(fnames, params, spin_system)
+AgingBasin::AgingBasin(const utils::FileNames fnames, const utils::SimulationParameters params, const SpinSystem& spin_system) : Aging(fnames, params, spin_system)
 {
     _init_E_data();
     _init_S_data();
@@ -420,8 +408,8 @@ void AgingBasin::_help_step(const double simulation_clock, const std::string whi
     if ((data_ptr->pointer1 > length - 1) && (data_ptr->pointer2 > length - 1)) {return;}
 
     // We'll now need the previous and current energies
-    const parameters::StateProperties prev = spin_system_ptr->get_previous_state();
-    const parameters::StateProperties curr = spin_system_ptr->get_current_state();
+    const utils::StateProperties prev = spin_system_ptr->get_previous_state();
+    const utils::StateProperties curr = spin_system_ptr->get_current_state();
 
     const double prev_energy = prev.energy;
     const double curr_energy = curr.energy;

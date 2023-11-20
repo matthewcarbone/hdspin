@@ -12,8 +12,8 @@ class PsiConfig
 {
 protected:
 
-    const parameters::FileNames fnames;
-    const parameters::SimulationParameters params;
+    const utils::FileNames fnames;
+    const utils::SimulationParameters params;
     FILE *outfile;
     const SpinSystem* spin_system_ptr;
     
@@ -30,7 +30,7 @@ protected:
 
 public:
 
-    PsiConfig(const parameters::FileNames fnames, const parameters::SimulationParameters params, const SpinSystem& spin_system);
+    PsiConfig(const utils::FileNames fnames, const utils::SimulationParameters params, const SpinSystem& spin_system);
     void step(const double current_waiting_time);
     ~PsiConfig();
 
@@ -55,8 +55,8 @@ class PsiBasin
 protected:
 
     // TODO- refeactor so these inherit from a base class
-    const parameters::FileNames fnames;
-    const parameters::SimulationParameters params;
+    const utils::FileNames fnames;
+    const utils::SimulationParameters params;
     const SpinSystem* spin_system_ptr;
     long long _max_counter;
     PsiBasinData E_data, S_data;
@@ -70,7 +70,7 @@ protected:
     
 
 public:
-    PsiBasin(const parameters::FileNames fnames, const parameters::SimulationParameters params, const SpinSystem& spin_system);
+    PsiBasin(const utils::FileNames fnames, const utils::SimulationParameters params, const SpinSystem& spin_system);
     void step(const double current_waiting_time);
     ~PsiBasin();
 };
@@ -81,8 +81,8 @@ class Aging
 protected:
     const SpinSystem* spin_system_ptr;
 
-    const parameters::FileNames fnames;
-    const parameters::SimulationParameters params;
+    const utils::FileNames fnames;
+    const utils::SimulationParameters params;
 
     // The pi 1 and 2 grids
     std::vector<long long> grid_pi1;
@@ -90,7 +90,7 @@ protected:
     int length;
 
 public:
-    Aging(const parameters::FileNames fnames, const parameters::SimulationParameters params, const SpinSystem& spin_system);
+    Aging(const utils::FileNames fnames, const utils::SimulationParameters params, const SpinSystem& spin_system);
 };
 
 
@@ -117,7 +117,7 @@ protected:
     // void _dump_outfile();
 
 public:
-    AgingConfig(const parameters::FileNames fnames, const parameters::SimulationParameters params, const SpinSystem& spin_system);
+    AgingConfig(const utils::FileNames fnames, const utils::SimulationParameters params, const SpinSystem& spin_system);
     void step(const double simulation_clock);
     ~AgingConfig();
 };
@@ -163,7 +163,7 @@ protected:
     void _help_step(const double simulation_clock, const std::string which);
 
 public:
-    AgingBasin(const parameters::FileNames fnames, const parameters::SimulationParameters params, const SpinSystem& spin_system);
+    AgingBasin(const utils::FileNames fnames, const utils::SimulationParameters params, const SpinSystem& spin_system);
     void step(const double simulation_clock);
     ~AgingBasin();
 };

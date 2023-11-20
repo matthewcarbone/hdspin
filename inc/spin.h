@@ -12,10 +12,10 @@ class SpinSystem
 
 // Accessible only from within the class or it children
 protected:
-    parameters::SimulationParameters params;
+    utils::SimulationParameters params;
     EnergyMapping* emap_ptr;
     ap_uint<PRECISON> current_state;
-    mutable parameters::SimulationStatistics sim_stats;
+    mutable utils::SimulationStatistics sim_stats;
 
     // Gillespie only //////////////////////////////////////////////////////
     // Pointer to the delta E and exit rates
@@ -47,7 +47,7 @@ protected:
 
     // Initialize some objects for storing the previous and current values of
     // things. This is required for some of the 2-point observables.
-    parameters::StateProperties _prev, _curr;
+    utils::StateProperties _prev, _curr;
 
     /**
      * @brief [brief description]
@@ -79,7 +79,7 @@ public:
      * @param s [description]
      * @param g [description]
      */
-    SpinSystem(const parameters::SimulationParameters params, EnergyMapping& emap);
+    SpinSystem(const utils::SimulationParameters params, EnergyMapping& emap);
 
     /**
      * @brief [brief description]
@@ -106,10 +106,10 @@ public:
      */
     std::string binary_state() const;
 
-    parameters::StateProperties get_previous_state() const {return _prev;}
-    parameters::StateProperties get_current_state() const {return _curr;}
+    utils::StateProperties get_previous_state() const {return _prev;}
+    utils::StateProperties get_current_state() const {return _curr;}
     EnergyMapping* get_emap_ptr() const {return emap_ptr;}
-    parameters::SimulationStatistics get_sim_stats() const {return sim_stats;}
+    utils::SimulationStatistics get_sim_stats() const {return sim_stats;}
     // double get_average_neighboring_energy() const;
     
     double _step_standard();

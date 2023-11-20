@@ -78,8 +78,8 @@ class OnePointObservables
 protected:
 
     // Base objects we need
-    const parameters::FileNames fnames;
-    const parameters::SimulationParameters params;
+    const utils::FileNames fnames;
+    const utils::SimulationParameters params;
     std::vector<long long> grid;
     int grid_length;
     const SpinSystem* spin_system_ptr;
@@ -108,7 +108,7 @@ protected:
 public:
 
     // Constructor: reads in the grid from the specified grid directory
-    OnePointObservables(const parameters::FileNames fnames, const parameters::SimulationParameters params, const SpinSystem& spin_system);
+    OnePointObservables(const utils::FileNames fnames, const utils::SimulationParameters params, const SpinSystem& spin_system);
 
     void step(const double waiting_time, const double simulation_clock);
     ~OnePointObservables();

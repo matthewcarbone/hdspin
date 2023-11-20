@@ -86,7 +86,7 @@ void EnergyMapping::_initialize_distributions()
 }
 
 
-EnergyMapping::EnergyMapping(const parameters::SimulationParameters params) : params(params)
+EnergyMapping::EnergyMapping(const utils::SimulationParameters params) : params(params)
 {
     _initialize_distributions();
 
@@ -127,7 +127,7 @@ ap_uint<PRECISON> EnergyMapping::get_inherent_structure(const ap_uint<PRECISON> 
 
     while (true)
     {
-        state::get_neighbors_(tmp_neighbors, tmp_state, params.N_spins);
+        utils::get_neighbors_(tmp_neighbors, tmp_state, params.N_spins);
         get_config_energies_array_(tmp_neighbors, tmp_neighbor_energies, params.N_spins);
         min_el = _min_element(tmp_neighbor_energies, params.N_spins);
         tmp_energy = get_config_energy(tmp_state);
