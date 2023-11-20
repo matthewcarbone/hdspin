@@ -144,7 +144,9 @@ void master(const size_t min_index_inclusive, const size_t max_index_exclusive)
     // the workers
 
     std::cout << "!!! DONE !!!" << std::endl;
-    // std::cout << "Diagnostics:" << std::endl;
+    
+    std::vector<int> jobs_finished_per_task;
+
     for (size_t cc=0; cc<mpi_world_size - 1; cc++)
     {
 
@@ -155,13 +157,18 @@ void master(const size_t min_index_inclusive, const size_t max_index_exclusive)
         // of its core loop
         MPI_Send(&END_SIGNAL, 1, MPI_INT, worker_rank, DEFAULT_TAG, MPI_COMM_WORLD);
 
-        // TODO - debug this
         // And finally we ask for the total number of tasks it had to compute
-        // int tmp_n_jobs;
-        // MPI_Recv(&tmp_n_jobs, 1, MPI_INT, MPI_ANY_SOURCE, DEFAULT_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-        // std::cout << "RANK " << worker_rank << " finished " << tmp_n_jobs << " jobs" << std::endl;
+        int tmp_n_jobs;
+        MPI_Recv(&tmp_n_jobs, 1, MPI_INT, MPI_ANY_SOURCE, DEFAULT_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        jobs_finished_per_task.push_back(tmp_n_jobs);   
     }
+
+    std::cout << "Diagnostic (jobs finished per task): ";
+    for (const auto& v : jobs_finished_per_task)
+    {
+        std::cout << v << " ";
+    }
+    std::cout << std::endl;
 
 }
 
@@ -189,7 +196,7 @@ void worker(const utils::SimulationParameters params)
         {
             // Now we can return some information back to the master process about
             // how many jobs were completed.
-            // MPI_Send(&total_jobs, 1, MPI_INT, 0, DEFAULT_TAG, MPI_COMM_WORLD);
+            MPI_Send(&total_jobs, 1, MPI_INT, 0, DEFAULT_TAG, MPI_COMM_WORLD);
 
             // Finish signal received, break from the loop
             return;
