@@ -72,6 +72,7 @@ add_executable(
     src/main.cpp
     src/energy_mapping.cpp
     src/utils.cpp
+    src/main_utils.cpp
     src/spin.cpp
     src/obs1.cpp
     src/obs2.cpp

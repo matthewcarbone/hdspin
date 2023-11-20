@@ -17,7 +17,7 @@ bool test_basic_lru_cache_with_spin()
     p.beta_critical = 1.0;
     p.dynamics = "standard";
     p.memory = 15;
-    p.n_tracers_per_MPI_rank = 1;
+    p.n_tracers = 1;
 
     EnergyMapping emap(p);
     SpinSystem spin(p, emap);
@@ -63,7 +63,7 @@ bool test_basic_lru_cache_with_spin()
 //     p.beta_critical = 1.0;
 //     p.dynamics = "standard";
 //     p.memory = -1;
-//     p.n_tracers_per_MPI_rank = 1;
+//     p.n_tracers = 1;
 //     p.use_manual_seed = true;
 //     p.seed = 123;
 
@@ -91,7 +91,7 @@ bool test_inherent_structure_min_is_min()
     p.beta_critical = 1.0;
     p.dynamics = "standard";
     p.memory = -1;
-    p.n_tracers_per_MPI_rank = 1;
+    p.n_tracers = 1;
     p.use_manual_seed = true;
     p.seed = 123;
 

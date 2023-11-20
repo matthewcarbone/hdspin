@@ -143,7 +143,7 @@ void log_parameters(const utils::SimulationParameters p)
     printf("valid_entropic_attractor \t\t\t= %i\n", p.valid_entropic_attractor);
     printf("grid_size                \t\t\t= %i\n", p.grid_size);
     printf("dw                       \t\t\t= %.05f\n", p.dw);
-    printf("n_tracers_per_MPI_rank   \t\t\t= %i\n", p.n_tracers_per_MPI_rank);
+    printf("n_tracers                \t\t\t= %i\n", p.n_tracers);
     if (p.use_manual_seed)
     {
         printf("manual seed              \t\t\t= %i\n", p.seed);
@@ -218,7 +218,7 @@ json parameters_to_json(const utils::SimulationParameters p)
         {"valid_entropic_attractor", p.valid_entropic_attractor},
         {"grid_size", p.grid_size},
         {"dw", p.dw},
-        {"n_tracers_per_MPI_rank", p.n_tracers_per_MPI_rank},
+        {"n_tracers", p.n_tracers},
         {"use_manual_seed", p.use_manual_seed},
         {"seed", p.seed},
         {"calculate_IS", p.calculate_inherent_structure_observables},

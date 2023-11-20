@@ -1,227 +1,12 @@
-#include <fstream>      // std::ofstream
-#include <chrono>
-#include <unistd.h>
-#include <iomanip>
-#include <iostream>
-#include <cstring>
-#include <sstream>
-#include <assert.h>
-#include <vector>
-#include <set>
 #include <mpi.h>
 
-#include "utils.h"
-#include "spin.h"
-#include "obs1.h"
-#include "obs2.h"
+#include "main_utils.h"
 #include "CLI11/CLI11.hpp"
-
-
-void step_all_(const double waiting_time, const double simulation_clock, OnePointObservables& obs1, PsiConfig& psiConfig, PsiBasin& psiBasin, AgingConfig& agingConfig, AgingBasin& agingBasin)
-{
-    obs1.step(waiting_time, simulation_clock);
-    psiConfig.step(waiting_time);
-    psiBasin.step(waiting_time);
-    agingConfig.step(simulation_clock);
-    agingBasin.step(simulation_clock);
-}
-
-void execute(const utils::FileNames fnames,
-    const utils::SimulationParameters params)
-{
-    EnergyMapping emap(params);
-    SpinSystem sys(params, emap);
-
-    // Special case of the standard spin dynamics: if rtp.loop_dynamics == 2,
-    // then the timestep is divided by rtp.N_spins.
-    double waiting_time;
-
-    // Simulation parameters
-    double simulation_clock = 0.0;
-
-    OnePointObservables obs1(fnames, params, sys);
-    PsiConfig psiConfig(fnames, params, sys);
-    PsiBasin psiBasin(fnames, params, sys);
-    AgingConfig agingConfig(fnames, params, sys);
-    AgingBasin agingBasin(fnames, params, sys);
-
-    // Simulation clock is 0 before entering the while loop
-    while (true)
-    {
-        
-        // Standard step returns a boolean flag which is true if the new
-        // proposed configuration was accepted or not.
-        waiting_time = sys.step();
-
-        // The waiting time is always 1.0 for a standard simulation. We take
-        // the convention that the "prev" structure indexes the state of the
-        // spin system before the step, and that all observables are indexed
-        // by the state after the step. Thus, we step the simulation_clock
-        // before stepping the observables. Note that the waiting time can
-        // vary for the Gillespie dynamics.
-        simulation_clock += waiting_time;
-
-        step_all_(
-            waiting_time,
-            simulation_clock,
-            obs1,
-            psiConfig,
-            psiBasin,
-            agingConfig,
-            agingBasin
-        );
-
-        if (simulation_clock > params.N_timesteps){break;}
-    }
-}
-
-double get_sim_time(utils::SimulationParameters p, const std::string dynamics)
-{
-    double simulation_clock = 0.0;
-    p.dynamics = dynamics;
-    EnergyMapping emap(p);
-    SpinSystem sys(p, emap);
-    auto t_start = std::chrono::high_resolution_clock::now();
-    for (size_t cc=0; cc<1e7; cc++)
-    {
-        simulation_clock += sys.step();
-        if (simulation_clock > p.N_timesteps){break;}
-    }
-    return utils::get_time_delta(t_start) / simulation_clock;
-}
-
-std::string determine_dynamics_automatically(const utils::SimulationParameters params, const unsigned int mpi_world_size, const unsigned int mpi_rank, MPI_Comm mpi_comm)
-{
-    double standard_time = 0.0;
-    double gillespie_time = 0.0;
-    double standard_std = 0.0;
-    double gillespie_std = 0.0;
-    utils::SimulationParameters p = params;
-    unsigned int result_int = 2;
-
-    // Run both on rank 1 if we only have a single process
-    if (mpi_world_size == 1)
-    {
-        standard_time = get_sim_time(p, "standard");
-        gillespie_time = get_sim_time(p, "gillespie");
-    }
-
-    // Otherwise, we actually want to divide up the work a bit
-    // Let all even ranks (including 0) run the standard simulation
-    // and all odd ranks run the Gillespie simulation
-    // The results can then be averaged at the end by ranks 0 and 1.
-    else
-    {
-        double times[mpi_world_size];
-        if (mpi_rank % 2 == 0)
-        {
-            times[mpi_rank] = get_sim_time(p, "standard");
-            // MPI_Recv(&gillespie_time, 1, MPI_DOUBLE, 1, 0, mpi_comm, MPI_STATUS_IGNORE);
-        }
-        else if (mpi_rank % 2 != 0)
-        {
-            times[mpi_rank] = get_sim_time(p, "gillespie");
-            // MPI_Send(&gillespie_time, 1, MPI_DOUBLE, 0, 0, mpi_comm);
-        }
-        MPI_Barrier(mpi_comm);
-
-        // Now, we send everything to rank 0
-        if (mpi_rank != 0)
-        {
-            MPI_Send(&times[mpi_rank], 1, MPI_DOUBLE, 0, 0, mpi_comm);
-        }
-        else
-        {
-            for (unsigned int rank=1; rank<mpi_world_size; rank++)
-            {
-                MPI_Recv(&times[rank], 1, MPI_DOUBLE, rank, 0, mpi_comm, MPI_STATUS_IGNORE);
-            }
-        }
-        MPI_Barrier(mpi_comm);
-
-        // And let rank 0 deal with the rest
-        if (mpi_rank == 0)
-        {
-            std::vector<double> standard_times;
-            std::vector<double> gillespie_times;
-            for (unsigned int ii=0; ii<mpi_world_size; ii++)
-            {
-                if (ii % 2 == 0){standard_times.push_back(times[ii]);}
-                else{gillespie_times.push_back(times[ii]);}
-            }
-
-            // Calculate the mean and standard deviation
-            standard_time = utils::mean_vector(standard_times);
-            standard_std = sqrt(utils::variance_vector(standard_times));
-            gillespie_time = utils::mean_vector(gillespie_times);
-            gillespie_std = sqrt(utils::variance_vector(gillespie_times));
-        }
-    }
-
-    if (mpi_rank == 0)
-    {
-        printf("Gillespie vs. Standard dynamics:\n\t%.02e +/- %.02e vs. %.02e +/- %.02e wall/sim\n", gillespie_time, gillespie_std, standard_time, standard_std);
-        if (gillespie_time < standard_time)
-        {
-            printf("\tRunning Gillespie dynamics, faster by factor of %.01f\n", standard_time / gillespie_time);
-            result_int = 1;
-        }
-        else
-        {
-            printf("\tRunning standard dynamics, faster by factor of %.01f\n", gillespie_time / standard_time);   
-            result_int = 0;
-        }
-    }
-
-    MPI_Bcast(&result_int, 1, MPI_INT, 0, mpi_comm);
-    MPI_Barrier(mpi_comm);
-    
-    if (result_int == 1){return "gillespie";}
-    else if (result_int == 0){return "standard";}
-    else{MPI_Abort(mpi_comm, 1); return "error";}
-}
-
-
-/**
- * @brief Prints information about the current processor that is running
- * the job on the provided rank
- * 
- * @param mpi_rank
- * @param mpi_world_size
- */
-void print_processor_information(const int mpi_rank, const int mpi_world_size)
-{
-    // Get the name of the processor
-    char processor_name[MPI_MAX_PROCESSOR_NAME];
-    int name_len;
-    // Replace name_len with NULL?
-    MPI_Get_processor_name(processor_name, &name_len);
-
-    // Print off a hello world message
-    printf("Ready: processor %s, rank %d/%d\n", processor_name, mpi_rank, mpi_world_size);
-}
-
-
-void initialize_grids_and_config(const utils::SimulationParameters p, const int mpi_rank)
-{
-    if (mpi_rank == 0)
-    {
-        utils::log_parameters(p);
-        utils::make_directories();
-        utils::make_energy_grid_logspace(p.log10_N_timesteps, p.grid_size);
-        utils::make_pi_grids(p.log10_N_timesteps, p.dw, p.grid_size);
-        json j = utils::parameters_to_json(p);
-        std::ofstream o("config.json");
-        o << std::setw(4) << j << std::endl;
-    }
-    fflush(stdout);
-    MPI_Barrier(MPI_COMM_WORLD);
-}
 
 
 int main(int argc, char *argv[])
 {
-    MPI_Init(NULL, NULL);
+    MPI_Init(&argc, &argv);
     int MPI_WORLD_SIZE, MPI_RANK;
     MPI_Comm_size(MPI_COMM_WORLD, &MPI_WORLD_SIZE);
     MPI_Comm_rank(MPI_COMM_WORLD, &MPI_RANK);
@@ -277,9 +62,11 @@ int main(int argc, char *argv[])
         "is faster, and selects that one."
     )->check(CLI::IsMember({"standard", "gillespie", "auto"}));
 
+    // YOU LEFT OFF HERE!!!!
+    // Need to change this definition in the utils files
     app.add_option(
-        "-n, --n_tracers_per_MPI_rank", p.n_tracers_per_MPI_rank,
-        "The number of simulations per MPI rank to run. Defaults to 10."
+        "-n, --n_tracers", p.n_tracers,
+        "The number of simulations to run in total, defaults to 100."
     )->check(CLI::PositiveNumber);
 
     app.add_option(
@@ -296,77 +83,10 @@ int main(int argc, char *argv[])
     // -----------------------------------------------------------------------
     // PARSER ----------------------------------------------------------------
 
-    // This helper completes all missing fields in the input parameters
     utils::update_parameters_(&p);
-
-    MPI_Barrier(MPI_COMM_WORLD);
-
-    print_processor_information(MPI_RANK, MPI_WORLD_SIZE);
-
-    // Quick barrier to make sure the printing works out cleanly
-    fflush(stdout);
-    MPI_Barrier(MPI_COMM_WORLD);
-
-    // Get the information for this MPI rank
-    const unsigned int n_tracers_per_MPI_rank = p.n_tracers_per_MPI_rank;
-    const unsigned int resume_at = 0;
-    const unsigned int start = resume_at + MPI_RANK * n_tracers_per_MPI_rank;
-    const unsigned int end = resume_at + (MPI_RANK + 1) * n_tracers_per_MPI_rank;
-
-    fflush(stdout);
-    MPI_Barrier(MPI_COMM_WORLD);
-
-    initialize_grids_and_config(p, MPI_RANK);
-
-    // Define some helpers to be used to track progress.
-    const unsigned int total_steps = end - start;
-    unsigned int step_size = total_steps / 10; // Print at 10 percent steps
-    if (step_size == 0){step_size = 1;}
-    unsigned int loop_count = 0;
-
-    auto global_start = std::chrono::high_resolution_clock::now();
-
-    const unsigned int starting_seed = p.seed;
-
-    // If p.dynamics == "auto", we run a quick check to see which
-    // simulation is faster
-    if (p.dynamics == "auto")
-    {
-        p.dynamics = determine_dynamics_automatically(p, MPI_WORLD_SIZE, MPI_RANK, MPI_COMM_WORLD);
-    }
-
-    for(int ii=start; ii<end; ii++)
-    {
-
-        auto t_start = std::chrono::high_resolution_clock::now();
-
-        const utils::FileNames fnames = utils::get_filenames(ii);
-
-        // Change the seed based on the MPI rank, very important for seeded runs!
-        // This will be ignored later if p.use_manual_seed is false
-        p.seed = starting_seed + ii + MPI_RANK * n_tracers_per_MPI_rank;
-
-        // Run dynamics START -------------------------------------------------
-        execute(fnames, p);
-        // Run dynamics END ---------------------------------------------------
-
-        const double duration = utils::get_time_delta(t_start);
-
-        loop_count++;
-
-        if (MPI_RANK == 0)
-        {
-            if (loop_count % step_size == 0 | loop_count == 1)
-            {
-                const std::string dt_string = utils::get_datetime();
-                const double global_duration = utils::get_time_delta(global_start);
-                printf(
-                    "%s ~ %s done in %.01f s (%i/%i) total elapsed %.01f s\n", dt_string.c_str(), fnames.ii_str.c_str(), duration, loop_count, total_steps, global_duration
-                );
-                fflush(stdout);
-            }
-        }
-    }
+    main_utils::initialize_grids_and_config(p);
+    main_utils::auto_determine_dynamics_(&p);
+    main_utils::execute_process_pool(p);
 
     MPI_Finalize();
 }

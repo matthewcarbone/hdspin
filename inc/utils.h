@@ -165,7 +165,7 @@ struct SimulationParameters
     // Some come along with defaults
     long long memory = pow(2, 25);
     std::string dynamics = "auto";
-    unsigned int n_tracers_per_MPI_rank = 10;
+    unsigned int n_tracers = 100;
     unsigned int seed = 0;  // 0 is special, meaning no seed
 
     // Some defaults which are not required to be explicitly set by the user
