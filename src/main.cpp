@@ -4,6 +4,10 @@
 #include "CLI11/CLI11.hpp"
 
 
+// All utilities in this main module come from main_utils
+using namespace main_utils;
+
+
 int main(int argc, char *argv[])
 {
     MPI_Init(&argc, &argv);
@@ -80,10 +84,10 @@ int main(int argc, char *argv[])
     // -----------------------------------------------------------------------
     // PARSER ----------------------------------------------------------------
 
-    utils::update_parameters_(&p);
-    main_utils::initialize_grids_and_config(p);
-    main_utils::auto_determine_dynamics_(&p);
-    main_utils::execute_process_pool(p);
+    update_parameters_(&p);
+    initialize_grids_and_config(p);
+    auto_determine_dynamics_(&p);
+    execute_process_pool(p);
 
     MPI_Finalize();
 }

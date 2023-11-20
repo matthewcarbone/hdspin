@@ -153,54 +153,6 @@ void log_parameters(const utils::SimulationParameters p)
     printf("----------------------------------------------------------\n");
 }
 
-/**
- * @brief [brief description]
- * @details Updates the simulation parameters with more values.
- * 
- * @param p [description]
- * @return [description]
- */
-void update_parameters_(utils::SimulationParameters* p)
-{
-
-    p->N_timesteps = ipow(10, int(p->log10_N_timesteps));
-
-    // Set beta critical
-    if (p->landscape == "EREM"){p->beta_critical = 1.0;}
-
-    // This is ~sqrt(2 ln 2)
-    else{p->beta_critical = 1.177410022515475;}
-
-    // Get the energy barrier information
-    double et, ea;
-    if (p->landscape == "EREM")
-    {
-        et = -1.0 / p->beta_critical * log(p->N_spins);
-        ea = 1.0 / (p->beta - p->beta_critical)
-            * log((2.0 * p->beta_critical - p->beta) / p->beta_critical);
-
-        if (p->beta >= 2.0 * p->beta_critical | p->beta <= p->beta_critical)
-        {
-            ea = 1e16;  // Set purposefully invalid value instead of nan or inf
-            p->valid_entropic_attractor = false;
-        }
-    }
-    else if (p->landscape == "GREM")
-    {
-        et = -sqrt(2.0 * p->N_spins * log(p->N_spins));
-        ea = -p->N_spins * p->beta / 2.0;
-    }
-    else
-    {
-        throw std::runtime_error("Invalid landscape");
-    }
-
-    p->energetic_threshold = et;
-    p->entropic_attractor = ea;
-
-    // handle the manual seeding
-    if (p->seed > 0){p->use_manual_seed = true;}
-}
 
 json parameters_to_json(const utils::SimulationParameters p)
 {

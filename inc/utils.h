@@ -206,12 +206,6 @@ void log_json(const json inp);
  */
 void log_parameters(const SimulationParameters p);
 
-/**
- * @brief [brief description]
- * @details [long description]
- * @return [description]
- */
-void update_parameters_(SimulationParameters* p);
 
 json parameters_to_json(const SimulationParameters p);
 

@@ -5,20 +5,20 @@
 #include "spin.h"
 #include "obs1.h"
 #include "obs2.h"
-// #include <mpi.h>
 
+
+// TODO: add documentation
 
 namespace main_utils
 {
 
+
 /**
  * @brief [brief description]
  * @details [long description]
- * 
- * @param params [description]
+ * @return [description]
  */
-void auto_determine_dynamics_(utils::SimulationParameters* params);
-
+void update_parameters_(utils::SimulationParameters* p);
 
 /**
  * @brief Prints information about the current processor that is running
@@ -36,6 +36,15 @@ void auto_determine_dynamics_(utils::SimulationParameters* params);
  * @param p [description]
  */
 void initialize_grids_and_config(const utils::SimulationParameters p);
+
+
+/**
+ * @brief [brief description]
+ * @details [long description]
+ * 
+ * @param params [description]
+ */
+void auto_determine_dynamics_(utils::SimulationParameters* params);
 
 
 /**

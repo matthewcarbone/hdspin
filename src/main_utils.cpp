@@ -11,7 +11,6 @@
 
 #define DEFAULT_TAG 0
 #define MASTER 0
-#define DIAGNOSTIC_TAG 1
 
 
 void step_all_(const double waiting_time, const double simulation_clock, OnePointObservables& obs1, PsiConfig& psiConfig, PsiBasin& psiBasin, AgingConfig& agingConfig, AgingBasin& agingBasin)
@@ -93,8 +92,6 @@ double get_sim_time(utils::SimulationParameters p, const std::string dynamics)
     return utils::get_time_delta(t_start) / simulation_clock;
 }
 
-
-
 void master(const size_t min_index_inclusive, const size_t max_index_exclusive)
 {
 
@@ -130,10 +127,11 @@ void master(const size_t min_index_inclusive, const size_t max_index_exclusive)
             std::string ii_str = std::to_string(next_job + 1);
             ii_str.insert(ii_str.begin(), 8 - ii_str.length(), '0');
             printf(
-                "%s ~ %s | %.01f s total\n",
+                "%s ~ %s | %.01f s total (%.06f s/tracer)\n",
                 dt_string.c_str(),
                 ii_str.c_str(),
-                duration
+                duration,
+                duration / loop_count
             );
         }   
     }
@@ -172,7 +170,6 @@ void master(const size_t min_index_inclusive, const size_t max_index_exclusive)
 
 }
 
-
 void worker(const utils::SimulationParameters params)
 {
 
@@ -210,11 +207,71 @@ void worker(const utils::SimulationParameters params)
     
 }
 
-
-// "Public API"
-
-namespace main_utils
+namespace main_utils  // "Public" API
 {
+
+void update_parameters_(utils::SimulationParameters* p)
+{
+
+    p->N_timesteps = utils::ipow(10, int(p->log10_N_timesteps));
+
+    // Set beta critical
+    if (p->landscape == "EREM"){p->beta_critical = 1.0;}
+
+    // This is ~sqrt(2 ln 2)
+    else{p->beta_critical = 1.177410022515475;}
+
+    // Get the energy barrier information
+    double et, ea;
+    if (p->landscape == "EREM")
+    {
+        et = -1.0 / p->beta_critical * log(p->N_spins);
+        ea = 1.0 / (p->beta - p->beta_critical)
+            * log((2.0 * p->beta_critical - p->beta) / p->beta_critical);
+
+        if (p->beta >= 2.0 * p->beta_critical | p->beta <= p->beta_critical)
+        {
+            ea = 1e16;  // Set purposefully invalid value instead of nan or inf
+            p->valid_entropic_attractor = false;
+        }
+    }
+    else if (p->landscape == "GREM")
+    {
+        et = -sqrt(2.0 * p->N_spins * log(p->N_spins));
+        ea = -p->N_spins * p->beta / 2.0;
+    }
+    else
+    {
+        throw std::runtime_error("Invalid landscape");
+    }
+
+    p->energetic_threshold = et;
+    p->entropic_attractor = ea;
+
+    // handle the manual seeding
+    if (p->seed > 0){p->use_manual_seed = true;}
+}
+
+void initialize_grids_and_config(const utils::SimulationParameters p)
+{
+
+    int mpi_rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
+
+    if (mpi_rank == MASTER)
+    {
+        utils::log_parameters(p);
+        utils::make_directories();
+        utils::make_energy_grid_logspace(p.log10_N_timesteps, p.grid_size);
+        utils::make_pi_grids(p.log10_N_timesteps, p.dw, p.grid_size);
+        json j = utils::parameters_to_json(p);
+        std::ofstream o("config.json");
+        o << std::setw(4) << j << std::endl;
+    }
+
+    fflush(stdout);
+    MPI_Barrier(MPI_COMM_WORLD);
+}
 
 void auto_determine_dynamics_(utils::SimulationParameters* params)
 {
@@ -311,49 +368,6 @@ void auto_determine_dynamics_(utils::SimulationParameters* params)
     if (result_int == 1){params->dynamics = "gillespie";}
     else if (result_int == 0){params->dynamics = "standard";}
     else{MPI_Abort(MPI_COMM_WORLD, 1);}
-}
-
-
-/**
- * @brief Prints information about the current processor that is running
- * the job on the provided rank
- * 
- * @param mpi_rank
- * @param mpi_world_size
- */
-// void print_processor_information(const int mpi_rank, const int mpi_world_size)
-// {
-//     // Get the name of the processor
-//     char processor_name[MPI_MAX_PROCESSOR_NAME];
-//     int name_len;
-
-//     // Replace name_len with NULL?
-//     MPI_Get_processor_name(processor_name, &name_len);
-
-//     // Print off a hello world message
-//     printf("Ready: processor %s, rank %d/%d\n", processor_name, mpi_rank, mpi_world_size);
-// }
-
-
-void initialize_grids_and_config(const utils::SimulationParameters p)
-{
-
-    int mpi_rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
-
-    if (mpi_rank == MASTER)
-    {
-        utils::log_parameters(p);
-        utils::make_directories();
-        utils::make_energy_grid_logspace(p.log10_N_timesteps, p.grid_size);
-        utils::make_pi_grids(p.log10_N_timesteps, p.dw, p.grid_size);
-        json j = utils::parameters_to_json(p);
-        std::ofstream o("config.json");
-        o << std::setw(4) << j << std::endl;
-    }
-
-    fflush(stdout);
-    MPI_Barrier(MPI_COMM_WORLD);
 }
 
 void execute_process_pool(const utils::SimulationParameters params)
