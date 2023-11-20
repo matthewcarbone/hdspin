@@ -13,7 +13,7 @@ _If you use this code, please consider citing our [work](https://doi.org/10.1103
 
 ## Installation instructions
 
-Aside from MPI, the hdspin repository requires no external libraries whatsoever (except via Git Submodules). Downloading and building the code should be simple via CMake.
+hdspin requires MPI. Other than that, every external dependency is either self-contained explicitly or can be downloaded via Git submodules. Installing hdspin should be straightforward using CMake:
 
 ```bash
 git clone git@github.com:matthewcarbone/hdspin.git
@@ -25,9 +25,8 @@ cd build
 make
 ```
 
-Note, it is required you have MPI available on your system in order to build hdspin. You can do this via your system's package managers (such as Homebrew or apt). hdspin is tested with openmpi. See [here](https://github.com/mpi4py/setup-mpi/blob/master/setup-mpi.sh) for how hdspin's CI system installs MPI (you can emulate this).
 
-There are three options for the user to set:
+At compile time, there are three options for the user to set:
 * `-DPRECISON=<INT>` is the maximum number of spins you can use during the simulation. Should be a power of 2 (as recommended by the Arbitrary Precision library). Default is `256`. Note that this is the _maximum_ value you can use for `N_spins` in the simulation.
 * `-DBUILD_TESTS={ON, OFF}` is a boolean flag for telling CMake whether or not to compile the testing suite. Default is `OFF`.
 * `-DSMOKE={ON, OFF}` controls whether or not to use the smoke testing or not. Smoke tests basically run tests using slightly less statistics, and are generally faster. Default is `ON`.
@@ -36,7 +35,7 @@ There are three options for the user to set:
 
 ### Running the hdspin executable
 
-After running `make` in the previous steps, an executable `build/hdspin` will be created. Running hdspin is simple. hdspin uses a command line parser called [CLI11](https://github.com/CLIUtils/CLI11). Use `hdspin -h` to see a list of options. A `config.json` is always saved to the working directory with all of the command line inputs.
+After running `make` in the previous steps, an executable `build/hdspin` will be created. Running hdspin is simple. hdspin uses a command line parser called [CLI11](https://github.com/CLIUtils/CLI11). Use `hdspin -h` to see a list of options. A `config.json` is always saved to the working directory with all of the command line inputs. All outputs are saved in the working directory as well.
 
 Four parameters are absolutely required:
 * `log10_N_timesteps=<INT>`: the log10 number of timesteps to run 
