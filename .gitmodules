@@ -1,6 +1,0 @@
-[submodule "inc/ap"]
-	path = inc/ArbitraryPrecision/ap
-	url = https://github.com/arbitrary-precision/ap
-[submodule "inc/Catch2"]
-	path = inc/Catch2
-	url = https://github.com/catchorg/Catch2

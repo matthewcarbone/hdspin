@@ -13,13 +13,11 @@ _If you use this code, please consider citing our [work](https://doi.org/10.1103
 
 ## Installation instructions
 
-hdspin requires MPI. Other than that, every external dependency is either self-contained explicitly or can be downloaded via Git submodules. Installing hdspin should be straightforward using CMake:
+hdspin requires MPI. Other than that, every external dependency is self-contained explicitly under the terms of their licences. Installing hdspin should be straightforward using CMake:
 
 ```bash
 git clone git@github.com:matthewcarbone/hdspin.git
 cd hdspin
-git submodule init
-git submodule update
 cmake -S . -B build -DPRECISON=256 -DBUILD_TESTS=ON -DSMOKE=ON
 cd build
 make
@@ -56,7 +54,7 @@ Post-processing creates averages and spreads of all observable quantities, such 
 
 # License
 
-The hdspin code is released under a 3-clause BSD license. Hosted codes are contained locally as per the permissive terms of the associated licenses (check out this explicitly clear [blog post](https://levelofindirection.com/blog/unit-testing-in-cpp-and-objective-c-just-got-ridiculously-easier-still.html) regarding the Catch library for more details, if you're interested). This includes nlohmann's [Json](https://github.com/nlohmann/json) header, as well as [Catch2](https://github.com/catchorg/Catch2), [CLI11](https://github.com/CLIUtils/CLI11) and the [Arbitrary Precision](https://www.codeproject.com/Articles/5319814/Arbitrary-Precision-Easy-to-use-Cplusplus-Library) library.
+The hdspin software is released under a 3-clause BSD license. Hosted codes are contained locally as per the permissive terms of the associated licenses (check out this explicitly clear [blog post](https://levelofindirection.com/blog/unit-testing-in-cpp-and-objective-c-just-got-ridiculously-easier-still.html) regarding the Catch library for more details, if you're interested). This includes nlohmann's [Json](https://github.com/nlohmann/json) header, Alexander Ponomarev's [LRU cache](https://github.com/lamerman/cpp-lru-cache) as well as [Catch2](https://github.com/catchorg/Catch2) (the header-only version), [CLI11](https://github.com/CLIUtils/CLI11) and the [Arbitrary Precision](https://www.codeproject.com/Articles/5319814/Arbitrary-Precision-Easy-to-use-Cplusplus-Library) library.
 
 
 # Funding acknowledgement
