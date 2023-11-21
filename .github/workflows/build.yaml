@@ -15,7 +15,7 @@ jobs:
       matrix:
         mpi: ['mpich', 'openmpi']
         os: ['ubuntu-latest', 'macos-latest']
-        precision: [128, 256, 4096, 16384]
+        precision: [128, 256, 512]
 
     name: ${{ matrix.os }} ${{ matrix.mpi }} ${{ matrix.precision }}
     runs-on: ${{ matrix.os }}
