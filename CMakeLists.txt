@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.6)
 project(hdspin)
 
-
 option(PRECISON "Set the Arbitrary Precision" 256)
 option(BUILD_TESTS "Build tests or not" OFF)
 option(SMOKE "Whether or not to use smoke tests" ON)
@@ -10,16 +9,10 @@ set (CMAKE_CXX_STANDARD 17)
 set (CMAKE_CXX_STANDARD_REQUIRED True)
 set (EXTRA_CXX_FLAGS "-O3 -Wall")
 
-# Essentially -Iinc
-include_directories(inc)
-
+include_directories(inc)  # Essentially -Iinc
 
 if (${BUILD_TESTS})
-    
-    # Find other CMakeLists.txt files in lib and execute
-    add_subdirectory(lib/Catch2_v3)
 
-    # Compile the tests, link against required libraries
     add_executable(
         tests
         tests/tests.cpp
@@ -42,11 +35,6 @@ if (${BUILD_TESTS})
             PUBLIC -DPRECISON=${PRECISON} -DSMOKE=0
         )
     endif()
-
-    target_link_libraries(
-        tests
-        PRIVATE Catch2::Catch2WithMain
-    )
 
 endif()
 

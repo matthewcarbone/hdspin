@@ -1,5 +1,7 @@
-#include "catch2/catch_test_macros.hpp"  // New library version of Catch2
-// #include "inc/Catch2/catch.hpp"  // Old header-only version of Catch2
+#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
+
+// #include "catch2/catch_test_macros.hpp"  // New library version of Catch2
+#include "Catch2/catch.hpp"  // Old header-only version of Catch2
 #include "ArbitraryPrecision/ap/ap.hpp"
 
 // Import the tests themselves
