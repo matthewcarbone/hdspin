@@ -17,7 +17,7 @@ jobs:
         os: ['ubuntu-latest', 'macos-latest']
         precision: [128, 256, 4096, 16384]
 
-    name: ${{ matrix.os }} ${{ matrix.mpi }} ${{ precision }}
+    name: ${{ matrix.os }} ${{ matrix.mpi }} ${{ matrix.precision }}
     runs-on: ${{ matrix.os }}
 
     steps:
