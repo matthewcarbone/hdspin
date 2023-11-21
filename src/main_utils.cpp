@@ -387,6 +387,7 @@ void execute_process_pool(const utils::SimulationParameters params)
     {
         worker(params);
     }
+    MPI_Barrier(MPI_COMM_WORLD);
 }
 
 }
