@@ -41,8 +41,6 @@ At compile time, there are three options for the user to set:
 
 # 📗 Running instructions
 
-## Running the hdspin executable
-
 After running `make` in the previous steps, an executable `build/hdspin` will be created. Running hdspin is simple. hdspin uses a command line parser called [CLI11](https://github.com/CLIUtils/CLI11). Use `hdspin -h` to see a list of options. A `config.json` is always saved to the working directory with all of the command line inputs. All outputs are saved in the working directory as well.
 
 Four parameters are absolutely required:
