@@ -23,7 +23,7 @@ _If you use this code, please consider citing our [work](https://doi.org/10.1103
 
 # 📕 Installation instructions
 
-hdspin requires [MPI](http://www.mpi-forum.org), and is tested using [MPICH](https://www.mpich.org) and [Open MPI](https://www.open-mpi.org). Other than that, every external dependency is self-contained explicitly under the terms of their licences. Installing hdspin should be straightforward using CMake:
+hdspin requires [MPI](http://www.mpi-forum.org), and is tested using [MPICH](https://www.mpich.org) and [Open MPI](https://www.open-mpi.org) on both Ubuntu latest and MacOS. Other than that, every external dependency is self-contained explicitly under the terms of their licences. Installing hdspin should be straightforward using CMake:
 
 ```bash
 git clone git@github.com:matthewcarbone/hdspin.git
