@@ -33,7 +33,6 @@ cd build
 make
 ```
 
-
 At compile time, there are three options for the user to set:
 * `-DPRECISON=<INT>` is the maximum number of spins you can use during the simulation. Should be a power of 2 (as recommended by the Arbitrary Precision library). Default is `256`. Note that this is the _maximum_ value you can use for `N_spins` in the simulation.
 * `-DBUILD_TESTS={ON, OFF}` is a boolean flag for telling CMake whether or not to compile the testing suite. Default is `OFF`.
@@ -48,6 +47,14 @@ Four parameters are absolutely required:
 * `N_spins=<INT>`: the number of spins to use in the simulation. Must be `<=PRECISON`.
 * `beta=<FLOAT>`: inverse temperature (`beta_critical` is set automatically based on the `landscape`).
 * `landscape={"EREM", "GREM"}`: the type of simulation to run (either exponential or Gaussian REM).
+
+One example of a job might be
+
+```bash
+mpiexec -n 5 path/to/hdspin -N 20 -l EREM -b 2.5 -t 6 -n 100 --seed=123
+```
+
+which will run the exponential random energy model with 20 spins with inverse temperature `beta=2.5`, for `1e6` timesteps and 100 tracers (with seed 123 for reproducibility).
 
 
 # 📘 Post-processing
