@@ -9,8 +9,8 @@
 #include "main_utils.h"
 
 
-#define DEFAULT_TAG 0
-#define JOB_DIAGNOSTICS_TAG 1
+#define TAG_DEFAULT 0
+#define TAG_JOB_DIAGNOSTICS 1
 #define MASTER 0
 
 
@@ -115,11 +115,11 @@ void master(const size_t min_index_inclusive, const size_t max_index_exclusive)
 
         // Step 2: the master process receives the worker rank and stores it in
         // worker_rank. This indicates to master that worker is ready for a job
-        MPI_Recv(&worker_rank, 1, MPI_INT, MPI_ANY_SOURCE, DEFAULT_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        MPI_Recv(&worker_rank, 1, MPI_INT, MPI_ANY_SOURCE, TAG_DEFAULT, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
         // Step 3: the job is assigned to the worker and the job index is
         // incremented
-        MPI_Send(&next_job, 1, MPI_INT, worker_rank, DEFAULT_TAG, MPI_COMM_WORLD);
+        MPI_Send(&next_job, 1, MPI_INT, worker_rank, TAG_DEFAULT, MPI_COMM_WORLD);
 
         if (loop_count % step_size == 0 | loop_count == 1)
         {
@@ -150,15 +150,15 @@ void master(const size_t min_index_inclusive, const size_t max_index_exclusive)
     {
 
         // Receive the ready signal from some source
-        MPI_Recv(&worker_rank, 1, MPI_INT, MPI_ANY_SOURCE, DEFAULT_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        MPI_Recv(&worker_rank, 1, MPI_INT, MPI_ANY_SOURCE, TAG_DEFAULT, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
         // Send the termination signal to that worker, this breaks it out
         // of its core loop
-        MPI_Send(&END_SIGNAL, 1, MPI_INT, worker_rank, DEFAULT_TAG, MPI_COMM_WORLD);
+        MPI_Send(&END_SIGNAL, 1, MPI_INT, worker_rank, TAG_DEFAULT, MPI_COMM_WORLD);
 
         // And finally we ask for the total number of tasks it had to compute
         int tmp_n_jobs;
-        MPI_Recv(&tmp_n_jobs, 1, MPI_INT, MPI_ANY_SOURCE, JOB_DIAGNOSTICS_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        MPI_Recv(&tmp_n_jobs, 1, MPI_INT, MPI_ANY_SOURCE, TAG_JOB_DIAGNOSTICS, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         jobs_finished_per_task.push_back(tmp_n_jobs);   
     }
 
@@ -182,11 +182,11 @@ void worker(const utils::SimulationParameters params)
     while (true)
     {
         // Step 1: worker `rank` sends its rank to the master process
-        MPI_Send(&mpi_rank, 1, MPI_INT, 0, DEFAULT_TAG, MPI_COMM_WORLD);
+        MPI_Send(&mpi_rank, 1, MPI_INT, 0, TAG_DEFAULT, MPI_COMM_WORLD);
 
         // Step 4: the job is received from master and executed
         int job_index;
-        MPI_Recv(&job_index, 1, MPI_INT, 0, DEFAULT_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        MPI_Recv(&job_index, 1, MPI_INT, 0, TAG_DEFAULT, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
         // Step 5: if all jobs are completed, the worker receives a termination
         // signal, breaking the process out of the control flow
@@ -194,7 +194,7 @@ void worker(const utils::SimulationParameters params)
         {
             // Now we can return some information back to the master process about
             // how many jobs were completed.
-            MPI_Send(&total_jobs, 1, MPI_INT, 0, JOB_DIAGNOSTICS_TAG, MPI_COMM_WORLD);
+            MPI_Send(&total_jobs, 1, MPI_INT, 0, TAG_JOB_DIAGNOSTICS, MPI_COMM_WORLD);
 
             // Finish signal received, break from the loop
             return;
