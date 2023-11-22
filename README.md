@@ -5,7 +5,7 @@
 [![image](https://github.com/matthewcarbone/hdspin/actions/workflows/build.yaml/badge.svg)](https://github.com/matthewcarbone/hdspin/actions/workflows/build.yaml)
 <!-- [![image](https://github.com/matthewcarbone/hdspin/actions/workflows/tests.yml/badge.svg)](https://github.com/matthewcarbone/hdspin/actions/workflows/tests.yml) -->
 
-**Sandbox for the Exponential and Gaussian Random Energy Models**
+**Lightning fast simulator for the Exponential and Gaussian Random Energy Models**
 
 _If you use this code, please consider citing our [work](https://doi.org/10.1103/PhysRevE.106.024603)_ <br>
 
