@@ -11,6 +11,14 @@ _If you use this code, please consider citing our [work](https://doi.org/10.1103
 
 </div>
 
+## Features
+
+⚡ Fast spin-flips using [decimal representation and bit-flip operations](https://github.com/matthewcarbone/hdspin/blob/master/inc/spin.h), driven by the [Arbitrary Precision](https://www.codeproject.com/Articles/5319814/Arbitrary-Precision-Easy-to-use-Cplusplus-Library) (AP) library, no need to store an expensive `std::vector<int>` for every system anymore.
+
+⚡ System energies are stored using a [least recently used cache](https://www.geeksforgeeks.org/lru-cache-implementation/), leading to orders of magnitude more memory saving and together wth the AP library, arbitrarily large systems.
+
+⚡ [MPI load-balancer](https://github.com/matthewcarbone/hdspin/blob/master/src/main_utils.cpp), allowing for massively parallel simulations on high-performance computing systems. The rare time-consuming job no longer holds up other simulations.
+
 ## Installation instructions
 
 hdspin requires MPI. Other than that, every external dependency is self-contained explicitly under the terms of their licences. Installing hdspin should be straightforward using CMake:
