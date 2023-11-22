@@ -2,14 +2,24 @@
 
 # hdspin
 
+**Lightning-fast simulator for the Exponential and Gaussian Random Energy Models** <br>
+
+_If you use this code, please consider citing our [work](https://doi.org/10.1103/PhysRevE.106.024603)_ <br> 
+
+---
+
 [![image](https://github.com/matthewcarbone/hdspin/actions/workflows/build.yaml/badge.svg)](https://github.com/matthewcarbone/hdspin/actions/workflows/build.yaml)
 <!-- [![image](https://github.com/matthewcarbone/hdspin/actions/workflows/tests.yml/badge.svg)](https://github.com/matthewcarbone/hdspin/actions/workflows/tests.yml) -->
 
-**Sandbox for the Exponential and Gaussian Random Energy Models**
-
-_If you use this code, please consider citing our [work](https://doi.org/10.1103/PhysRevE.106.024603)_ <br>
-
 </div>
+
+## Features
+
+⚡ Fast spin-flips using [decimal representation and bit-flip operations](https://github.com/matthewcarbone/hdspin/blob/master/inc/spin.h), driven by the [Arbitrary Precision](https://www.codeproject.com/Articles/5319814/Arbitrary-Precision-Easy-to-use-Cplusplus-Library) (AP) library, no need to store an expensive `std::vector<int>` for every system anymore.
+
+⚡ System energies are stored using a [least recently used cache](https://www.geeksforgeeks.org/lru-cache-implementation/), leading to orders of magnitude more memory saving and together wth the AP library, arbitrarily large systems.
+
+⚡ [MPI load-balancer](https://github.com/matthewcarbone/hdspin/blob/master/src/main_utils.cpp), allowing for massively parallel simulations on high-performance computing systems. The rare time-consuming job no longer holds up other simulations.
 
 ## Installation instructions
 
