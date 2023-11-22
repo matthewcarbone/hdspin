@@ -2,7 +2,7 @@
 
 # hdspin
 
-**Lightning fast simulator for the Exponential and Gaussian Random Energy Models** <br>
+**Lightning-fast simulator for the Exponential and Gaussian Random Energy Models** <br>
 
 _If you use this code, please consider citing our [work](https://doi.org/10.1103/PhysRevE.106.024603)_ <br> 
 
