@@ -54,7 +54,7 @@ One example of a job might be
 mpiexec -n 5 path/to/hdspin -N 20 -l EREM -b 2.5 -t 6 -n 100 --seed=123
 ```
 
-which will run the exponential random energy model with 20 spins with inverse temperature `beta=2.5`, for `1e6` timesteps and 100 tracers (with seed 123 for reproducibility).
+which will run the exponential random energy model with 20 spins with inverse temperature `beta=2.5`, for `1e6` timesteps and 100 tracers (with seed 123 for reproducibility). The job will be split amongst 4 compute tasks with a single controller task (for 5 total).
 
 
 # 📘 Post-processing
