@@ -196,18 +196,11 @@ struct SimulationStatistics
  * 
  * @param inp [description]
  */
-void log_json(const json inp);
+void print_json(const json jrep);
 
-/**
- * @brief [brief description]
- * @details [long description]
- * 
- * @param p [description]
- */
-void log_parameters(const SimulationParameters p);
+json simulation_parameters_to_json(const utils::SimulationParameters p);
 
-
-json parameters_to_json(const SimulationParameters p);
+void json_to_file(const json jrep, const std::string& filename);
 
 /**
  * @brief [brief description]

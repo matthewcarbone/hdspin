@@ -85,9 +85,11 @@ int main(int argc, char *argv[])
     // PARSER ----------------------------------------------------------------
 
     update_parameters_(&p);
-    initialize_grids_and_config(p);
+    save_and_log_config(p);
+    initialize_grids_and_directories(p);
     auto_determine_dynamics_(&p);
-    execute_process_pool(p);
+
+    execute_process_pool(p);  // <----- Main simulation
 
     MPI_Finalize();
 }

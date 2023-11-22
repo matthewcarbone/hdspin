@@ -93,8 +93,10 @@ double get_sim_time(utils::SimulationParameters p, const std::string dynamics)
     return utils::get_time_delta(t_start) / simulation_clock;
 }
 
-void master(const size_t min_index_inclusive, const size_t max_index_exclusive)
+json master(const size_t min_index_inclusive, const size_t max_index_exclusive)
 {
+
+    const std::string dt_start = utils::get_datetime();
 
     int mpi_world_size;
     MPI_Comm_size(MPI_COMM_WORLD, &mpi_world_size);
@@ -141,11 +143,8 @@ void master(const size_t min_index_inclusive, const size_t max_index_exclusive)
 
     // We're done on the master process, send termination signals to all of
     // the workers
-
     std::cout << "!!! DONE !!!" << std::endl;
-    
     std::vector<int> jobs_finished_per_task;
-
     for (size_t cc=0; cc<mpi_world_size - 1; cc++)
     {
 
@@ -162,12 +161,16 @@ void master(const size_t min_index_inclusive, const size_t max_index_exclusive)
         jobs_finished_per_task.push_back(tmp_n_jobs);   
     }
 
-    std::cout << "Diagnostic (jobs finished per task): ";
-    for (const auto& v : jobs_finished_per_task)
-    {
-        std::cout << v << " ";
-    }
-    std::cout << std::endl;
+    const std::string dt_end = utils::get_datetime();
+    const double duration = utils::get_time_delta(t_start);
+
+    json diagnostics;
+    diagnostics["elapsed"] = duration;
+    diagnostics["dt_start"] = dt_start;
+    diagnostics["dt_end"] = dt_end;
+    diagnostics["jobs_finished_per_task"] = jobs_finished_per_task;
+
+    return diagnostics;
 
 }
 
@@ -251,9 +254,27 @@ void update_parameters_(utils::SimulationParameters* p)
 
     // handle the manual seeding
     if (p->seed > 0){p->use_manual_seed = true;}
+
+    MPI_Barrier(MPI_COMM_WORLD);
 }
 
-void initialize_grids_and_config(const utils::SimulationParameters p)
+void save_and_log_config(const utils::SimulationParameters p)
+{
+    int mpi_rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
+
+    if (mpi_rank == MASTER)
+    {
+        json jrep = utils::simulation_parameters_to_json(p);
+        utils::print_json(jrep);
+        utils::json_to_file(jrep, "config.json");
+    }
+
+    fflush(stdout);
+    MPI_Barrier(MPI_COMM_WORLD);
+}
+
+void initialize_grids_and_directories(const utils::SimulationParameters p)
 {
 
     int mpi_rank;
@@ -261,16 +282,11 @@ void initialize_grids_and_config(const utils::SimulationParameters p)
 
     if (mpi_rank == MASTER)
     {
-        utils::log_parameters(p);
         utils::make_directories();
         utils::make_energy_grid_logspace(p.log10_N_timesteps, p.grid_size);
         utils::make_pi_grids(p.log10_N_timesteps, p.dw, p.grid_size);
-        json j = utils::parameters_to_json(p);
-        std::ofstream o("config.json");
-        o << std::setw(4) << j << std::endl;
     }
 
-    fflush(stdout);
     MPI_Barrier(MPI_COMM_WORLD);
 }
 
@@ -382,7 +398,8 @@ void execute_process_pool(const utils::SimulationParameters params)
     {
         // TODO add some logic for checkpoint-restart here
         std::cout << "Running " << mpi_world_size << " procs. " << mpi_world_size - 1 << " compute, 1 controller " << std::endl;
-        master(0, params.n_tracers);
+        const json diagnostics = master(0, params.n_tracers);
+        utils::json_to_file(diagnostics, "out.json");
     }
     else
     {

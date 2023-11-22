@@ -20,14 +20,8 @@ namespace main_utils
  */
 void update_parameters_(utils::SimulationParameters* p);
 
-/**
- * @brief Prints information about the current processor that is running
- * the job on the provided rank
- * 
- * @param mpi_rank
- * @param mpi_world_size
- */
-// void print_processor_information(const int mpi_rank, const int mpi_world_size);
+
+void save_and_log_config(const utils::SimulationParameters p);
 
 /**
  * @brief [brief description]
@@ -35,7 +29,7 @@ void update_parameters_(utils::SimulationParameters* p);
  * 
  * @param p [description]
  */
-void initialize_grids_and_config(const utils::SimulationParameters p);
+void initialize_grids_and_directories(const utils::SimulationParameters p);
 
 
 /**

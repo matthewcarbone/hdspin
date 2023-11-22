@@ -117,44 +117,14 @@ bool _key_exists(const json inp, const std::string key)
     return false;
 }
 
-void log_json(const json inp)
+void print_json(const json jrep)
 {
-    printf("------------------- config.json loaded -------------------\n");
-    for (auto it=inp.begin(); it!=inp.end(); ++it)
-    {
-        std::cout << it.key() << " : " << it.value() << std::endl;
-    }   
-}
-
-void log_parameters(const utils::SimulationParameters p)
-{
-    
-    printf("--------------- simulation parameters set ----------------\n");
-    printf("log10_N_timesteps        \t\t\t= %i\n", p.log10_N_timesteps);
-    printf("N_timesteps              \t\t\t= %lli\n", p.N_timesteps);
-    printf("N_spins                  \t\t\t= %i\n", p.N_spins);
-    printf("beta                     \t\t\t= %.05f\n", p.beta);
-    printf("beta_critical            \t\t\t= %.05f\n", p.beta_critical);
-    printf("landscape                \t\t\t= %s\n", p.landscape.c_str());
-    printf("dynamics                 \t\t\t= %s\n", p.dynamics.c_str());
-    printf("memory                   \t\t\t= %lli\n", p.memory);
-    printf("energetic threshold      \t\t\t= %.03e\n", p.energetic_threshold);
-    printf("entropic attractor       \t\t\t= %.03e\n", p.entropic_attractor);
-    printf("valid_entropic_attractor \t\t\t= %i\n", p.valid_entropic_attractor);
-    printf("grid_size                \t\t\t= %i\n", p.grid_size);
-    printf("dw                       \t\t\t= %.05f\n", p.dw);
-    printf("n_tracers                \t\t\t= %i\n", p.n_tracers);
-    if (p.use_manual_seed)
-    {
-        printf("manual seed              \t\t\t= %i\n", p.seed);
-    }
-    printf("calculate_IS             \t\t\t= %i\n", p.calculate_inherent_structure_observables);
-    printf("PRECISON                 \t\t\t= %i\n", PRECISON);
-    printf("----------------------------------------------------------\n");
+    std::cout << "hdspin - simulation parameters" << std::endl;
+    std::cout << std::setw(4) << jrep << std::endl;
 }
 
 
-json parameters_to_json(const utils::SimulationParameters p)
+json simulation_parameters_to_json(const utils::SimulationParameters p)
 {
     json j = {
         {"log10_N_timesteps", p.log10_N_timesteps},
@@ -173,12 +143,25 @@ json parameters_to_json(const utils::SimulationParameters p)
         {"n_tracers", p.n_tracers},
         {"use_manual_seed", p.use_manual_seed},
         {"seed", p.seed},
-        {"calculate_IS", p.calculate_inherent_structure_observables},
+        {"calculate_inherent_structure_observables", p.calculate_inherent_structure_observables},
         {"PRECISON", PRECISON}
     };
 
     return j;
 }
+
+void json_to_file(const json jrep, const std::string& filename)
+{
+    std::ofstream outputFile(filename);
+    if (outputFile.is_open())
+    {
+        outputFile << std::setw(4) << jrep;
+        outputFile.close();
+    } else {
+        std::cerr << "Unable to open file: " << filename << std::endl;
+    }
+}
+
 
 utils::FileNames get_filenames(const unsigned int ii)
 {
