@@ -4,6 +4,7 @@ project(hdspin)
 option(PRECISON "Set the Arbitrary Precision" 256)
 option(BUILD_TESTS "Build tests or not" OFF)
 option(SMOKE "Whether or not to use smoke tests" ON)
+option(VERSION_STAMP "Whether or not to get the current commit hash as version" ON)
 
 set (CMAKE_CXX_STANDARD 17)
 set (CMAKE_CXX_STANDARD_REQUIRED True)
@@ -66,6 +67,17 @@ add_executable(
     src/obs2.cpp
 )
 
-target_compile_definitions(hdspin PUBLIC -DPRECISON=${PRECISON})
+if (${VERSION_STAMP})
+    execute_process(
+        COMMAND git rev-parse HEAD
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        OUTPUT_VARIABLE GIT_COMMIT_HASH
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+    target_compile_definitions(hdspin PUBLIC -DPRECISON=${PRECISON} -DGIT_COMMIT_HASH=\"${GIT_COMMIT_HASH}\")
+else()
+    target_compile_definitions(hdspin PUBLIC -DPRECISON=${PRECISON})
+
+endif()
 
 target_link_libraries(hdspin ${MPI_CXX_LIBRARIES})

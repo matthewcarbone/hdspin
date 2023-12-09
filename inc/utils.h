@@ -28,6 +28,11 @@ using json = nlohmann::json;
 #define SMOKE 1
 #endif
 
+// This is the current commit hash hdspin is running on
+#ifndef GIT_COMMIT_HASH
+#define GIT_COMMIT_HASH "UNKNOWN_COMMIT_HASH"
+#endif
+
 
 namespace utils
 {

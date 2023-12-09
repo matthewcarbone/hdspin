@@ -266,6 +266,7 @@ void save_and_log_config(const utils::SimulationParameters p)
     if (mpi_rank == MASTER)
     {
         json jrep = utils::simulation_parameters_to_json(p);
+        jrep["HDSPIN_GIT_COMMIT_HASH"] = GIT_COMMIT_HASH;
         utils::print_json(jrep);
         utils::json_to_file(jrep, "config.json");
     }
