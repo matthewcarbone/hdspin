@@ -173,6 +173,7 @@ utils::FileNames get_filenames(const unsigned int ii)
     // Energy
     fnames.energy = "data/" + ii_str + "_energy.txt";
     fnames.energy_IS = "data/" + ii_str + "_energy_IS.txt";
+    fnames.max_energy = "data/" + ii_str + "_max_energy.txt";
 
     // Ridges
     fnames.ridge_E = "data/" + ii_str + "_ridge_E.txt";

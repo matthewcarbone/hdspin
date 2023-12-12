@@ -144,7 +144,7 @@ struct FileNames
     // observables
 
     // Energy
-    std::string energy, energy_IS;
+    std::string energy, energy_IS, max_energy;
 
     // Ridges
     std::string ridge_E, ridge_S;

@@ -65,6 +65,7 @@ add_executable(
     src/spin.cpp
     src/obs1.cpp
     src/obs2.cpp
+    src/emax.cpp
 )
 
 if (${VERSION_STAMP})

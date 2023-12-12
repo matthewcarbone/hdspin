@@ -5,6 +5,7 @@
 #include "spin.h"
 #include "obs1.h"
 #include "obs2.h"
+#include "emax.h"
 
 #include "main_utils.h"
 
@@ -14,13 +15,14 @@
 #define MASTER 0
 
 
-void step_all_(const double waiting_time, const double simulation_clock, OnePointObservables& obs1, PsiConfig& psiConfig, PsiBasin& psiBasin, AgingConfig& agingConfig, AgingBasin& agingBasin)
+void step_all_(const double waiting_time, const double simulation_clock, OnePointObservables& obs1, PsiConfig& psiConfig, PsiBasin& psiBasin, AgingConfig& agingConfig, AgingBasin& agingBasin, EMaxt2& emaxt2)
 {
     obs1.step(waiting_time, simulation_clock);
     psiConfig.step(waiting_time);
     psiBasin.step(waiting_time);
     agingConfig.step(simulation_clock);
     agingBasin.step(simulation_clock);
+    emaxt2.step(simulation_clock);
 }
 
 
@@ -47,6 +49,7 @@ void execute(const int job_index, const utils::SimulationParameters const_params
     PsiBasin psiBasin(fnames, params, sys);
     AgingConfig agingConfig(fnames, params, sys);
     AgingBasin agingBasin(fnames, params, sys);
+    EMaxt2 emaxt2(fnames, params, sys);
 
     // Simulation clock is 0 before entering the while loop
     while (true)
@@ -71,7 +74,8 @@ void execute(const int job_index, const utils::SimulationParameters const_params
             psiConfig,
             psiBasin,
             agingConfig,
-            agingBasin
+            agingBasin,
+            emaxt2
         );
 
         if (simulation_clock > params.N_timesteps){break;}

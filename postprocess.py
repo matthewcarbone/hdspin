@@ -67,8 +67,26 @@ def obs1(all_filenames, substring, save_path):
     files = [f for f in all_filenames if substring in f]
     if len(files) == 0:
         return
-    arr = np.array(read_files_via_numpy(files))
+    arrays = read_files_via_numpy(files)
+    # for arr in arrays:
+    #     print(arr.shape)
+    arr = np.array(arrays)
     grid = np.loadtxt("grids/energy.txt")
+    mu = arr.mean(axis=0)
+    sd = arr.std(axis=0)
+    stderr = sem(arr, axis=0)
+    final = np.array([grid, mu, sd, stderr]).T
+    np.savetxt(save_path, final, fmt='%.08e')
+
+
+def emax(all_filenames, substring, save_path):
+    """Processes files that have returned energy information."""
+
+    files = [f for f in all_filenames if substring in f]
+    if len(files) == 0:
+        return
+    arr = np.array(read_files_via_numpy(files))
+    grid = np.loadtxt("grids/pi2.txt")
     mu = arr.mean(axis=0)
     sd = arr.std(axis=0)
     stderr = sem(arr, axis=0)
@@ -214,6 +232,7 @@ if __name__ == '__main__':
     # Handle all standard one-point observables
     obs1(fnames, "_energy.txt", Path(FINAL_DIRECTORY) / "energy.txt")
     obs1(fnames, "_energy_IS.txt", Path(FINAL_DIRECTORY) / "energy_IS.txt")
+    emax(fnames, "_max_energy.txt", Path(FINAL_DIRECTORY) / "max_energy.txt")
     ridge(fnames, "_ridge_E.txt", Path(FINAL_DIRECTORY) / "ridge_E.txt")
     ridge(fnames, "_ridge_S.txt", Path(FINAL_DIRECTORY) / "ridge_S.txt")
     obs1(fnames, "_acceptance_rate.txt", Path(FINAL_DIRECTORY) / "acceptance_rate.txt")
