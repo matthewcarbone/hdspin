@@ -232,7 +232,7 @@ if __name__ == '__main__':
     # Handle all standard one-point observables
     obs1(fnames, "_energy.txt", Path(FINAL_DIRECTORY) / "energy.txt")
     obs1(fnames, "_energy_IS.txt", Path(FINAL_DIRECTORY) / "energy_IS.txt")
-    emax(fnames, "_max_energy.txt", Path(FINAL_DIRECTORY) / "max_energy.txt")
+    emax(fnames, "_emax.txt", Path(FINAL_DIRECTORY) / "emax.txt")
     ridge(fnames, "_ridge_E.txt", Path(FINAL_DIRECTORY) / "ridge_E.txt")
     ridge(fnames, "_ridge_S.txt", Path(FINAL_DIRECTORY) / "ridge_S.txt")
     obs1(fnames, "_acceptance_rate.txt", Path(FINAL_DIRECTORY) / "acceptance_rate.txt")

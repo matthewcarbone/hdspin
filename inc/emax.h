@@ -5,7 +5,7 @@
 
 struct EMaxt2Data
 {
-    double max_energy = -1e6;
+    double max_energy = -1e16;
     long long tmin;
     long long tmax;
 };

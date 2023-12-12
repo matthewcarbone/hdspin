@@ -38,7 +38,10 @@ void EMaxt2::step(const double simulation_clock) const
     std::vector<size_t> pop_these;
     for (std::pair<const size_t, EMaxt2Data>& n : trackers)
     {
-        size_t key = n.first;
+
+        // std::cout << "trackers size=" << trackers.size() << std::endl;
+
+        const size_t key = n.first;
         EMaxt2Data* d = &n.second;
 
         // If the simulation clock is greater than the minimum time, we compare
@@ -62,6 +65,8 @@ void EMaxt2::step(const double simulation_clock) const
         max_energies[key] = trackers[key].max_energy;
         trackers.erase(key);
     }
+
+    // std::cout << "trackers size=" << trackers.size() << std::endl;
 }
 
 
