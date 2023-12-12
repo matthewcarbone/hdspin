@@ -8,38 +8,41 @@
 #include "utils.h"
 
 
-long long _get_max_counter(const utils::SimulationParameters params)
+size_t _get_max_counter(const utils::SimulationParameters params)
 {
-    long long mc = (long long) log2l(utils::ipow(10, params.log10_N_timesteps));
-    mc += 10;  // Give the max counter a lot of space
-    return mc;
+    // let N be the log base 10 total timesteps
+    // log2(10^N) = N log2(10)
+    // Give the max counter a lot of space
+    return  params.log10_N_timesteps * log2(10.0) + 10;
 }
 
 
 /**
  * @brief Fills a long long vector with zeros up to _max_counter
  */
-void _fill_counter(const long long _max_counter, std::vector<long long> &counter)
+void _fill_counter(const size_t _max_counter, std::vector<long long> &counter)
 {
-    for (int ii=0; ii<_max_counter; ii++){counter.push_back(0);}
+    for (size_t ii=0; ii<_max_counter; ii++){counter.push_back(0);}
 }
 
 
-long long _get_key(const long double local_waiting_time)
+int _get_key(const double local_waiting_time)
 {
-    long long key;
-
     // If the waiting time is <= 1, round it to 1.
-    if (local_waiting_time <= 1.0){key = 0;}
+    if (local_waiting_time <= 1.0){return 0;} // 2^0
 
-    else
-    {
-        const long double log_t = log2l(local_waiting_time);
-        key = (long long) roundl(log_t);
-    }
-
-    return key;
+    // Otherwise return the log2-binned result
+    // log2(1) == 0
+    // log2(2) == 1 -> 1
+    // log2(2.5) == 1.3 -> 2
+    // log2(3) == 1.7 -> 2
+    // log2(4) == 2 -> 2
+    // log2(7) == 2.8 -> 3
+    // log2(8) == 3 -> 3
+    // log2(8.000001) == 3.000001 -> 4
+    return ceil(log2(local_waiting_time));
 }
+
 
 
 // PSI CONFIG -----------------------------------------------------------------
@@ -57,6 +60,14 @@ void PsiConfig::step(const double current_waiting_time)
     const utils::StateProperties prev = spin_system_ptr->get_previous_state();
     const utils::StateProperties curr = spin_system_ptr->get_current_state();
 
+    // (x) ----------------------> ( )
+    // prev prev prev prev prev   curr
+    //
+    //
+    //
+    //                              prev ...
+    //                             (x)
+
     // No matter what, we update the internal states. If the configs are logged
     // to the counters they are reset in the helper functions.
     _waiting_time += current_waiting_time;
@@ -66,7 +77,7 @@ void PsiConfig::step(const double current_waiting_time)
     if (curr.state == prev.state){return;}
 
     // Otherwise we get the key
-    const long long key = _get_key(_waiting_time);
+    const size_t key = _get_key(_waiting_time);
 
     // Reset the waiting time
     _waiting_time = 0.0;
