@@ -31,58 +31,39 @@ double StreamingMedian::median() const
     return max_heap.top();
 }
 
-OnePointObservables::OnePointObservables(const utils::FileNames fnames, const utils::SimulationParameters params, const SpinSystem& spin_system) : fnames(fnames), params(params)
+OnePointObservables::OnePointObservables(const utils::SimulationParameters params, const SpinSystem& spin_system) : params(params)
 {
 
     spin_system_ptr = &spin_system;
 
-    const std::string grid_location = fnames.grids_directory + "/energy.txt";
-    utils::load_long_long_grid_(grid, grid_location);
+    utils::load_long_long_grid_(grid, ENERGY_GRID_PATH);
     grid_length = grid.size();
 
-    // Energy
-    outfile_energy = fopen(fnames.energy.c_str(), "w");
-
-    // Inherent structure energy
-    if (params.calculate_inherent_structure_observables)
-    {
-        outfile_energy_IS = fopen(fnames.energy_IS.c_str(), "w");
-    }
-    
     // Cache capacity observable
     // First line is the total capacity
     const std::string cache_capacity_string = std::string(spin_system_ptr->get_emap_ptr()->get_capacity());
-    outfile_capacity = fopen(fnames.cache_size.c_str(), "w");
-    fprintf(outfile_capacity, "%s\n", cache_capacity_string.c_str());
 
-    // Acceptance rate
-    outfile_acceptance_rate = fopen(fnames.acceptance_rate.c_str(), "w");
+    // DON't FORGET TO WRITE THE CACHE CAPACITY
+    //fprintf(outfile_capacity, "%s\n", cache_capacity_string.c_str());
 
-    // Wall time/timestep
-    outfile_walltime_per_waitingtime = fopen(fnames.walltime_per_waitingtime.c_str(), "w");
-
-    // Ridge energy
-    ridge_E_objects.outfile = fopen(fnames.ridge_E.c_str(), "w");
-    ridge_E_objects.threshold = params.energetic_threshold;
-    ridge_S_objects.threshold_valid = params.valid_entropic_attractor;
-    ridge_S_objects.threshold = params.entropic_attractor;
-    if (ridge_S_objects.threshold_valid)
-    {
-        ridge_S_objects.outfile = fopen(fnames.ridge_S.c_str(), "w");
-    }
+    // Initialize the ridge energies from the provided parameters
+    ridge_E_object.threshold = params.energetic_threshold;
+    ridge_E_object.threshold_valid = true;
+    ridge_S_object.threshold = params.entropic_attractor;
+    ridge_S_object.threshold_valid = params.valid_entropic_attractor;
 }
 
 
-_RidgeEnergyObjects* OnePointObservables::_get_ridge_pointer(const std::string which_ridge)
+RidgeEnergyObject* OnePointObservables::_get_RidgeEnergyObject_ptr(const std::string which_ridge)
 {
-    _RidgeEnergyObjects* ridge_ptr;
+    RidgeEnergyObject* ridge_ptr;
     if (which_ridge == "E") // This is the energy threshold ridge step
     {
-        ridge_ptr = &ridge_E_objects;
+        ridge_ptr = &ridge_E_object;
     }
     else if (which_ridge == "S") // This is the entropic attractor ridge step
     {
-        ridge_ptr = &ridge_S_objects;
+        ridge_ptr = &ridge_S_object;
     }
     else
     {
@@ -95,7 +76,7 @@ _RidgeEnergyObjects* OnePointObservables::_get_ridge_pointer(const std::string w
 void OnePointObservables::_step_ridge(const double waiting_time, const double simulation_clock, const std::string which_ridge)
 {
 
-    _RidgeEnergyObjects* ridge_ptr = _get_ridge_pointer(which_ridge);
+    RidgeEnergyObject* ridge_ptr = _get_RidgeEnergyObject_ptr(which_ridge);
 
     if (!ridge_ptr->threshold_valid){return;}
 
@@ -132,10 +113,10 @@ void OnePointObservables::_step_ridge(const double waiting_time, const double si
     }
 }
 
-void OnePointObservables::_ridge_writeout(const std::string which_ridge)
+void OnePointObservables::_log_ridge(const std::string which_ridge)
 {
 
-    _RidgeEnergyObjects* ridge_ptr = _get_ridge_pointer(which_ridge);
+    RidgeEnergyObject* ridge_ptr = _get_RidgeEnergyObject_ptr(which_ridge);
 
     if (!ridge_ptr->threshold_valid){return;}
 
@@ -148,9 +129,14 @@ void OnePointObservables::_ridge_writeout(const std::string which_ridge)
     {
         total_steps = 1;
     }
-    const double _median = ridge_ptr->streaming_median.median();
-    const double _mean = ridge_ptr->streaming_mean.mean();
-    fprintf(ridge_ptr->outfile, "%.08f %.08f %lli\n", _mean, _median, ridge_ptr->total_steps);
+
+    const double median = ridge_ptr->streaming_median.median();
+    ridge_ptr->vec_medians.push_back(median);
+
+    const double mean = ridge_ptr->streaming_mean.mean();
+    ridge_ptr->vec_means.push_back(mean);
+
+    ridge_ptr->vec_total_steps.push_back(ridge_ptr->total_steps);
 }
 
 void OnePointObservables::step(const double waiting_time, const double simulation_clock)
@@ -194,35 +180,36 @@ void OnePointObservables::step(const double waiting_time, const double simulatio
 
     while (grid[pointer] < simulation_clock)
     {   
-        fprintf(outfile_energy, "%.08f\n", energy);
+        vec_energy.push_back(energy);
+        
         if (params.calculate_inherent_structure_observables)
         {
-            fprintf(outfile_energy_IS, "%.08f\n", energy_IS);
+            vec_energy_IS.push_back(energy_IS);
         }
-        fprintf(outfile_capacity, "%s\n", cache_size_string.c_str());
-        fprintf(outfile_acceptance_rate, "%.08f\n", acceptance_rate);
-        fprintf(outfile_walltime_per_waitingtime, "%.08f\n", sim_stats.total_wall_time/sim_stats.total_waiting_time);
-        _ridge_writeout("E");
-        _ridge_writeout("S");
+        vec_cache_size.push_back(cache_size_string.c_str());
+        vec_acceptance_rate.push_back(acceptance_rate);
+        vec_walltime_per_waiting_time.push_back(
+            sim_stats.total_wall_time/sim_stats.total_waiting_time);
+        _log_ridge("E");
+        _log_ridge("S");
 
         pointer += 1;
         if (pointer > grid_length - 1){return;}
     }
 }
 
-OnePointObservables::~OnePointObservables()
-{
-    fclose(outfile_energy);
-    if (params.calculate_inherent_structure_observables)
-    {
-        fclose(outfile_energy_IS);
-    }
-    fclose(outfile_capacity);
-    fclose(outfile_acceptance_rate);
-    fclose(outfile_walltime_per_waitingtime);
-    if (ridge_S_objects.threshold_valid)
-    {
-        fclose(ridge_S_objects.outfile);
-    }
+json OnePointObservables::as_json() const {
+    json j;
+    j["energy"] = vec_energy;
+    j["energy_inherent_structure"] = vec_energy_IS;
+    j["cache_size"] = vec_cache_size;
+    j["acceptance_rate"] = vec_acceptance_rate;
+    j["walltime_per_waitingtime"] = vec_walltime_per_waiting_time;
+    j["ridge_E_mean"] = ridge_E_object.vec_means;
+    j["ridge_E_median"] = ridge_E_object.vec_medians;
+    j["ridge_E_total_steps"] = ridge_E_object.vec_total_steps;
+    j["ridge_S_mean"] = ridge_S_object.vec_means;
+    j["ridge_S_median"] = ridge_S_object.vec_medians;
+    j["ridge_S_total_steps"] = ridge_S_object.vec_total_steps;
+    return j;
 }
-

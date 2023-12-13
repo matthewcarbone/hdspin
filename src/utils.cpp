@@ -163,6 +163,19 @@ void json_to_file(const json jrep, const std::string& filename)
 }
 
 
+void json_to_file_no_format(const json jrep, const std::string& filename)
+{
+    std::ofstream outputFile(filename);
+    if (outputFile.is_open())
+    {
+        outputFile << jrep;
+        outputFile.close();
+    } else {
+        std::cerr << "Unable to open file: " << filename << std::endl;
+    }
+}
+
+
 utils::FileNames get_filenames(const unsigned int ii)
 {
     std::string ii_str = std::to_string(ii);
@@ -196,6 +209,7 @@ utils::FileNames get_filenames(const unsigned int ii)
 
     fnames.ii_str = ii_str;
     fnames.grids_directory = "grids";
+    fnames.json_final = "data/" + ii_str + ".json";
     return fnames;
 }
 

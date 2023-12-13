@@ -44,7 +44,7 @@ void execute(const int job_index, const utils::SimulationParameters const_params
     // Simulation parameters
     double simulation_clock = 0.0;
 
-    OnePointObservables obs1(fnames, params, sys);
+    OnePointObservables obs1(params, sys);
     PsiConfig psiConfig(fnames, params, sys);
     PsiBasin psiBasin(fnames, params, sys);
     AgingConfig agingConfig(fnames, params, sys);
@@ -80,6 +80,10 @@ void execute(const int job_index, const utils::SimulationParameters const_params
 
         if (simulation_clock > params.N_timesteps){break;}
     }
+
+    // When the simulation is complete, write everything to disk
+    const json j = obs1.as_json();
+    utils::json_to_file_no_format(j, fnames.json_final);
 }
 
 double get_sim_time(utils::SimulationParameters p, const std::string dynamics)

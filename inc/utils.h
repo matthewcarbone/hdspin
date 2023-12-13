@@ -33,6 +33,11 @@ using json = nlohmann::json;
 #define GIT_COMMIT_HASH "UNKNOWN_COMMIT_HASH"
 #endif
 
+// Define the grids directories
+// These are constants always at compile time and should never change
+#define ENERGY_GRID_PATH "grids/energy.txt"
+#define PI1_GRID_PATH "grids/pi1.txt"
+#define PI2_GRID_PATH "grids/pi2.txt"
 
 namespace utils
 {
@@ -157,6 +162,9 @@ struct FileNames
 
     // Misc
     std::string cache_size, acceptance_rate, walltime_per_waitingtime;
+
+    // ...
+    std::string json_final;
 };
 
 struct SimulationParameters
@@ -206,6 +214,7 @@ void print_json(const json jrep);
 json simulation_parameters_to_json(const utils::SimulationParameters p);
 
 void json_to_file(const json jrep, const std::string& filename);
+void json_to_file_no_format(const json jrep, const std::string& filename);
 
 /**
  * @brief [brief description]

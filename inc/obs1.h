@@ -51,11 +51,8 @@ public:
     }
 };
 
-struct _RidgeEnergyObjects
+struct RidgeEnergyObject
 {
-    FILE* outfile;
-
-    // long double _ridge_energy_accumulator = 0.0;
     long long total_steps = 0;
     StreamingMedian streaming_median;
     StreamingMean streaming_mean;
@@ -70,6 +67,11 @@ struct _RidgeEnergyObjects
 
     double threshold;
     bool threshold_valid = true;
+
+    // Keep track of the observables!
+    std::vector<double> vec_means;
+    std::vector<double> vec_medians;
+    std::vector<double> vec_total_steps;
 };
 
 
@@ -78,7 +80,6 @@ class OnePointObservables
 protected:
 
     // Base objects we need
-    const utils::FileNames fnames;
     const utils::SimulationParameters params;
     std::vector<long long> grid;
     int grid_length;
@@ -88,30 +89,29 @@ protected:
     // Note that this is not actually a pointer =]
     unsigned int pointer = 0;
 
-    // Output files and pointers
-    FILE* outfile_energy;
-    FILE* outfile_energy_IS;
-    FILE* outfile_capacity;
-    FILE* outfile_acceptance_rate;
-    FILE* outfile_inherent_structure_timings;
-    FILE* outfile_walltime_per_waitingtime;
-
     // Define the ridge energy objects
-    _RidgeEnergyObjects ridge_E_objects;
-    _RidgeEnergyObjects ridge_S_objects;
+    RidgeEnergyObject ridge_E_object;
+    RidgeEnergyObject ridge_S_object;
+
+    // Vector to track the energy
+    std::vector<double> vec_energy;
+    std::vector<double> vec_energy_IS;
+    std::vector<std::string> vec_cache_size;
+    std::vector<double> vec_acceptance_rate;
+    std::vector<double> vec_walltime_per_waiting_time;
 
     // Other private methods. These are for ridge energies
-    _RidgeEnergyObjects* _get_ridge_pointer(const std::string which_ridge);
+    RidgeEnergyObject* _get_RidgeEnergyObject_ptr(const std::string which_ridge);
     void _step_ridge(const double waiting_time, const double simulation_clock, const std::string which_ridge);
-    void _ridge_writeout(const std::string which_ridge);
+    void _log_ridge(const std::string which_ridge);
 
 public:
 
     // Constructor: reads in the grid from the specified grid directory
-    OnePointObservables(const utils::FileNames fnames, const utils::SimulationParameters params, const SpinSystem& spin_system);
+    OnePointObservables(const utils::SimulationParameters params, const SpinSystem& spin_system);
 
     void step(const double waiting_time, const double simulation_clock);
-    ~OnePointObservables();
+    json as_json() const;
 };
 
 
