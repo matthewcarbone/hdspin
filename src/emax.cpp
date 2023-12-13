@@ -9,15 +9,14 @@
 #include "emax.h"
 
 
-EMaxt2::EMaxt2(const utils::FileNames fnames, const utils::SimulationParameters params, const SpinSystem& spin_system) : fnames(fnames), params(params)
+EMaxt2::EMaxt2(const utils::SimulationParameters params, const SpinSystem& spin_system) : params(params)
 {
     spin_system_ptr = &spin_system;
 
     // We need the pi2 grid since this goes from 0 to the length of the
     // simulation
     std::vector<long long> grid2;
-    const std::string grid_location = fnames.grids_directory + "/pi2.txt";
-    utils::load_long_long_grid_(grid2, grid_location);
+    utils::load_long_long_grid_(grid2, PI2_GRID_PATH);
     length = grid2.size();
 
     // Grid 1 is grid2 // 2
@@ -70,12 +69,14 @@ void EMaxt2::step(const double simulation_clock) const
 }
 
 
-EMaxt2::~EMaxt2()
+json EMaxt2::as_json() const
 {
-    outfile = fopen(fnames.max_energy.c_str(), "w");
+    std::vector<double> final;
     for (size_t ii=0; ii<length; ii++)
     {
-        fprintf(outfile, "%.08f\n", max_energies[ii]);
+        final.push_back(max_energies[ii]);
     }
-    fclose(outfile);
+    json j;
+    j["emax"] = final;
+    return j;
 }

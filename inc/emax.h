@@ -13,16 +13,14 @@ struct EMaxt2Data
 class EMaxt2
 {
 private:
-    const utils::FileNames fnames;
     const utils::SimulationParameters params;
     const SpinSystem* spin_system_ptr;
-    FILE* outfile;
     size_t length;
     mutable std::map<size_t, EMaxt2Data> trackers;
     mutable std::map<size_t, double> max_energies;
 
 public:
-    EMaxt2(const utils::FileNames fnames, const utils::SimulationParameters params, const SpinSystem& spin_system);
+    EMaxt2(const utils::SimulationParameters params, const SpinSystem& spin_system);
     void step(const double simulation_clock) const;
-    ~EMaxt2();
+    json as_json() const;
 };

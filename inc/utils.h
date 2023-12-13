@@ -143,28 +143,7 @@ struct StateProperties
 
 struct FileNames
 {
-    // utilities
-    std::string ii_str, grids_directory;
-
-    // observables
-
-    // Energy
-    std::string energy, energy_IS, max_energy;
-
-    // Ridges
-    std::string ridge_E, ridge_S;
-
-    // Psi
-    std::string psi_config, psi_basin_E, psi_basin_S;
-
-    // Pi
-    std::string Pi_config, Pi_basin_E, Pi_basin_S;
-
-    // Misc
-    std::string cache_size, acceptance_rate, walltime_per_waitingtime;
-
-    // ...
-    std::string json_final;
+    std::string ii_str, json_final;
 };
 
 struct SimulationParameters

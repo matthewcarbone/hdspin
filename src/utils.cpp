@@ -182,33 +182,7 @@ utils::FileNames get_filenames(const unsigned int ii)
     ii_str.insert(ii_str.begin(), 8 - ii_str.length(), '0');
 
     utils::FileNames fnames;
-
-    // Energy
-    fnames.energy = "data/" + ii_str + "_energy.txt";
-    fnames.energy_IS = "data/" + ii_str + "_energy_IS.txt";
-    fnames.max_energy = "data/" + ii_str + "_emax.txt";
-
-    // Ridges
-    fnames.ridge_E = "data/" + ii_str + "_ridge_E.txt";
-    fnames.ridge_S = "data/" + ii_str + "_ridge_S.txt";
-
-    // Psi
-    fnames.psi_config = "data/" + ii_str + "_psi_config.txt";
-    fnames.psi_basin_E = "data/" + ii_str + "_psi_basin_E.txt";
-    fnames.psi_basin_S = "data/" + ii_str + "_psi_basin_S.txt";
-
-    // Pi
-    fnames.Pi_config = "data/" + ii_str + "_Pi_config.txt";
-    fnames.Pi_basin_E = "data/" + ii_str + "_Pi_basin_E.txt";
-    fnames.Pi_basin_S = "data/" + ii_str + "_Pi_basin_S.txt";
-
-    // Misc
-    fnames.cache_size = "data/" + ii_str + "_cache_size.txt";
-    fnames.acceptance_rate = "data/" + ii_str + "_acceptance_rate.txt";
-    fnames.walltime_per_waitingtime = "data/" + ii_str + "_walltime_per_waitingtime.txt";
-
     fnames.ii_str = ii_str;
-    fnames.grids_directory = "grids";
     fnames.json_final = "data/" + ii_str + ".json";
     return fnames;
 }

@@ -12,9 +12,7 @@ class PsiConfig
 {
 protected:
 
-    const utils::FileNames fnames;
     const utils::SimulationParameters params;
-    FILE *outfile;
     const SpinSystem* spin_system_ptr;
     
     // The (roughly) maximum timestep on the counter. It's padded at the end,
@@ -30,16 +28,14 @@ protected:
 
 public:
 
-    PsiConfig(const utils::FileNames fnames, const utils::SimulationParameters params, const SpinSystem& spin_system);
+    PsiConfig(const utils::SimulationParameters params, const SpinSystem& spin_system);
     void step(const double current_waiting_time);
-    ~PsiConfig();
+    json as_json() const;
 
 };
 
 struct PsiBasinData
 {
-    FILE* outfile;
-
     std::vector<long long> _counter;
     std::vector<long long> _counter_unique_configs_per_basin;
     std::set<std::string> _tmp_unique_configs_in_basin;
@@ -59,20 +55,19 @@ protected:
     const utils::SimulationParameters params;
     const SpinSystem* spin_system_ptr;
     long long _max_counter;
-    PsiBasinData E_data, S_data;
+    PsiBasinData data_E, data_S;
 
     void _init_E_data();
     void _init_S_data();
     // void _init_data_objects(PsiBasinData &data);
-    PsiBasinData* _get_psi_basin_data_pointer(const std::string which);
+    PsiBasinData* _get_PsiBasinData_ptr(const std::string which);
     void _step(const double current_waiting_time, const std::string which);
-    void _dump_outfile(const std::string which);
     
 
 public:
-    PsiBasin(const utils::FileNames fnames, const utils::SimulationParameters params, const SpinSystem& spin_system);
+    PsiBasin(const utils::SimulationParameters params, const SpinSystem& spin_system);
     void step(const double current_waiting_time);
-    ~PsiBasin();
+    json as_json() const;
 };
 
 
@@ -81,7 +76,6 @@ class Aging
 protected:
     const SpinSystem* spin_system_ptr;
 
-    const utils::FileNames fnames;
     const utils::SimulationParameters params;
 
     // The pi 1 and 2 grids
@@ -90,7 +84,7 @@ protected:
     int length;
 
 public:
-    Aging(const utils::FileNames fnames, const utils::SimulationParameters params, const SpinSystem& spin_system);
+    Aging(const utils::SimulationParameters params, const SpinSystem& spin_system);
 };
 
 
@@ -106,28 +100,19 @@ protected:
     int pointer1 = 0;
     int pointer2 = 0;
 
-    // The outstream for this tracker
-    FILE* outfile;
-
     // Helpers
     void _help_step_1(const double simulation_clock);
     void _help_step_2(const double simulation_clock);
-    // void _help_step_2(const double, const long long);
-
-    // void _dump_outfile();
 
 public:
-    AgingConfig(const utils::FileNames fnames, const utils::SimulationParameters params, const SpinSystem& spin_system);
+    AgingConfig(const utils::SimulationParameters params, const SpinSystem& spin_system);
     void step(const double simulation_clock);
-    ~AgingConfig();
+    json as_json() const;
 };
-
 
 
 struct AgingBasinData
 {
-    FILE* outfile;
-
     // Define the pointers
     int pointer1 = 0;
     int pointer2 = 0;
@@ -152,22 +137,19 @@ struct AgingBasinData
 class AgingBasin : public Aging
 {
 protected:
-    AgingBasinData E_data, S_data;
+    AgingBasinData data_E, data_S;
 
     void _init_E_data();
     void _init_S_data();
-    AgingBasinData* _get_psi_basin_data_pointer(const std::string which);
-    void _dump_outfile(const std::string which);
+    AgingBasinData* _get_PsiBasinData_ptr(const std::string which);
     void _help_step_1_(const double simulation_clock, const double prev_energy, AgingBasinData* data_ptr);
     void _help_step_2_(const double simulation_clock, const double prev_energy, AgingBasinData* data_ptr);
     void _help_step(const double simulation_clock, const std::string which);
 
 public:
-    AgingBasin(const utils::FileNames fnames, const utils::SimulationParameters params, const SpinSystem& spin_system);
+    AgingBasin(const utils::SimulationParameters params, const SpinSystem& spin_system);
     void step(const double simulation_clock);
-    ~AgingBasin();
+    json as_json();
 };
-
-
 
 #endif

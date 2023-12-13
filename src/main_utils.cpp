@@ -26,6 +26,43 @@ void step_all_(const double waiting_time, const double simulation_clock, OnePoin
 }
 
 
+/**
+ * @brief Combines the json in the second argument into the first, in place
+ */
+void combine_json_(json* base_json_ptr, json* json_ptr)
+{
+    for (json::iterator it = json_ptr->begin(); it != json_ptr->end(); ++it)
+    {
+        (*base_json_ptr)[it.key()] = it.value();
+    }
+}
+
+
+json get_final_json(OnePointObservables& obs1, PsiConfig& psiConfig, PsiBasin& psiBasin, AgingConfig& agingConfig, AgingBasin& agingBasin, EMaxt2& emaxt2)
+{
+    json j;
+
+    json obs1_json = obs1.as_json();
+    combine_json_(&j, &obs1_json);
+
+    json psiConfig_as_json = psiConfig.as_json();
+    combine_json_(&j, &psiConfig_as_json);
+
+    json psiBasin_as_json = psiBasin.as_json();
+    combine_json_(&j, &psiBasin_as_json);
+
+    json agingConfig_as_json = agingConfig.as_json();
+    combine_json_(&j, &agingConfig_as_json);
+
+    json agingBasin_as_json = agingBasin.as_json();
+    combine_json_(&j, &agingBasin_as_json);
+
+    json emaxt2_json = emaxt2.as_json();
+    combine_json_(&j, &emaxt2_json);
+
+    return j;
+}
+
 void execute(const int job_index, const utils::SimulationParameters const_params)
 {
 
@@ -45,11 +82,11 @@ void execute(const int job_index, const utils::SimulationParameters const_params
     double simulation_clock = 0.0;
 
     OnePointObservables obs1(params, sys);
-    PsiConfig psiConfig(fnames, params, sys);
-    PsiBasin psiBasin(fnames, params, sys);
-    AgingConfig agingConfig(fnames, params, sys);
-    AgingBasin agingBasin(fnames, params, sys);
-    EMaxt2 emaxt2(fnames, params, sys);
+    PsiConfig psiConfig(params, sys);
+    PsiBasin psiBasin(params, sys);
+    AgingConfig agingConfig(params, sys);
+    AgingBasin agingBasin(params, sys);
+    EMaxt2 emaxt2(params, sys);
 
     // Simulation clock is 0 before entering the while loop
     while (true)
@@ -82,8 +119,15 @@ void execute(const int job_index, const utils::SimulationParameters const_params
     }
 
     // When the simulation is complete, write everything to disk
-    const json j = obs1.as_json();
-    utils::json_to_file_no_format(j, fnames.json_final);
+    const json j_final = get_final_json(
+        obs1,
+        psiConfig,
+        psiBasin,
+        agingConfig,
+        agingBasin,
+        emaxt2
+    );
+    utils::json_to_file_no_format(j_final, fnames.json_final);
 }
 
 double get_sim_time(utils::SimulationParameters p, const std::string dynamics)

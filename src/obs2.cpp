@@ -47,7 +47,7 @@ int _get_key(const double local_waiting_time)
 
 // PSI CONFIG -----------------------------------------------------------------
 
-PsiConfig::PsiConfig(const utils::FileNames fnames, const utils::SimulationParameters params, const SpinSystem& spin_system) : fnames(fnames), params(params)
+PsiConfig::PsiConfig(const utils::SimulationParameters params, const SpinSystem& spin_system) : params(params)
 {
     spin_system_ptr = &spin_system;
     _max_counter = _get_max_counter(params);
@@ -97,15 +97,14 @@ void PsiConfig::step(const double current_waiting_time)
 }
 
 
-PsiConfig::~PsiConfig()
+json PsiConfig::as_json() const
 {
-    outfile = fopen(fnames.psi_config.c_str(), "w");
-    for (int ii=0; ii<_max_counter; ii++)
-    {
-        fprintf(outfile, "%lli\n", _counter[ii]);
-    }
-    fclose(outfile);
+    json j;
+    j["psi_config"] = _counter;
+    j["psi_config_out_of_counte"] = _out_of_counter;
+    return j;
 }
+
 
 
 // PSI BASIN ------------------------------------------------------------------
@@ -113,26 +112,22 @@ PsiConfig::~PsiConfig()
 
 void PsiBasin::_init_E_data()
 {
-    _fill_counter(_max_counter, E_data._counter);
-    _fill_counter(_max_counter, E_data._counter_unique_configs_per_basin);
-    E_data.threshold = params.energetic_threshold;
-    E_data.outfile = fopen(fnames.psi_basin_E.c_str(), "w");
+    _fill_counter(_max_counter, data_E._counter);
+    _fill_counter(_max_counter, data_E._counter_unique_configs_per_basin);
+    data_E.threshold = params.energetic_threshold;
+    data_E.threshold_valid = true;
 }
 
 void PsiBasin::_init_S_data()
 {
-    _fill_counter(_max_counter, S_data._counter);
-    _fill_counter(_max_counter, S_data._counter_unique_configs_per_basin);
-    if (!params.valid_entropic_attractor){S_data.threshold_valid = false;}
-    S_data.threshold = params.entropic_attractor;
-    if (S_data.threshold_valid)
-    {
-        S_data.outfile = fopen(fnames.psi_basin_S.c_str(), "w");
-    }
+    _fill_counter(_max_counter, data_S._counter);
+    _fill_counter(_max_counter, data_S._counter_unique_configs_per_basin);
+    if (!params.valid_entropic_attractor){data_S.threshold_valid = false;}
+    data_S.threshold = params.entropic_attractor;
 }
 
 
-PsiBasin::PsiBasin(const utils::FileNames fnames, const utils::SimulationParameters params, const SpinSystem& spin_system) : fnames(fnames), params(params)
+PsiBasin::PsiBasin(const utils::SimulationParameters params, const SpinSystem& spin_system) : params(params)
 {
     spin_system_ptr = &spin_system;
     _max_counter = _get_max_counter(params);
@@ -141,15 +136,15 @@ PsiBasin::PsiBasin(const utils::FileNames fnames, const utils::SimulationParamet
 }
 
 
-PsiBasinData* PsiBasin::_get_psi_basin_data_pointer(const std::string which)
+PsiBasinData* PsiBasin::_get_PsiBasinData_ptr(const std::string which)
 {
     if (which == "E") // This is the energy threshold
     {
-        return &E_data;
+        return &data_E;
     }
     else if (which == "S") // This is the entropic attractor
     {
-        return &S_data;
+        return &data_S;
     }
     else
     {
@@ -161,7 +156,7 @@ PsiBasinData* PsiBasin::_get_psi_basin_data_pointer(const std::string which)
 void PsiBasin::_step(const double current_waiting_time, const std::string which)
 {
 
-    PsiBasinData* data_ptr = _get_psi_basin_data_pointer(which);
+    PsiBasinData* data_ptr = _get_PsiBasinData_ptr(which);
     if (!data_ptr->threshold_valid){return;}
 
     const utils::StateProperties prev = spin_system_ptr->get_previous_state();
@@ -224,45 +219,30 @@ void PsiBasin::step(const double current_waiting_time)
     _step(current_waiting_time, "S");
 }
 
-void PsiBasin::_dump_outfile(const std::string which)
+json PsiBasin::as_json() const
 {
-    PsiBasinData* data_ptr = _get_psi_basin_data_pointer(which);
-    if (!data_ptr->threshold_valid){return;}
-
-    for (int ii=0; ii<_max_counter; ii++)
+    json j;
+    j["psi_basin_E"] = data_E._counter;
+    j["psi_basin_E_unique_configs_per_basin"] = data_E._counter_unique_configs_per_basin;
+    if (data_S.threshold_valid)
     {
-        long long cc = data_ptr->_counter[ii];
-        long long uc = data_ptr->_counter_unique_configs_per_basin[ii];
-        fprintf(data_ptr->outfile, "%lli %lli\n", cc, uc);
+        j["psi_basin_S"] = data_S._counter;
+        j["psi_basin_S_unique_configs_per_basin"] = data_S._counter_unique_configs_per_basin;
     }
-    fclose(data_ptr->outfile);
+    return j;
 }
-
-PsiBasin::~PsiBasin()
-{
-    _dump_outfile("E");
-    _dump_outfile("S");
-}
-
 
 
 // PI CONFIG ------------------------------------------------------------------
 
 
-
-Aging::Aging(const utils::FileNames fnames, const utils::SimulationParameters params, const SpinSystem& spin_system) : fnames(fnames), params(params)
+Aging::Aging(const utils::SimulationParameters params, const SpinSystem& spin_system) : params(params)
 {
     spin_system_ptr = &spin_system;
-
-    const std::string pi_1_grid_location = fnames.grids_directory + "/pi1.txt";
-    utils::load_long_long_grid_(grid_pi1, pi_1_grid_location);
+    utils::load_long_long_grid_(grid_pi1, PI1_GRID_PATH);
+    utils::load_long_long_grid_(grid_pi2, PI2_GRID_PATH);
     length = grid_pi1.size();
-
-    const std::string pi_2_grid_location = fnames.grids_directory + "/pi2.txt";
-    utils::load_long_long_grid_(grid_pi2, pi_2_grid_location);
-    const int grid_length2 = grid_pi2.size();
-
-    assert(length == grid_length2);
+    assert(length == grid_pi2.size());
 }
 
 
@@ -306,11 +286,7 @@ void AgingConfig::_help_step_2(const double simulation_clock)
 }
 
 
-
-AgingConfig::AgingConfig(const utils::FileNames fnames, const utils::SimulationParameters params, const SpinSystem& spin_system) : Aging(fnames, params, spin_system)
-{
-    outfile = fopen(fnames.Pi_config.c_str(), "w");
-}
+AgingConfig::AgingConfig(const utils::SimulationParameters params, const SpinSystem& spin_system) : Aging(params, spin_system) {}
 
 
 void AgingConfig::step(const double simulation_clock)
@@ -319,22 +295,19 @@ void AgingConfig::step(const double simulation_clock)
     _help_step_2(simulation_clock);
 }
 
-AgingConfig::~AgingConfig()
+json AgingConfig::as_json() const
 {
 
     // Sanity checks to make sure that every vector was filled completely
     assert(length == results1.size());
     assert(length == results2.size());
 
-    // Dump results to disk
-    for (int ii = 0; ii < length; ii++)
-    {
-        const std::string s1 = results1[ii];
-        const std::string s2 = results2[ii];
-        fprintf(outfile, "%s %s\n", s1.c_str(), s2.c_str());
-    }
-    fclose(outfile);   
+    json j;
+    j["aging_config_pi1"] = results1;
+    j["aging_config_pi2"] = results2;
+    return j;
 }
+
 
 
 // PI BASIN -------------------------------------------------------------------
@@ -342,29 +315,25 @@ AgingConfig::~AgingConfig()
 
 void AgingBasin::_init_E_data()
 {
-    E_data.threshold = params.energetic_threshold;
-    E_data.outfile = fopen(fnames.Pi_basin_E.c_str(), "w");
+    data_E.threshold = params.energetic_threshold;
+    data_E.threshold_valid = true;
 }
 
 void AgingBasin::_init_S_data()
 {
-    if (!params.valid_entropic_attractor){S_data.threshold_valid = false;}
-    S_data.threshold = params.entropic_attractor;
-    if (S_data.threshold_valid)
-    {
-        S_data.outfile = fopen(fnames.Pi_basin_S.c_str(), "w");
-    }
+    data_S.threshold = params.entropic_attractor;
+    data_S.threshold_valid = params.valid_entropic_attractor;
 }
 
-AgingBasinData* AgingBasin::_get_psi_basin_data_pointer(const std::string which)
+AgingBasinData* AgingBasin::_get_PsiBasinData_ptr(const std::string which)
 {
     if (which == "E") // This is the energy threshold
     {
-        return &E_data;
+        return &data_E;
     }
     else if (which == "S") // This is the entropic attractor
     {
-        return &S_data;
+        return &data_S;
     }
     else
     {
@@ -373,7 +342,7 @@ AgingBasinData* AgingBasin::_get_psi_basin_data_pointer(const std::string which)
 }
 
 
-AgingBasin::AgingBasin(const utils::FileNames fnames, const utils::SimulationParameters params, const SpinSystem& spin_system) : Aging(fnames, params, spin_system)
+AgingBasin::AgingBasin(const utils::SimulationParameters params, const SpinSystem& spin_system) : Aging(params, spin_system)
 {
     _init_E_data();
     _init_S_data();
@@ -412,7 +381,7 @@ void AgingBasin::_help_step_2_(const double simulation_clock, const double prev_
 void AgingBasin::_help_step(const double simulation_clock, const std::string which)
 {
 
-    AgingBasinData* data_ptr = _get_psi_basin_data_pointer(which);
+    AgingBasinData* data_ptr = _get_PsiBasinData_ptr(which);
     if (!data_ptr->threshold_valid){return;}
 
     // Early return conditions
@@ -464,22 +433,24 @@ void AgingBasin::step(const double simulation_clock)
 }
 
 
-void AgingBasin::_dump_outfile(const std::string which)
+json AgingBasin::as_json()
 {
-    AgingBasinData* data_ptr = _get_psi_basin_data_pointer(which);
-    if (!data_ptr->threshold_valid){return;}
+    json j;
 
-    for (int ii=0; ii<length; ii++)
+    AgingBasinData* data_ptr = _get_PsiBasinData_ptr("E");
+    j["aging_basin_E_index_1"] = data_ptr->vec_basin_index_1;
+    j["aging_basin_E_prev_state_in_basin_1"] = data_ptr->vec_prev_state_in_basin_1;
+    j["aging_basin_E_index_2"] = data_ptr->vec_basin_index_2;
+    j["aging_basin_E_prev_state_in_basin_2"] = data_ptr->vec_prev_state_in_basin_2;
+
+    data_ptr = _get_PsiBasinData_ptr("S");
+    if (data_ptr->threshold_valid)
     {
-        fprintf(data_ptr->outfile, "%lli %i %lli %i\n", data_ptr->vec_basin_index_1[ii],
-            data_ptr->vec_prev_state_in_basin_1[ii], data_ptr->vec_basin_index_2[ii],
-            data_ptr->vec_prev_state_in_basin_2[ii]);
+        j["aging_basin_S_index_1"] = data_ptr->vec_basin_index_1;
+        j["aging_basin_S_prev_state_in_basin_1"] = data_ptr->vec_prev_state_in_basin_1;
+        j["aging_basin_S_index_2"] = data_ptr->vec_basin_index_2;
+        j["aging_basin_S_prev_state_in_basin_2"] = data_ptr->vec_prev_state_in_basin_2;
     }
-    fclose(data_ptr->outfile);
-}
 
-AgingBasin::~AgingBasin()
-{
-    _dump_outfile("E");
-    _dump_outfile("S");
+    return j;
 }
