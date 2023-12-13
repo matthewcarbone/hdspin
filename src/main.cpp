@@ -76,8 +76,8 @@ int main(int argc, char *argv[])
         "unset for un-reproducible, random seeds."
     )->check(CLI::PositiveNumber);
 
-    app.add_flag("--skip_IS{false}", p.calculate_inherent_structure_observables,
-        "Providing the --skip_IS flag informs hdspin to skip all calculations of the inherent structure. This will speed up the simulation and use ~log N less memory in the cache.");
+    app.add_flag("--calc_IS{true}", p.calculate_inherent_structure_observables,
+        "Providing the --calc_IS flag informs hdspin to run all calculations of the inherent structure. This will slow down the simulation and use ~log N more memory in the cache.");
 
     CLI11_PARSE(app, argc, argv);
     // -----------------------------------------------------------------------
