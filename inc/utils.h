@@ -35,6 +35,8 @@ using json = nlohmann::json;
 
 // Define the grids directories
 // These are constants always at compile time and should never change
+#define DATA_PATH "data/"
+#define GRID_PATH "grids/"
 #define ENERGY_GRID_PATH "grids/energy.txt"
 #define PI1_GRID_PATH "grids/pi1.txt"
 #define PI2_GRID_PATH "grids/pi2.txt"
@@ -51,6 +53,8 @@ double mean_vector(const std::vector<double> v);
 * @brief Computes the variance of a vector of doubles.
 */
 double variance_vector(const std::vector<double> v);
+
+double median_vector(const std::vector<double> v);
 
 /**
 * @brief Defines arbitrary precision integer powers

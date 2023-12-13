@@ -1,4 +1,5 @@
 #include <sstream>  // oss
+#include <algorithm>
 
 #include "utils.h"
 #include "ArbitraryPrecision/ap/ap.hpp"
@@ -18,6 +19,15 @@ double variance_vector(const std::vector<double> v)
     const double mean = mean_vector(v);
     const double sq_sum = std::inner_product(v.begin(), v.end(), v.begin(), 0.0);
     return sq_sum / v.size() - mean * mean;
+}
+
+double median_vector(const std::vector<double> v)
+{
+    std::vector<double> v2 = v;
+    std::sort(v2.begin(), v2.end());
+    const size_t size = v2.size();
+    if (v2.size() % 2 != 0){return v2[size / 2];}
+    return (v2[size / 2] + v2[(size / 2) - 1]) / 2;
 }
 
 ap_uint<PRECISON> arbitrary_precision_integer_pow(
@@ -183,7 +193,7 @@ utils::FileNames get_filenames(const unsigned int ii)
 
     utils::FileNames fnames;
     fnames.ii_str = ii_str;
-    fnames.json_final = "data/" + ii_str + ".json";
+    fnames.json_final = std::string(DATA_PATH) + ii_str + ".json";
     return fnames;
 }
 
@@ -191,8 +201,10 @@ utils::FileNames get_filenames(const unsigned int ii)
 
 void make_directories()
 {
-    system("mkdir data");
-    system("mkdir grids");
+    std::string command = "mkdir " + std::string(DATA_PATH);
+    system(command.c_str());
+    command = "mkdir " + std::string(GRID_PATH);
+    system(command.c_str());
 }
 
 
@@ -209,8 +221,7 @@ void make_energy_grid_logspace(const int log10_timesteps, const int n_gridpoints
 
     v.erase(unique(v.begin(), v.end()), v.end());
 
-    const std::string fname = "grids/energy.txt";
-    FILE* outfile = fopen(fname.c_str(), "w");
+    FILE* outfile = fopen(ENERGY_GRID_PATH, "w");
     for (int ii=0; ii<v.size(); ii++)
     {
         fprintf(outfile, "%lli\n", v[ii]);
@@ -241,10 +252,8 @@ void make_pi_grids(const int log10_timesteps, const double dw, const int n_gridp
         v2.push_back(_v2);
     }
 
-    const std::string fname1 = "grids/pi1.txt";
-    const std::string fname2 = "grids/pi2.txt";
-    FILE* outfile1 = fopen(fname1.c_str(), "w");
-    FILE* outfile2 = fopen(fname2.c_str(), "w");
+    FILE* outfile1 = fopen(PI1_GRID_PATH, "w");
+    FILE* outfile2 = fopen(PI2_GRID_PATH, "w");
 
     for (int ii=0; ii<v1.size(); ii++)
     {

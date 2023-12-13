@@ -1,6 +1,7 @@
 #include <mpi.h>
 
 #include "main_utils.h"
+#include "processing_utils.h"
 #include "CLI11/CLI11.hpp"
 
 
@@ -90,6 +91,10 @@ int main(int argc, char *argv[])
     auto_determine_dynamics_(&p);
 
     execute_process_pool(p);  // <----- Main simulation
+
+    MPI_Barrier(MPI_COMM_WORLD);  // <----- Barrier to make sure all finish
+    
+    processing_utils::postprocess();  // <- Postprocess to final json file
 
     MPI_Finalize();
 }
