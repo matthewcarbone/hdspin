@@ -14,6 +14,19 @@ double mean_vector(const std::vector<double> v)
     return sum / v.size();
 }
 
+double weighted_mean_vector(const std::vector<double> v, const std::vector<double> weights)
+{
+    double sum = 0.0;
+    assert(v.size() == weights.size());
+    for (size_t ii=0; ii<v.size(); ii++)
+    {
+        sum += v[ii] * weights[ii];
+    }
+    double total_weight = std::accumulate(weights.begin(), weights.end(), 0.0);
+    if (total_weight == 0.0) {total_weight = 1.0;}
+    return sum / total_weight;
+}
+
 double variance_vector(const std::vector<double> v)
 {
     const double mean = mean_vector(v);

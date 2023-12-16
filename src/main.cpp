@@ -91,8 +91,6 @@ int main(int argc, char *argv[])
     auto_determine_dynamics_(&p);
 
     execute_process_pool(p);  // <----- Main simulation
-
-    MPI_Barrier(MPI_COMM_WORLD);  // <----- Barrier to make sure all finish
     
     processing_utils::postprocess();  // <- Postprocess to final json file
 

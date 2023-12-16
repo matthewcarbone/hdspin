@@ -127,7 +127,7 @@ void execute(const int job_index, const utils::SimulationParameters const_params
         agingBasin,
         emaxt2
     );
-    utils::json_to_file_no_format(j_final, fnames.json_final);
+    utils::json_to_file(j_final, fnames.json_final);
 }
 
 double get_sim_time(utils::SimulationParameters p, const std::string dynamics)
@@ -195,7 +195,7 @@ json master(const size_t min_index_inclusive, const size_t max_index_exclusive)
 
     // We're done on the master process, send termination signals to all of
     // the workers
-    std::cout << "!!! DONE !!!" << std::endl;
+    std::cout << "Simulation complete - ";
     std::vector<int> jobs_finished_per_task;
     for (size_t cc=0; cc<mpi_world_size - 1; cc++)
     {
@@ -453,6 +453,7 @@ void execute_process_pool(const utils::SimulationParameters params)
         std::cout << "Running " << mpi_world_size << " procs. " << mpi_world_size - 1 << " compute, 1 controller " << std::endl;
         const json diagnostics = master(0, params.n_tracers);
         utils::json_to_file(diagnostics, "out.json");
+        std::cout << "diagnostics saved" << std::endl;
     }
     else
     {

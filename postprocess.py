@@ -113,7 +113,7 @@ def ridge(all_filenames, substring, save_path):
     weights = arr[:, :, 2]
     dat = arr[:, :, 1]
     mu2 = np.ma.average(dat, axis=0, weights=weights)
-    var2 = np.ma.average((mu - dat)**2, axis=0, weights=weights)
+    var2 = np.ma.average((mu2 - dat)**2, axis=0, weights=weights)
 
     final = np.array([
         grid,

@@ -48,6 +48,7 @@ namespace utils
 * @brief Computes the average of a vector of doubles.
 */
 double mean_vector(const std::vector<double> v);
+double weighted_mean_vector(const std::vector<double> v, const std::vector<double> weights);
 
 /**
 * @brief Computes the variance of a vector of doubles.

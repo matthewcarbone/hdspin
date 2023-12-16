@@ -136,7 +136,7 @@ void OnePointObservables::_log_ridge(const std::string which_ridge)
     const double mean = ridge_ptr->streaming_mean.mean();
     ridge_ptr->vec_means.push_back(mean);
 
-    ridge_ptr->vec_total_steps.push_back(ridge_ptr->total_steps);
+    ridge_ptr->vec_total_steps.push_back(total_steps);
 }
 
 void OnePointObservables::step(const double waiting_time, const double simulation_clock)
