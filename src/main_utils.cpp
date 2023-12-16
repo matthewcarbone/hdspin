@@ -175,7 +175,7 @@ json master(const size_t min_index_inclusive, const size_t max_index_exclusive)
         // incremented
         MPI_Send(&next_job, 1, MPI_INT, worker_rank, TAG_DEFAULT, MPI_COMM_WORLD);
 
-        if (loop_count % step_size == 0 | loop_count == 1)
+        if (loop_count % step_size == 0 && loop_count > 1)
         {
             const std::string dt_string = utils::get_datetime();
             const double duration = utils::get_time_delta(t_start);
@@ -195,7 +195,7 @@ json master(const size_t min_index_inclusive, const size_t max_index_exclusive)
 
     // We're done on the master process, send termination signals to all of
     // the workers
-    std::cout << "Simulation complete - ";
+    printf("Simulation complete\n");
     std::vector<int> jobs_finished_per_task;
     for (size_t cc=0; cc<mpi_world_size - 1; cc++)
     {
@@ -320,7 +320,8 @@ void save_and_log_config(const utils::SimulationParameters p)
         json jrep = utils::simulation_parameters_to_json(p);
         jrep["HDSPIN_GIT_COMMIT_HASH"] = GIT_COMMIT_HASH;
         utils::print_json(jrep);
-        utils::json_to_file(jrep, "config.json");
+        utils::json_to_file(jrep, CONFIG_PATH);
+        printf("Config saved to %s\n", CONFIG_PATH);
     }
 
     fflush(stdout);
@@ -450,10 +451,10 @@ void execute_process_pool(const utils::SimulationParameters params)
     if (mpi_rank == MASTER)
     {
         // TODO add some logic for checkpoint-restart here
-        std::cout << "Running " << mpi_world_size << " procs. " << mpi_world_size - 1 << " compute, 1 controller " << std::endl;
+        printf("Running %i ranks: %i compute, 1 controller\n", mpi_world_size, mpi_world_size-1);
         const json diagnostics = master(0, params.n_tracers);
-        utils::json_to_file(diagnostics, "out.json");
-        std::cout << "diagnostics saved" << std::endl;
+        utils::json_to_file(diagnostics, DIAGNOSTICS_PATH);
+        printf("Diagnostics saved to %s\n", DIAGNOSTICS_PATH);
     }
     else
     {

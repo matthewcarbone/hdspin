@@ -120,23 +120,13 @@ void OnePointObservables::_log_ridge(const std::string which_ridge)
 
     if (!ridge_ptr->threshold_valid){return;}
 
-    double total_steps;
-    if (ridge_ptr->total_steps > 0)
-    {
-        total_steps = ((double) ridge_ptr->total_steps);
-    }
-    else
-    {
-        total_steps = 1;
-    }
-
     const double median = ridge_ptr->streaming_median.median();
     ridge_ptr->vec_medians.push_back(median);
 
     const double mean = ridge_ptr->streaming_mean.mean();
     ridge_ptr->vec_means.push_back(mean);
 
-    ridge_ptr->vec_total_steps.push_back(total_steps);
+    ridge_ptr->vec_total_steps.push_back(ridge_ptr->total_steps);
 }
 
 void OnePointObservables::step(const double waiting_time, const double simulation_clock)
@@ -186,7 +176,7 @@ void OnePointObservables::step(const double waiting_time, const double simulatio
         {
             vec_energy_IS.push_back(energy_IS);
         }
-        vec_cache_size.push_back(cache_size_string.c_str());
+        vec_cache_size.push_back(std::stod(cache_size_string));
         vec_acceptance_rate.push_back(acceptance_rate);
         vec_walltime_per_waiting_time.push_back(
             sim_stats.total_wall_time/sim_stats.total_waiting_time);

@@ -96,7 +96,7 @@ protected:
     // Vector to track the energy
     std::vector<double> vec_energy;
     std::vector<double> vec_energy_IS;
-    std::vector<std::string> vec_cache_size;
+    std::vector<double> vec_cache_size;
     std::vector<double> vec_acceptance_rate;
     std::vector<double> vec_walltime_per_waiting_time;
 

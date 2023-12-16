@@ -33,13 +33,17 @@ using json = nlohmann::json;
 #define GIT_COMMIT_HASH "UNKNOWN_COMMIT_HASH"
 #endif
 
-// Define the grids directories
+// Define the grids directories and some paths
 // These are constants always at compile time and should never change
+// Always relative to the working directory in which the code was run
 #define DATA_PATH "data/"
 #define GRID_PATH "grids/"
 #define ENERGY_GRID_PATH "grids/energy.txt"
 #define PI1_GRID_PATH "grids/pi1.txt"
 #define PI2_GRID_PATH "grids/pi2.txt"
+#define CONFIG_PATH "config.json"
+#define RESULTS_PATH "results.json"
+#define DIAGNOSTICS_PATH "diagnostics.json"
 
 namespace utils
 {
@@ -211,6 +215,8 @@ FileNames get_filenames(const unsigned int ii);
 
 
 void make_directories();
+
+void cleanup_directories();
 
 /**
  * @brief [brief description]

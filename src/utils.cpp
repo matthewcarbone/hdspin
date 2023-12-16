@@ -17,6 +17,7 @@ double mean_vector(const std::vector<double> v)
 double weighted_mean_vector(const std::vector<double> v, const std::vector<double> weights)
 {
     double sum = 0.0;
+    // std::cout << v.size() << " " << weights.size() << std::endl;
     assert(v.size() == weights.size());
     for (size_t ii=0; ii<v.size(); ii++)
     {
@@ -217,6 +218,12 @@ void make_directories()
     std::string command = "mkdir " + std::string(DATA_PATH);
     system(command.c_str());
     command = "mkdir " + std::string(GRID_PATH);
+    system(command.c_str());
+}
+
+void cleanup_directories()
+{
+    std::string command = "rm -r " + std::string(GRID_PATH);
     system(command.c_str());
 }
 

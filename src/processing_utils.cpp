@@ -41,9 +41,11 @@ std::vector<json> read_all_results()
 
 json get_standard_statistics(const std::vector<json> results, const std::string key)
 {
+    auto t_start = std::chrono::high_resolution_clock::now();
+
     json j;
-    const int N = results.size();
-    const int M = results[0][key].size();
+    const size_t N = results.size();
+    const size_t M = results[0][key].size();
 
     std::vector<std::vector<double>> target;
     for (auto &result : results){target.push_back(result[key]);}
@@ -69,6 +71,11 @@ json get_standard_statistics(const std::vector<json> results, const std::string 
     j["median"] = medians;
     j["standard_deviation"] = standard_deviations;
     j["standard_error"] = standard_errors;
+
+    const double dt = utils::get_time_delta(t_start);
+
+    printf("Standard statistics : %s : done in %.02f s\n", key.c_str(), dt);
+
     return j;
 }
 
@@ -76,13 +83,15 @@ json get_standard_statistics(const std::vector<json> results, const std::string 
 json get_ridge_statistics(const std::vector<json> results, const std::string key)
 {
 
+    auto t_start = std::chrono::high_resolution_clock::now();
+
     const std::string mean_key = key + "_mean";
     const std::string median_key = key + "_median";
     const std::string total_steps_key = key + "_total_steps";
 
     json j;
-    const int N = results.size();
-    const int M = results[0][mean_key].size();
+    const size_t N = results.size();
+    const size_t M = results[0][mean_key].size();
 
     // std::vector<std::vector<double>> target = _parse_results(results, key);
     // std::vector<double> means, medians, standard_deviations, standard_errors;
@@ -120,58 +129,88 @@ json get_ridge_statistics(const std::vector<json> results, const std::string key
         // Fill all the tracers
         for (int ii=0; ii<N; ii++)
         {   
-            tmp_ridge_means.push_back(ridge_means[ii][jj]);
-            tmp_ridge_medians.push_back(ridge_medians[ii][jj]);
-            tmp_ridge_weights.push_back(ridge_weights[ii][jj]);
+
+            // Special logic here. We do not want to count anything in which
+            // the value for the ridge is 0 and the weight is zero. This is a
+            // case in which nothing has been logged yet. The equivalent in the
+            // old python postprocessing script was to use a masked array.
+            // Here we have to handle it explicitly
+
+            const double _mean = ridge_means[ii][jj];
+            const double _median = ridge_medians[ii][jj];
+            const double _weight = ridge_weights[ii][jj];
+
+            if ((_mean == 0.0) && (_median == 0.0) && (_weight == 0.0))
+            {
+                continue;
+            }
+
+            tmp_ridge_means.push_back(_mean);
+            tmp_ridge_medians.push_back(_median);
+            tmp_ridge_weights.push_back(_weight);
         }
 
-        total_N = std::accumulate(tmp_ridge_weights.begin(), tmp_ridge_weights.end(), 0.0);
-        all_weights.push_back(total_N);
+        // std::cout << "tmp_ridge_means.size()==" << tmp_ridge_means.size() << std::endl;
+        // std::cout << "tmp_ridge_medians.size()==" << tmp_ridge_medians.size() << std::endl;
+        // std::cout << "tmp_ridge_weights.size()==" << tmp_ridge_weights.size() << std::endl;
 
-
-        // Do logic for the mean ridge energies here
-
-        double mu = utils::weighted_mean_vector(tmp_ridge_means, tmp_ridge_weights);
-
-        // Calculate the variance of the means
-        
-        for (int ii=0; ii<N; ii++)
+        // Special case here
+        if (tmp_ridge_weights.size() == 0)
         {
-            tmp_var.push_back(pow(mu - ridge_means[ii][jj], 2));
+            all_weights.push_back(0.0);
+            mean_avg.push_back(0.0);
+            mean_standard_deviations.push_back(0.0);
+            mean_standard_errors.push_back(0.0);
+            median_avg.push_back(0.0);
+            median_standard_deviations.push_back(0.0);
+            median_standard_errors.push_back(0.0);
         }
-        double var = utils::weighted_mean_vector(tmp_var, tmp_ridge_weights);
-        double std = sqrt(var);
-        
-        mean_avg.push_back(mu);
-        mean_standard_deviations.push_back(std);
-        mean_standard_errors.push_back(std / sqrt(total_N));
-        tmp_var.clear();
 
-
-        // Do logic for the median ridge energies here
-
-        mu = utils::weighted_mean_vector(tmp_ridge_medians, tmp_ridge_weights);
-
-        // Calculate the variance of the medians
-        for (int ii=0; ii<N; ii++)
+        else
         {
-            tmp_var.push_back(pow(mu - ridge_medians[ii][jj], 2));
+            total_N = std::accumulate(tmp_ridge_weights.begin(), tmp_ridge_weights.end(), 0.0);
+            all_weights.push_back(total_N);
+            // Do logic for the mean ridge energies here
+            double mu = utils::weighted_mean_vector(tmp_ridge_means, tmp_ridge_weights);
+
+            // Calculate the variance of the means
+            for (int kk=0; kk<tmp_ridge_means.size(); kk++)  // problem is here I think
+                // Need to account for the fact that tmp_ridge_means can have
+                // sizes different from N
+            {
+                tmp_var.push_back(pow(mu - tmp_ridge_means[kk], 2));
+            }
+            double var = utils::weighted_mean_vector(tmp_var, tmp_ridge_weights);
+            double std = sqrt(var);
+            
+            mean_avg.push_back(mu);
+            mean_standard_deviations.push_back(std);
+            mean_standard_errors.push_back(std / sqrt(total_N));
+            tmp_var.clear();
+
+
+            // Do logic for the median ridge energies here
+            mu = utils::weighted_mean_vector(tmp_ridge_medians, tmp_ridge_weights);
+
+            // Calculate the variance of the medians
+            for (int kk=0; kk<tmp_ridge_medians.size(); kk++)
+            {
+                tmp_var.push_back(pow(mu - tmp_ridge_medians[kk], 2));
+            }
+            var = utils::weighted_mean_vector(tmp_var, tmp_ridge_weights);
+            std = sqrt(var);
+            double stderr = std / sqrt(total_N);
+            
+            median_avg.push_back(mu);
+            median_standard_deviations.push_back(std);
+            median_standard_errors.push_back(stderr);
+            tmp_var.clear();
         }
-        var = utils::weighted_mean_vector(tmp_var, tmp_ridge_weights);
-        std = sqrt(var);
-        double stderr = std / sqrt(total_N);
-        
-        median_avg.push_back(mu);
-        median_standard_deviations.push_back(std);
-        median_standard_errors.push_back(stderr);
-        tmp_var.clear();
 
         tmp_ridge_means.clear();
         tmp_ridge_medians.clear();
         tmp_ridge_weights.clear();
     }
-
-    std::cout << "made it to the end " << std::endl;
 
     j["mean_mean"] = mean_avg;
     j["mean_std"] = mean_standard_deviations;
@@ -181,8 +220,35 @@ json get_ridge_statistics(const std::vector<json> results, const std::string key
     j["median_std"] = median_standard_deviations;
     j["median_std_err"] = median_standard_errors;
 
+    const double dt = utils::get_time_delta(t_start);
+
+    printf("Ridge statistics : %s : done in %.02f s\n", key.c_str(), dt);
+
     return j;
 }
+
+
+
+json load_grids()
+{
+    json j;
+
+    std::vector<long long> grid_energy;
+    utils::load_long_long_grid_(grid_energy, ENERGY_GRID_PATH);
+    j["energy"] = grid_energy;
+
+    std::vector<long long> grid_pi1;
+    utils::load_long_long_grid_(grid_pi1, PI1_GRID_PATH);
+    j["pi1"] = grid_pi1;
+
+    std::vector<long long> grid_pi2;
+    utils::load_long_long_grid_(grid_pi2, PI2_GRID_PATH);
+    j["pi2"] = grid_pi2;
+
+    return j;
+}
+
+
 
 
 namespace processing_utils
@@ -191,23 +257,31 @@ namespace processing_utils
 void postprocess()
 {
 
-    MPI_Barrier(MPI_COMM_WORLD);  // <----- Barrier to make sure all finish
+    MPI_Barrier(MPI_COMM_WORLD);  // <----- Barrier to make sure all ranks finish
 
     int mpi_rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
     if (mpi_rank != MASTER){return;}
 
-    std::vector<json> results = read_all_results();
+    printf("Postprocessing results\n");
+
+    const std::vector<json> results = read_all_results();
 
     json j;
     j["energy"] = get_standard_statistics(results, "energy");
     j["acceptance_rate"] = get_standard_statistics(results, "acceptance_rate");
+    // Problem here below
+    j["cache_size"] = get_standard_statistics(results, "cache_size");
     j["walltime_per_waitingtime"] = get_standard_statistics(results, "walltime_per_waitingtime");
     j["emax"] = get_standard_statistics(results, "emax");
     j["ridge_E"] = get_ridge_statistics(results, "ridge_E");
+    j["grids"] = load_grids();
+    
 
-    utils::json_to_file(j, "final.json");
-    std::cout << "Averaged results saved to final.json" << std::endl;
+    utils::json_to_file(j, RESULTS_PATH);
+    printf("Results saved to %s\n", RESULTS_PATH);
+    utils::cleanup_directories();
+    printf("Simulation completed successfully\n");
 }
 
 }
