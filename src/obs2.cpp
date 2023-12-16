@@ -40,7 +40,7 @@ int _get_key(const double local_waiting_time)
     // log2(7) == 2.8 -> 3
     // log2(8) == 3 -> 3
     // log2(8.000001) == 3.000001 -> 4
-    return ceil(log2(local_waiting_time));
+    return ceil(log(local_waiting_time));
 }
 
 
@@ -101,7 +101,7 @@ json PsiConfig::as_json() const
 {
     json j;
     j["psi_config"] = _counter;
-    j["psi_config_out_of_counte"] = _out_of_counter;
+    j["psi_config_out_of_counter"] = _out_of_counter;
     return j;
 }
 
