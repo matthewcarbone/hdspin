@@ -133,7 +133,7 @@ void execute(const int job_index, const utils::SimulationParameters const_params
         agingBasin,
         emaxt2
     );
-    utils::json_to_file(j_final, fnames.json_final);
+    utils::json_to_file_no_format(j_final, fnames.json_final);
 }
 
 double get_sim_time(utils::SimulationParameters p, const std::string dynamics)
