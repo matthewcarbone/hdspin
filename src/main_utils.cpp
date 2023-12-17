@@ -194,6 +194,7 @@ json master(const size_t min_index_inclusive, const size_t max_index_exclusive)
                 duration,
                 duration / loop_count
             );
+            fflush(stdout);
         }   
     }
 
@@ -437,6 +438,7 @@ void auto_determine_dynamics_(utils::SimulationParameters* params)
             printf("\tRunning standard dynamics, faster by factor of %.01f\n", gillespie_time / standard_time);   
             result_int = 0;
         }
+        fflush(stdout);
     }
 
     MPI_Bcast(&result_int, 1, MPI_INT, 0, MPI_COMM_WORLD);
