@@ -1,5 +1,8 @@
 #include <chrono>
+#include <filesystem>
+#include <regex>
 #include <mpi.h>
+
 
 #include "utils.h"
 #include "spin.h"
@@ -8,6 +11,9 @@
 #include "emax.h"
 
 #include "main_utils.h"
+
+
+namespace fs = std::filesystem;
 
 
 #define TAG_DEFAULT 0
@@ -441,6 +447,53 @@ void auto_determine_dynamics_(utils::SimulationParameters* params)
     else{MPI_Abort(MPI_COMM_WORLD, 1);}
 }
 
+
+size_t get_index(const std::string input) {
+    // std::string input = "Example_45-3";
+    std::string output = std::regex_replace(
+        input,
+        std::regex("[^0-9]*([0-9]+).*"),
+        std::string("$1")
+        );
+    return stoi(output);
+}
+
+
+/**
+ * @brief Gets the starting index of the simulation. Effective the
+ * checkpoint-restart component of the code
+ * @details [long description]
+ * @return The start index
+ */
+size_t get_start_index()
+{
+    std::vector<std::string> all_current_results;
+    try
+    {
+        for (const auto& entry : fs::directory_iterator(DATA_PATH))
+        {
+            if (entry.path().extension() == ".json")
+            {
+                all_current_results.push_back(entry.path().string());
+            }
+        }
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << "Error while parsing json results: " << e.what() << std::endl;
+    }
+
+    if (all_current_results.size() == 0){return 0;}
+    
+    std::sort(all_current_results.begin(), all_current_results.end());
+
+    // Get the last entry here, which will correspond to the start index,
+    // since we don't want to risk that a json file was partially written
+    const size_t N = all_current_results.size();
+    return get_index(all_current_results[N - 1]) + 1;
+}
+
+
 void execute_process_pool(const utils::SimulationParameters params)
 {
     int mpi_rank, mpi_world_size;
@@ -451,8 +504,11 @@ void execute_process_pool(const utils::SimulationParameters params)
     if (mpi_rank == MASTER)
     {
         // TODO add some logic for checkpoint-restart here
+        const size_t start_index = get_start_index();
+        const int jobs_remaining = params.n_tracers - start_index;
+        printf("Total jobs remaining is %i\n", jobs_remaining);
         printf("Running %i ranks: %i compute, 1 controller\n", mpi_world_size, mpi_world_size-1);
-        const json diagnostics = master(0, params.n_tracers);
+        const json diagnostics = master(start_index, params.n_tracers);
         utils::json_to_file(diagnostics, DIAGNOSTICS_PATH);
         printf("Diagnostics saved to %s\n", DIAGNOSTICS_PATH);
     }
