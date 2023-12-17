@@ -228,6 +228,123 @@ json get_ridge_statistics(const std::vector<json> results, const std::string key
 }
 
 
+json get_aging_config_statistics(const std::vector<json> results)
+{
+
+    auto t_start = std::chrono::high_resolution_clock::now();
+
+    json j;
+    const size_t N = results.size();
+    const double sqrt_N = sqrt(N);
+    const size_t M = results[0]["aging_config_pi1"].size();
+
+    std::vector<std::vector<std::string>> aging_pi1, aging_pi2;
+    for (auto &result : results)
+    {
+        aging_pi1.push_back(result["aging_config_pi1"]);
+        aging_pi2.push_back(result["aging_config_pi2"]);
+    }
+
+    std::vector<double> tmp;
+    std::vector<double> means, medians, standard_deviations, standard_errors;
+    for (size_t jj=0; jj<M; jj++)
+    {
+        tmp.clear();
+        for (size_t ii=0; ii<N; ii++)
+        {
+            tmp.push_back(aging_pi1[ii][jj] == aging_pi2[ii][jj] ? 1.0 : 0.0);
+        }
+        const double mean = utils::mean_vector(tmp);
+        const double median = utils::median_vector(tmp);
+        const double variance = utils::variance_vector(tmp);
+        means.push_back(mean);
+        medians.push_back(median);
+        const double standard_deviation = sqrt(variance);
+        const double standard_error = standard_deviation / sqrt_N;
+        standard_deviations.push_back(standard_deviation);
+        standard_errors.push_back(standard_error);
+    }
+
+    j["mean"] = means;
+    j["median"] = medians;
+    j["standard_deviation"] = standard_deviations;
+    j["standard_error"] = standard_errors;
+
+    const double dt = utils::get_time_delta(t_start);
+
+    printf("Aging config statistics : done in %.02f s\n", dt);
+
+    return j;
+}
+
+
+
+json get_aging_basin_statistics(const std::vector<json> results)
+{
+
+    auto t_start = std::chrono::high_resolution_clock::now();
+
+    json j;
+    const size_t N = results.size();
+    const size_t M = results[0]["aging_basin_E_index_1"].size();
+
+    std::vector<std::vector<int>> aging_pi1, aging_pi2;
+    std::vector<std::vector<int>> in_basin;
+    for (auto &result : results)
+    {
+        aging_pi1.push_back(result["aging_basin_E_index_1"]);
+        aging_pi2.push_back(result["aging_basin_E_index_2"]);
+        in_basin.push_back(result["aging_basin_E_prev_state_in_basin_1"]);
+    }
+
+    std::vector<double> tmp;
+    std::vector<double> means, medians, standard_deviations, standard_errors;
+    for (size_t jj=0; jj<M; jj++)
+    {
+        tmp.clear();
+        for (size_t ii=0; ii<N; ii++)
+        {
+            if (in_basin[ii][jj] == 1)
+            {
+                tmp.push_back(aging_pi1[ii][jj] == aging_pi2[ii][jj] ? 1.0 : 0.0);
+            }
+            
+        }
+
+        if (tmp.size() == 0)
+        {
+            means.push_back(0.0);
+            medians.push_back(0.0);
+            standard_deviations.push_back(0.0);
+            standard_errors.push_back(0.0);
+        }
+        else
+        {
+            const double mean = utils::mean_vector(tmp);
+            const double median = utils::median_vector(tmp);
+            const double variance = utils::variance_vector(tmp);
+            means.push_back(mean);
+            medians.push_back(median);
+            const double standard_deviation = sqrt(variance);
+            const double standard_error = standard_deviation / sqrt(tmp.size());
+            standard_deviations.push_back(standard_deviation);
+            standard_errors.push_back(standard_error);
+        }
+    }
+
+    j["mean"] = means;
+    j["median"] = medians;
+    j["standard_deviation"] = standard_deviations;
+    j["standard_error"] = standard_errors;
+
+    const double dt = utils::get_time_delta(t_start);
+
+    printf("Aging basin statistics : done in %.02f s\n", dt);
+
+    return j;
+}    
+
+
 
 json load_grids()
 {
@@ -249,6 +366,13 @@ json load_grids()
 }
 
 
+std::vector<double> get_psi_grid(const size_t N)
+{
+    const double e = 2.71828182845904523536;
+    std::vector<double> v;
+    for (size_t ii=0; ii<N; ii++){v.push_back(pow(e, ii));}
+    return v;
+}
 
 
 namespace processing_utils
@@ -270,12 +394,19 @@ void postprocess()
     json j;
     j["energy"] = get_standard_statistics(results, "energy");
     j["acceptance_rate"] = get_standard_statistics(results, "acceptance_rate");
-    // Problem here below
     j["cache_size"] = get_standard_statistics(results, "cache_size");
     j["walltime_per_waitingtime"] = get_standard_statistics(results, "walltime_per_waitingtime");
     j["emax"] = get_standard_statistics(results, "emax");
     j["ridge_E"] = get_ridge_statistics(results, "ridge_E");
+
+    j["psi_config"] = get_standard_statistics(results, "psi_config");
+    j["psi_basin_E"] = get_standard_statistics(results, "psi_basin_E");
+
+    j["aging_config"] = get_aging_config_statistics(results);
+    j["aging_basin"] = get_aging_basin_statistics(results);
+
     j["grids"] = load_grids();
+    j["grids"]["psi"] = get_psi_grid(j["psi_config"]["mean"].size());
     
 
     utils::json_to_file(j, RESULTS_PATH);

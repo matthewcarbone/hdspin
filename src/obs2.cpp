@@ -13,7 +13,7 @@ size_t _get_max_counter(const utils::SimulationParameters params)
     // let N be the log base 10 total timesteps
     // log2(10^N) = N log2(10)
     // Give the max counter a lot of space
-    return  params.log10_N_timesteps * log2(10.0) + 10;
+    return  params.log10_N_timesteps * log(10.0) + 10;
 }
 
 
