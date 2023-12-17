@@ -81,13 +81,13 @@ protected:
 
     // Base objects we need
     const utils::SimulationParameters params;
-    std::vector<long long> grid;
-    int grid_length;
+    std::vector<double> grid;
+    size_t grid_length;
     const SpinSystem* spin_system_ptr;
 
     // The pointer to the last-updated point on the grid
     // Note that this is not actually a pointer =]
-    unsigned int pointer = 0;
+    size_t pointer = 0;
 
     // Define the ridge energy objects
     RidgeEnergyObject ridge_E_object;

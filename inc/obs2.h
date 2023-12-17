@@ -17,14 +17,14 @@ protected:
     
     // The (roughly) maximum timestep on the counter. It's padded at the end,
     // and is taken care of during post processing.
-    long long _max_counter;
+    size_t _max_counter;
     std::vector<long long> _counter;
 
     // Keep track internally of the waiting time for both the standard
     // trajectory and the inherent structure
     double _waiting_time = 0.0;
 
-    int _out_of_counter = 0;
+    size_t _out_of_counter = 0;
 
 public:
 
@@ -54,7 +54,7 @@ protected:
     const utils::FileNames fnames;
     const utils::SimulationParameters params;
     const SpinSystem* spin_system_ptr;
-    long long _max_counter;
+    size_t _max_counter;
     PsiBasinData data_E, data_S;
 
     void _init_E_data();
@@ -79,9 +79,9 @@ protected:
     const utils::SimulationParameters params;
 
     // The pi 1 and 2 grids
-    std::vector<long long> grid_pi1;
-    std::vector<long long> grid_pi2;
-    int length;
+    std::vector<double> grid_pi1;
+    std::vector<double> grid_pi2;
+    size_t length;
 
 public:
     Aging(const utils::SimulationParameters params, const SpinSystem& spin_system);
@@ -97,8 +97,8 @@ protected:
     std::vector<std::string> results2;
 
     // Define the pointers
-    int pointer1 = 0;
-    int pointer2 = 0;
+    size_t pointer1 = 0;
+    size_t pointer2 = 0;
 
     // Helpers
     void _help_step_1(const double simulation_clock);
@@ -114,13 +114,13 @@ public:
 struct AgingBasinData
 {
     // Define the pointers
-    int pointer1 = 0;
-    int pointer2 = 0;
+    size_t pointer1 = 0;
+    size_t pointer2 = 0;
 
     std::vector<long long> vec_basin_index_1;
     std::vector<long long> vec_basin_index_2;
-    std::vector<int> vec_prev_state_in_basin_1;
-    std::vector<int> vec_prev_state_in_basin_2;
+    std::vector<size_t> vec_prev_state_in_basin_1;
+    std::vector<size_t> vec_prev_state_in_basin_2;
 
     double threshold;
     bool threshold_valid = true;

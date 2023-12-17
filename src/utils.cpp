@@ -227,73 +227,66 @@ void cleanup_directories()
     system(command.c_str());
 }
 
-
-void make_energy_grid_logspace(const int log10_timesteps, const int n_gridpoints)
+void make_energy_grid_logspace(const size_t log10_timesteps, const size_t n_gridpoints)
 {
-    std::vector <long long> v;
-    v.push_back(0.0);
+    std::vector <double> v;
     const double delta = ((double) log10_timesteps) / ((double) n_gridpoints);
-    for (int ii=0; ii<n_gridpoints + 1; ii++)
+    for (size_t ii=0; ii<n_gridpoints + 1; ii++)
     {
-        int val = int(pow(10, ((double) ii * delta)));
+        const double val = pow(10.0, ((double) ii * delta));
         v.push_back(val);
     }
-
-    v.erase(unique(v.begin(), v.end()), v.end());
-
     FILE* outfile = fopen(ENERGY_GRID_PATH, "w");
-    for (int ii=0; ii<v.size(); ii++)
+    for (size_t ii=0; ii<v.size(); ii++)
     {
-        fprintf(outfile, "%lli\n", v[ii]);
+        fprintf(outfile, "%e\n", v[ii]);
     }
     fclose(outfile);
 }
 
-void make_pi_grids(const int log10_timesteps, const double dw, const int n_gridpoints)
+void make_pi_grids(const size_t log10_timesteps, const double dw, const size_t n_gridpoints)
 {
-    std::vector <long long> v1;
-    std::vector <long long> v2;
-    const int nMC = int(pow(10, log10_timesteps));
-    const int tw_max = int(nMC / (dw + 1.0));
-    const double delta = ((double) log10(tw_max)) / ((double) n_gridpoints);
+    std::vector <float> v1;
+    std::vector <float> v2;
+    const double nMC = pow(10, log10_timesteps);
+    const double tw_max = nMC / (dw + 1.0);
+    const double delta = log10(tw_max) / ((double) n_gridpoints);
 
-    int _v1;
-    for (int ii=0; ii<n_gridpoints + 1; ii++)
+    for (size_t ii=0; ii<n_gridpoints + 1; ii++)
     {
-        _v1 = int(pow(10, ((double) ii * delta)));
+        const double _v1 = pow(10, ((double) ii * delta));
         v1.push_back(_v1);
     }
-    v1.erase(unique(v1.begin(), v1.end()), v1.end());
 
-    int _v2;
-    for (int ii=0; ii<v1.size(); ii++)
+    const double dw_plus_1 = dw + 1.0;
+    for (size_t ii=0; ii<v1.size(); ii++)
     {
-        _v2 = int(v1[ii] * (dw + 1.0));
+        const double _v2 = v1[ii] * dw_plus_1;
         v2.push_back(_v2);
     }
 
     FILE* outfile1 = fopen(PI1_GRID_PATH, "w");
     FILE* outfile2 = fopen(PI2_GRID_PATH, "w");
 
-    for (int ii=0; ii<v1.size(); ii++)
+    for (size_t ii=0; ii<v1.size(); ii++)
     {
-        fprintf(outfile1, "%lli\n", v1[ii]);
-        fprintf(outfile2, "%lli\n", v2[ii]);
+        fprintf(outfile1, "%e\n", v1[ii]);
+        fprintf(outfile2, "%e\n", v2[ii]);
     }
 
     fclose(outfile1);
     fclose(outfile2);
 }
 
-void load_long_long_grid_(std::vector<long long> &grid, const std::string loc)
+void load_grid_(std::vector<double> &grid, const std::string path)
 {
-    std::ifstream myfile (loc);
+    std::ifstream myfile (path);
     std::string line;
     if (myfile.is_open())
     {
         while (getline(myfile, line))
         {
-            grid.push_back(stoll(line));
+            grid.push_back(stof(line));
         }
         myfile.close();
     }

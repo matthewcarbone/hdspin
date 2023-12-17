@@ -13,20 +13,21 @@ size_t _get_max_counter(const utils::SimulationParameters params)
     // let N be the log base 10 total timesteps
     // log2(10^N) = N log2(10)
     // Give the max counter a lot of space
-    return  params.log10_N_timesteps * log(10.0) + 10;
+    return params.log10_N_timesteps * log(10.0) + 10;
 }
 
 
 /**
  * @brief Fills a long long vector with zeros up to _max_counter
  */
+
 void _fill_counter(const size_t _max_counter, std::vector<long long> &counter)
 {
     for (size_t ii=0; ii<_max_counter; ii++){counter.push_back(0);}
 }
 
 
-int _get_key(const double local_waiting_time)
+size_t _get_key(const double local_waiting_time)
 {
     // If the waiting time is <= 1, round it to 1.
     if (local_waiting_time <= 1.0){return 0;} // 2^0
@@ -239,8 +240,8 @@ json PsiBasin::as_json() const
 Aging::Aging(const utils::SimulationParameters params, const SpinSystem& spin_system) : params(params)
 {
     spin_system_ptr = &spin_system;
-    utils::load_long_long_grid_(grid_pi1, PI1_GRID_PATH);
-    utils::load_long_long_grid_(grid_pi2, PI2_GRID_PATH);
+    utils::load_grid_(grid_pi1, PI1_GRID_PATH);
+    utils::load_grid_(grid_pi2, PI2_GRID_PATH);
     length = grid_pi1.size();
     assert(length == grid_pi2.size());
 }

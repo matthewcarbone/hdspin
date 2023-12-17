@@ -225,7 +225,7 @@ void cleanup_directories();
  * @param log10_timesteps [description]
  * @param n_gridpoints [description]
  */
-void make_energy_grid_logspace(const int log10_timesteps, const int n_gridpoints);
+void make_energy_grid_logspace(const size_t log10_timesteps, const size_t n_gridpoints);
 
 /**
  * @brief [brief description]
@@ -235,7 +235,7 @@ void make_energy_grid_logspace(const int log10_timesteps, const int n_gridpoints
  * @param dw [description]
  * @param n_gridpoints [description]
  */
-void make_pi_grids(const int log10_timesteps, const double dw, const int n_gridpoints);
+void make_pi_grids(const size_t log10_timesteps, const double dw, const size_t n_gridpoints);
 
 /**
  * @brief [brief description]
@@ -245,7 +245,7 @@ void make_pi_grids(const int log10_timesteps, const double dw, const int n_gridp
  * @param loc [description]
  * @param grid_size [description]
  */
-void load_long_long_grid_(std::vector<long long> &grid, const std::string loc);
+void load_grid_(std::vector<double> &grid, const std::string path);
 
 /**
  * @brief [brief description]

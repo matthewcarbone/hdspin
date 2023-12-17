@@ -36,7 +36,7 @@ OnePointObservables::OnePointObservables(const utils::SimulationParameters param
 
     spin_system_ptr = &spin_system;
 
-    utils::load_long_long_grid_(grid, ENERGY_GRID_PATH);
+    utils::load_grid_(grid, ENERGY_GRID_PATH);
     grid_length = grid.size();
 
     // Cache capacity observable

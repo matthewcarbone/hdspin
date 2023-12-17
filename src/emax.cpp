@@ -15,8 +15,8 @@ EMaxt2::EMaxt2(const utils::SimulationParameters params, const SpinSystem& spin_
 
     // We need the pi2 grid since this goes from 0 to the length of the
     // simulation
-    std::vector<long long> grid2;
-    utils::load_long_long_grid_(grid2, PI2_GRID_PATH);
+    std::vector<double> grid2;
+    utils::load_grid_(grid2, PI2_GRID_PATH);
     length = grid2.size();
 
     // Grid 1 is grid2 // 2
@@ -24,7 +24,7 @@ EMaxt2::EMaxt2(const utils::SimulationParameters params, const SpinSystem& spin_
     {
         EMaxt2Data d;
         d.tmax = grid2[ii];
-        d.tmin = d.tmax / 2;
+        d.tmin = d.tmax / 2.0;
         trackers[ii] = d;
     }
 }

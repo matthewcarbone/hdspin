@@ -354,16 +354,16 @@ json load_grids()
 {
     json j;
 
-    std::vector<long long> grid_energy;
-    utils::load_long_long_grid_(grid_energy, ENERGY_GRID_PATH);
+    std::vector<double> grid_energy;
+    utils::load_grid_(grid_energy, ENERGY_GRID_PATH);
     j["energy"] = grid_energy;
 
-    std::vector<long long> grid_pi1;
-    utils::load_long_long_grid_(grid_pi1, PI1_GRID_PATH);
+    std::vector<double> grid_pi1;
+    utils::load_grid_(grid_pi1, PI1_GRID_PATH);
     j["pi1"] = grid_pi1;
 
-    std::vector<long long> grid_pi2;
-    utils::load_long_long_grid_(grid_pi2, PI2_GRID_PATH);
+    std::vector<double> grid_pi2;
+    utils::load_grid_(grid_pi2, PI2_GRID_PATH);
     j["pi2"] = grid_pi2;
 
     return j;
