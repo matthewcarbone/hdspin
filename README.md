@@ -59,13 +59,8 @@ which will run the exponential random energy model with 20 spins with inverse te
 
 # 📘 Post-processing
 
-Once simulations are computed, run the post-processing script from the same working directory to finalize the results into the `final` directory
+Results are post-processed automatically to `results.json` at the end of the simulation.
 
-```bash
-python3 /path/to/postprocess.py
-```
-
-Post-processing creates averages and spreads of all observable quantities, such as the energy.
 
 # 🔨 License
 
