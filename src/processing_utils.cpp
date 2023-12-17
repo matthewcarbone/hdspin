@@ -279,22 +279,26 @@ json get_aging_config_statistics(const std::vector<json> results)
 
 
 
-json get_aging_basin_statistics(const std::vector<json> results)
+json get_aging_basin_statistics(const std::vector<json> results, const std::string key)
 {
-
+    // key == aging_basin_E or aging_basin_S
     auto t_start = std::chrono::high_resolution_clock::now();
+
+    const std::string key1 = key + "_index_1";
+    const std::string key2 = key + "_index_2";
+    const std::string key_in = key + "_prev_state_in_basin_1";
 
     json j;
     const size_t N = results.size();
-    const size_t M = results[0]["aging_basin_E_index_1"].size();
+    const size_t M = results[0][key1].size();
 
     std::vector<std::vector<int>> aging_pi1, aging_pi2;
     std::vector<std::vector<int>> in_basin;
     for (auto &result : results)
     {
-        aging_pi1.push_back(result["aging_basin_E_index_1"]);
-        aging_pi2.push_back(result["aging_basin_E_index_2"]);
-        in_basin.push_back(result["aging_basin_E_prev_state_in_basin_1"]);
+        aging_pi1.push_back(result[key1]);
+        aging_pi2.push_back(result[key2]);
+        in_basin.push_back(result[key_in]);
     }
 
     std::vector<double> tmp;
@@ -387,6 +391,9 @@ void postprocess()
     MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
     if (mpi_rank != MASTER){return;}
 
+    const json config = read_json(CONFIG_PATH);
+    const bool valid_entropic_attractor = config["valid_entropic_attractor"];
+
     printf("Postprocessing results\n");
 
     const std::vector<json> results = read_all_results();
@@ -398,12 +405,24 @@ void postprocess()
     j["walltime_per_waitingtime"] = get_standard_statistics(results, "walltime_per_waitingtime");
     j["emax"] = get_standard_statistics(results, "emax");
     j["ridge_E"] = get_ridge_statistics(results, "ridge_E");
+    if (valid_entropic_attractor)
+    {
+        j["ridge_S"] = get_ridge_statistics(results, "ridge_S");
+    }
 
     j["psi_config"] = get_standard_statistics(results, "psi_config");
     j["psi_basin_E"] = get_standard_statistics(results, "psi_basin_E");
+    if (valid_entropic_attractor)
+    {
+        j["psi_basin_S"] = get_standard_statistics(results, "psi_basin_S");
+    }
 
     j["aging_config"] = get_aging_config_statistics(results);
-    j["aging_basin"] = get_aging_basin_statistics(results);
+    j["aging_basin_E"] = get_aging_basin_statistics(results, "aging_basin_E");
+    if (valid_entropic_attractor)
+    {
+        j["aging_basin_S"] = get_aging_basin_statistics(results, "aging_basin_S");
+    }
 
     j["grids"] = load_grids();
     j["grids"]["psi"] = get_psi_grid(j["psi_config"]["mean"].size());
