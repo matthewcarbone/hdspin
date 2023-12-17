@@ -46,17 +46,17 @@ jobs:
         run: |
           mpiexec -n 5 ./build/hdspin -t 6 -N ${{ matrix.precision }} -l EREM -b 2.4 --seed=123
 
-      - name: set up Python 3.9
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.9
+      # - name: set up Python 3.9
+      #   uses: actions/setup-python@v2
+      #   with:
+      #     python-version: 3.9
 
-      - name: install python dependencies
-        run: |
-          pip install numpy
-          pip install scipy
+      # - name: install python dependencies
+      #   run: |
+      #     pip install numpy
+      #     pip install scipy
 
-      - name: run postprocess
-        run: |
-          python3 postprocess.py
+      # - name: run postprocess
+      #   run: |
+      #     python3 postprocess.py
 
