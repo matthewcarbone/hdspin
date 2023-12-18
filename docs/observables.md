@@ -1,4 +1,4 @@
-# Observables
+# What does hdspin calculate?
 
 We outline the various observables that hdspin calculates.
 

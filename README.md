@@ -21,55 +21,14 @@ _If you use this code, please consider citing our [work](https://doi.org/10.1103
 
 ⚡ [MPI load-balancer](https://github.com/matthewcarbone/hdspin/blob/master/src/main_utils.cpp), allowing for massively parallel simulations on high-performance computing systems. The rare time-consuming job no longer holds up other simulations.
 
-# ⭐️ Documentation
+# 📕 Documentation
 
-- Installation instructions TK
-- [Physical observables hdspin calculates](https://github.com/matthewcarbone/hdspin/blob/master/docs/observables.md)
-
-# 📕 Installation instructions
-
-hdspin requires [MPI](http://www.mpi-forum.org), and is tested using [MPICH](https://www.mpich.org) and [Open MPI](https://www.open-mpi.org) on both Ubuntu latest and MacOS. Other than that, every external dependency is self-contained explicitly under the terms of their licences. Installing hdspin should be straightforward using CMake:
-
-```bash
-git clone git@github.com:matthewcarbone/hdspin.git
-cd hdspin
-cmake -S . -B build -DPRECISON=256 -DBUILD_TESTS=ON -DSMOKE=ON
-cd build
-make
-```
-
-At compile time, there are three options for the user to set:
-* `-DPRECISON=<INT>` is the maximum number of spins you can use during the simulation. Should be a power of 2 (as recommended by the Arbitrary Precision library). Default is `256`. Note that this is the _maximum_ value you can use for `N_spins` in the simulation.
-* `-DBUILD_TESTS={ON, OFF}` is a boolean flag for telling CMake whether or not to compile the testing suite. Default is `OFF`.
-* `-DSMOKE={ON, OFF}` controls whether or not to use the smoke testing or not. Smoke tests basically run tests using slightly less statistics, and are generally faster. Default is `ON`.
-
-# 📗 Running instructions
-
-After running `make` in the previous steps, an executable `build/hdspin` will be created. Running hdspin is simple. hdspin uses a command line parser called [CLI11](https://github.com/CLIUtils/CLI11). Use `hdspin -h` to see a list of options. A `config.json` is always saved to the working directory with all of the command line inputs. All outputs are saved in the working directory as well.
-
-Four parameters are absolutely required:
-* `log10_N_timesteps=<INT>`: the log10 number of timesteps to run 
-* `N_spins=<INT>`: the number of spins to use in the simulation. Must be `<=PRECISON`.
-* `beta=<FLOAT>`: inverse temperature (`beta_critical` is set automatically based on the `landscape`).
-* `landscape={"EREM", "GREM"}`: the type of simulation to run (either exponential or Gaussian REM).
-
-One example of a job might be
-
-```bash
-mpiexec -n 5 path/to/hdspin -N 20 -l EREM -b 2.5 -t 6 -n 100 --seed=123
-```
-
-which will run the exponential random energy model with 20 spins with inverse temperature `beta=2.5`, for `1e6` timesteps and 100 tracers (with seed 123 for reproducibility). The job will be split amongst 4 compute tasks with a single controller task (for 5 total).
-
-
-# 📘 Post-processing
-
-Results are post-processed automatically to `results.json` at the end of the simulation.
+Please see our documentation for instructions on how to [install](https://github.com/matthewcarbone/hdspin/blob/master/docs/install.md), [run](https://github.com/matthewcarbone/hdspin/blob/master/docs/run.md) and [understand the results](https://github.com/matthewcarbone/hdspin/blob/master/docs/observables.md) of hdspin!
 
 
 # 🔨 License
 
-The hdspin software is released under a 3-clause BSD license.
+The hdspin software is released under a [3-clause BSD license](https://github.com/matthewcarbone/hdspin/blob/master/LICENSE).
 
 
 # 🙏 Software acknowledgement
