@@ -21,6 +21,10 @@ _If you use this code, please consider citing our [work](https://doi.org/10.1103
 
 ⚡ [MPI load-balancer](https://github.com/matthewcarbone/hdspin/blob/master/src/main_utils.cpp), allowing for massively parallel simulations on high-performance computing systems. The rare time-consuming job no longer holds up other simulations.
 
+# ⭐️ Documentation
+
+TK
+
 # 📕 Installation instructions
 
 hdspin requires [MPI](http://www.mpi-forum.org), and is tested using [MPICH](https://www.mpich.org) and [Open MPI](https://www.open-mpi.org) on both Ubuntu latest and MacOS. Other than that, every external dependency is self-contained explicitly under the terms of their licences. Installing hdspin should be straightforward using CMake:
