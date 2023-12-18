@@ -23,7 +23,8 @@ _If you use this code, please consider citing our [work](https://doi.org/10.1103
 
 # ⭐️ Documentation
 
-TK
+- Installation instructions TK
+- [Physical observables hdspin calculates](https://github.com/matthewcarbone/hdspin/blob/master/docs/observables.md)
 
 # 📕 Installation instructions
 
