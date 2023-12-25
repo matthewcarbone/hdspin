@@ -270,8 +270,28 @@ void worker(const utils::SimulationParameters params)
     
 }
 
-namespace main_utils  // "Public" API
+namespace main_utils
 {
+
+
+void simulation_parameters_from_disk_(utils::SimulationParameters* p)
+{
+    const json j = utils::read_json("config.json");
+    const utils::SimulationParameters tmp = utils::json_to_simulation_parameters(j);
+    *p = tmp;
+
+    // Safety check in case someone recompiles hdspin with a different
+    // precision and tries to restart from checkpoint
+    assert(p->N_spins <= PRECISON);
+
+    int mpi_rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
+    if (mpi_rank == MASTER)
+    {
+        printf("Successfully reloaded config from config.json\n");    
+    }
+}
+
 
 void update_parameters_(utils::SimulationParameters* p)
 {
@@ -505,7 +525,7 @@ void execute_process_pool(const utils::SimulationParameters params)
     // Execute the process pool
     if (mpi_rank == MASTER)
     {
-        // TODO add some logic for checkpoint-restart here
+        // Checkpoint-restart logic here
         const size_t start_index = get_start_index();
         const int jobs_remaining = params.n_tracers - start_index;
         printf("Total jobs remaining is %i\n", jobs_remaining);
@@ -521,4 +541,4 @@ void execute_process_pool(const utils::SimulationParameters params)
     MPI_Barrier(MPI_COMM_WORLD);
 }
 
-}
+}  // namespace main_utils

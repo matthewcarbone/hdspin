@@ -11,13 +11,6 @@ namespace fs = std::filesystem;
 #define MASTER 0
 
 
-json read_json(const std::string fname)
-{
-    std::ifstream f(fname);
-    return json::parse(f);
-}
-
-
 std::vector<json> read_all_results()
 {
     std::vector<json> all_json;
@@ -27,7 +20,7 @@ std::vector<json> read_all_results()
         {
             if (entry.path().extension() == ".json")
             {
-                all_json.push_back(read_json(entry.path().string()));
+                all_json.push_back(utils::read_json(entry.path().string()));
             }
         }
     }
@@ -391,7 +384,7 @@ void postprocess()
     MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
     if (mpi_rank != MASTER){return;}
 
-    const json config = read_json(CONFIG_PATH);
+    const json config = utils::read_json(CONFIG_PATH);
     const bool valid_entropic_attractor = config["valid_entropic_attractor"];
 
     printf("Postprocessing results\n");

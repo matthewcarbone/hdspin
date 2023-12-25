@@ -8,6 +8,12 @@
 namespace utils
 {
 
+json read_json(const std::string fname)
+{
+    std::ifstream f(fname);
+    return json::parse(f);
+}
+
 double mean_vector(const std::vector<double> v)
 {
     const double sum = std::accumulate(v.begin(), v.end(), 0.0);
@@ -172,6 +178,30 @@ json simulation_parameters_to_json(const utils::SimulationParameters p)
     };
 
     return j;
+}
+
+
+utils::SimulationParameters json_to_simulation_parameters(const json j)
+{
+    utils::SimulationParameters p;
+    p.log10_N_timesteps = j["log10_N_timesteps"];
+    p.N_timesteps = j["N_timesteps"];
+    p.N_spins = j["N_spins"];
+    p.beta = j["beta"];
+    p.beta_critical = j["beta_critical"];
+    p.landscape = j["landscape"];
+    p.dynamics = j["dynamics"];
+    p.memory = j["memory"];
+    p.energetic_threshold = j["energetic_threshold"];
+    p.entropic_attractor = j["entropic_attractor"];
+    p.valid_entropic_attractor = j["valid_entropic_attractor"];
+    p.grid_size = j["grid_size"];
+    p.dw = j["dw"];
+    p.n_tracers = j["n_tracers"];
+    p.use_manual_seed = j["use_manual_seed"];
+    p.seed = j["seed"];
+    p.calculate_inherent_structure_observables = j["calculate_inherent_structure_observables"];
+    return p;
 }
 
 void json_to_file(const json jrep, const std::string& filename)

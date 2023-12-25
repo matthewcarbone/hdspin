@@ -48,6 +48,8 @@ using json = nlohmann::json;
 namespace utils
 {
 
+json read_json(const std::string fname);
+
 /**
 * @brief Computes the average of a vector of doubles.
 */
@@ -175,7 +177,7 @@ struct SimulationParameters
     double energetic_threshold;
     double entropic_attractor;
     bool use_manual_seed = false;
-    // bool valid_energetic_threshold = true;
+
     bool valid_entropic_attractor = true;
     int grid_size = 100;
     double dw = 0.5;
@@ -200,6 +202,7 @@ struct SimulationStatistics
 void print_json(const json jrep);
 
 json simulation_parameters_to_json(const utils::SimulationParameters p);
+utils::SimulationParameters json_to_simulation_parameters(const json j);
 
 void json_to_file(const json jrep, const std::string& filename);
 void json_to_file_no_format(const json jrep, const std::string& filename);

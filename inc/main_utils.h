@@ -18,6 +18,15 @@ namespace main_utils
 
 
 /**
+ * @brief [brief description]
+ * @details [long description]
+ * 
+ * @param p [description]
+ */
+void simulation_parameters_from_disk_(utils::SimulationParameters* p);
+
+
+/**
  * @brief Completes the CLI-provided parameters
  * @details The user has full control over almost every part of the simulation,
  * but can optionally not provide explicit arguments for all of them. Additionally,
