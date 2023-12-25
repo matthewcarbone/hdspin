@@ -533,12 +533,14 @@ void execute_process_pool(const utils::SimulationParameters params)
     {
         // TODO add some logic for checkpoint-restart here
         const std::vector<std::string> completed_json_filenames = get_completed_json_filenames();
+        size_t start_index = 0;
         const size_t total_jobs_completed = completed_json_filenames.size();
-
-        // The start index will always be one greater than the last job
-        // finished, even if not every rank completed all its jobs
-        const size_t start_index = get_index(completed_json_filenames[total_jobs_completed - 1]) + 1;
-
+        if (total_jobs_completed > 0)
+        {
+            // The start index will always be one greater than the last job
+            // finished, even if not every rank completed all its jobs
+            start_index = get_index(completed_json_filenames[total_jobs_completed - 1]) + 1;
+        }
         const int jobs_remaining = params.n_tracers - total_jobs_completed;
         printf("Total jobs remaining is %i\n", jobs_remaining);
         printf("Running %i ranks: %i compute, 1 controller\n", mpi_world_size, mpi_world_size-1);
