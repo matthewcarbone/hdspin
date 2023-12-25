@@ -481,38 +481,44 @@ size_t get_index(const std::string input) {
 }
 
 
+
 /**
  * @brief Gets the starting index of the simulation. Effective the
  * checkpoint-restart component of the code
  * @details [long description]
  * @return The start index
  */
-size_t get_start_index()
+std::vector<std::string> get_completed_json_filenames()
 {
     std::vector<std::string> all_current_results;
-    try
+    for (const auto& entry : fs::directory_iterator(DATA_PATH))
     {
-        for (const auto& entry : fs::directory_iterator(DATA_PATH))
-        {
-            if (entry.path().extension() == ".json")
-            {
-                all_current_results.push_back(entry.path().string());
-            }
+        if (entry.path().extension() != ".json"){continue;}
+        const std::string path = entry.path().string();
+
+        // Check that the json file is parsable/complete
+        try {
+            utils::read_json(path);
+        } catch (const std::exception& e) {
+            printf("Error: fname=%s at %s", entry.path().c_str(), e.what());
+            continue;
         }
-    }
-    catch (const std::exception& e)
-    {
-        std::cerr << "Error while parsing json results: " << e.what() << std::endl;
+
+        all_current_results.push_back(path);
     }
 
-    if (all_current_results.size() == 0){return 0;}
-    
     std::sort(all_current_results.begin(), all_current_results.end());
 
-    // Get the last entry here, which will correspond to the start index,
-    // since we don't want to risk that a json file was partially written
-    const size_t N = all_current_results.size();
-    return get_index(all_current_results[N - 1]) + 1;
+    return all_current_results;
+    
+    // if (all_current_results.size() == 0){return 0;}
+    
+    // 
+
+    // // Get the last entry here, which will correspond to the start index,
+    // // since we don't want to risk that a json file was partially written
+    // const size_t N = all_current_results.size();
+    // return get_index(all_current_results[N - 1]) + 1;
 }
 
 
@@ -525,12 +531,18 @@ void execute_process_pool(const utils::SimulationParameters params)
     // Execute the process pool
     if (mpi_rank == MASTER)
     {
-        // Checkpoint-restart logic here
-        const size_t start_index = get_start_index();
-        const int jobs_remaining = params.n_tracers - start_index;
+        // TODO add some logic for checkpoint-restart here
+        const std::vector<std::string> completed_json_filenames = get_completed_json_filenames();
+        const size_t total_jobs_completed = completed_json_filenames.size();
+
+        // The start index will always be one greater than the last job
+        // finished, even if not every rank completed all its jobs
+        const size_t start_index = get_index(completed_json_filenames[total_jobs_completed - 1]) + 1;
+
+        const int jobs_remaining = params.n_tracers - total_jobs_completed;
         printf("Total jobs remaining is %i\n", jobs_remaining);
         printf("Running %i ranks: %i compute, 1 controller\n", mpi_world_size, mpi_world_size-1);
-        const json diagnostics = master(start_index, params.n_tracers);
+        const json diagnostics = master(start_index, jobs_remaining + start_index);
         utils::json_to_file(diagnostics, DIAGNOSTICS_PATH);
         printf("Diagnostics saved to %s\n", DIAGNOSTICS_PATH);
     }
