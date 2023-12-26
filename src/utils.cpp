@@ -251,10 +251,12 @@ void make_directories()
     system(command.c_str());
 }
 
+
+// Does nothing for now
 void cleanup_directories()
 {
-    std::string command = "rm -r " + std::string(GRID_PATH);
-    system(command.c_str());
+    // std::string command = "rm -r " + std::string(GRID_PATH);
+    // system(command.c_str());
 }
 
 void make_energy_grid_logspace(const size_t log10_timesteps, const size_t n_gridpoints)

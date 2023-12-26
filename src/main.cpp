@@ -73,8 +73,6 @@ int main(int argc, char *argv[])
             "is faster, and selects that one."
         )->check(CLI::IsMember({"standard", "gillespie", "auto"}));
 
-        // YOU LEFT OFF HERE!!!!
-        // Need to change this definition in the utils files
         app.add_option(
             "-n, --n_tracers", p.n_tracers,
             "The number of simulations to run in total, defaults to 100."

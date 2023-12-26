@@ -39,6 +39,9 @@ if (${BUILD_TESTS})
 
 endif()
 
+
+# Build the core package
+
 find_package(MPI REQUIRED)
 
 if(MPI_FOUND)
@@ -83,3 +86,17 @@ else()
 endif()
 
 target_link_libraries(hdspin ${MPI_CXX_LIBRARIES})
+
+
+# Build the postprocessing executable
+# Useful for if the main job doesn't actually finish, but we want to just
+# process what we have
+
+add_executable(
+    hdspin-postprocess
+    src/main_postprocess.cpp
+    src/utils.cpp
+    src/processing_utils.cpp
+)
+
+target_link_libraries(hdspin-postprocess ${MPI_CXX_LIBRARIES})
