@@ -2,6 +2,7 @@ build/
 hdspin.sublime*
 .ipynb_checkpoints/
 *.ipynb
+!notebooks/*.ipynb
 *.o
 *.out
 results/
