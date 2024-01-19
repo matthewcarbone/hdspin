@@ -96,6 +96,14 @@ int main(int argc, char *argv[])
         auto_determine_dynamics_(&p);
         save_and_log_config(p);    
     }
+   
+    // Ensure we are running with at least 2 mpi ranks
+    int mpi_world_size;
+    MPI_Comm_size(MPI_COMM_WORLD, &mpi_world_size);
+    if (mpi_world_size < 2){
+        std::cerr << "MPI WORLD SIZE must be greater than or equal to 2" << std::endl;
+        MPI_Abort(MPI_COMM_WORLD, 1);
+    }
 
     initialize_grids_and_directories(p);
 
