@@ -20,10 +20,10 @@ Here is an example SLURM script if you're running hdspin on a high-performance c
 
 ```bash
 #!/bin/bash
-#SBATCH --account=<ACCOUNT_NAME>
-#SBATCH --partition=<PARTITION_NAME>
+#SBATCH --account=<USER_SETS_ACCOUNT_NAME>
+#SBATCH --partition=<USER_SETS_PARTITION_NAME>
 #SBATCH --nodes=1
-#SBATCH --ntasks=<CPUS_PER_NODE>
+#SBATCH --ntasks=<USER_SETS_NTASKS>
 #SBATCH --cpus-per-task=1
 #SBATCH --time=12:00:00
 #SBATCH --job-name=hdsspin
@@ -31,11 +31,12 @@ Here is an example SLURM script if you're running hdspin on a high-performance c
 module load gcc/13.2.0
 module load openmpi
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
-srun -n 48 /path/to/build/hdspin -N 64 -l EREM -b 4.000 -t 7 -n 500 -d auto --seed=123
+srun -n $SLURM_NTASKS /path/to/build/hdspin -N 64 -l EREM -b 4.000 -t 7 -n 500 -d auto --seed=123
 
 exit
 ```
 
+The above submits `<USER_SETS_NTASKS>` total tasks on one node, with one CPU allocated per task.
 
 # Post-processing
 
