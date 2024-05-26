@@ -1,4 +1,3 @@
-#include <fstream>
 #include <filesystem>
 #include <mpi.h>
 
@@ -274,24 +273,25 @@ json get_aging_config_statistics(const std::vector<json> results)
 
 json get_aging_basin_statistics(const std::vector<json> results, const std::string key)
 {
-    // key == aging_basin_E or aging_basin_S
     auto t_start = std::chrono::high_resolution_clock::now();
 
     const std::string key1 = key + "_index_1";
     const std::string key2 = key + "_index_2";
-    const std::string key_in = key + "_prev_state_in_basin_1";
+    const std::string key_in1 = key + "_prev_state_in_basin_1"; 
+    const std::string key_in2 = key + "_prev_state_in_basin_2";
 
     json j;
     const size_t N = results.size();
     const size_t M = results[0][key1].size();
 
     std::vector<std::vector<int>> aging_pi1, aging_pi2;
-    std::vector<std::vector<int>> in_basin;
+    std::vector<std::vector<int>> in_basin1, in_basin2;
     for (auto &result : results)
     {
         aging_pi1.push_back(result[key1]);
         aging_pi2.push_back(result[key2]);
-        in_basin.push_back(result[key_in]);
+        in_basin1.push_back(result[key_in1]);
+        in_basin2.push_back(result[key_in2]);
     }
 
     std::vector<double> tmp;
@@ -301,7 +301,7 @@ json get_aging_basin_statistics(const std::vector<json> results, const std::stri
         tmp.clear();
         for (size_t ii=0; ii<N; ii++)
         {
-            if (in_basin[ii][jj] == 1)
+            if ((in_basin1[ii][jj] == 1) && (in_basin2[ii][jj] == 1))
             {
                 tmp.push_back(aging_pi1[ii][jj] == aging_pi2[ii][jj] ? 1.0 : 0.0);
             }
