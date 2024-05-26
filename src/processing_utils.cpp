@@ -220,9 +220,8 @@ json get_ridge_statistics(const std::vector<json> results, const std::string key
 }
 
 
-json get_aging_config_statistics(const std::vector<json> results)
+json get_aging_config_statistics(const std::vector<json> results, const bool coarsen)
 {
-
     auto t_start = std::chrono::high_resolution_clock::now();
 
     json j;
@@ -239,12 +238,24 @@ json get_aging_config_statistics(const std::vector<json> results)
 
     std::vector<double> tmp;
     std::vector<double> means, medians, standard_deviations, standard_errors;
+    std::string c1, c2;
     for (size_t jj=0; jj<M; jj++)
     {
         tmp.clear();
         for (size_t ii=0; ii<N; ii++)
         {
-            tmp.push_back(aging_pi1[ii][jj] == aging_pi2[ii][jj] ? 1.0 : 0.0);
+            c1 = aging_pi1[ii][jj];
+            c2 = aging_pi2[ii][jj];
+
+            if (coarsen)
+            {
+                // Coarsened dynamics are what we are usually doing, which is
+                // just taking the state index, disregarding if we've left
+                // the state or not
+                c1 = c1.substr(0, c1.find("-"));
+                c2 = c2.substr(0, c2.find("-"));
+            }
+            tmp.push_back(c1 == c2 ? 1.0 : 0.0);
         }
         const double mean = utils::mean_vector(tmp);
         const double median = utils::median_vector(tmp);
@@ -264,7 +275,7 @@ json get_aging_config_statistics(const std::vector<json> results)
 
     const double dt = utils::get_time_delta(t_start);
 
-    printf("Aging config statistics : done in %.02f s\n", dt);
+    printf("Aging config (coarsen=%i) statistics : done in %.02f s\n", int(coarsen), dt);
 
     return j;
 }
@@ -410,7 +421,8 @@ void postprocess()
         j["psi_basin_S"] = get_standard_statistics(results, "psi_basin_S");
     }
 
-    j["aging_config"] = get_aging_config_statistics(results);
+    j["aging_config_coarsened"] = get_aging_config_statistics(results, true);
+    j["aging_config_uncoarsened"] = get_aging_config_statistics(results, false);
     j["aging_basin_E"] = get_aging_basin_statistics(results, "aging_basin_E");
     if (valid_entropic_attractor)
     {

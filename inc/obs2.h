@@ -88,21 +88,27 @@ public:
 };
 
 
+class AgingConfigData
+{
+public:
+    // Results holder
+    std::vector<std::string> results;
+
+    // Define the pointer
+    size_t pointer = 0;
+
+
+};
+
 class AgingConfig : public Aging
 {
 protected:
 
-    // Results
-    std::vector<std::string> results1;
-    std::vector<std::string> results2;
-
-    // Define the pointers
-    size_t pointer1 = 0;
-    size_t pointer2 = 0;
+    AgingConfigData d1, d2;
+    unsigned long long state_index = 0;
 
     // Helpers
-    void _help_step_1(const double simulation_clock);
-    void _help_step_2(const double simulation_clock);
+    void _help_step(const double simulation_clock, const size_t index);
 
 public:
     AgingConfig(const utils::SimulationParameters params, const SpinSystem& spin_system);

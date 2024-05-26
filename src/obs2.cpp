@@ -3,6 +3,7 @@
  */
 
 #include <math.h>
+/* #include <string> */
 
 #include "obs2.h"
 #include "utils.h"
@@ -247,65 +248,55 @@ Aging::Aging(const utils::SimulationParameters params, const SpinSystem& spin_sy
 }
 
 
-
-// TODO - refactor!
-
-void AgingConfig::_help_step_1(const double simulation_clock)
+void AgingConfig::_help_step(const double simulation_clock, const size_t index)
 {
 
+    AgingConfigData* d = (index == 0) ? &d1 : &d2;
+    const std::vector<double> g = (index == 0) ? grid_pi1 : grid_pi2;
+
     // Two break conditions
-    if (grid_pi1[pointer1] >= simulation_clock) {return;}
-    if (pointer1 > length - 1) {return;}
+    if (g[d->pointer] >= simulation_clock) {return;}
+    if (d->pointer > length - 1) {return;}
 
     const std::string state = spin_system_ptr->get_previous_state_string_rep();
 
-    while (grid_pi1[pointer1] < simulation_clock)
+    // This accounts for the state index, which changes every time the
+    // state does (it increments by 1)
+    const std::string state2 = state + "-" + std::to_string(state_index);
+
+    while (g[d->pointer] < simulation_clock)
     {
-        results1.push_back(state);
-        pointer1 += 1;
-        if (pointer1 > length - 1){break;}
+        d->results.push_back(state2);
+        d->pointer += 1;
+        if (d->pointer > length - 1){break;}
     }
 }
-
-
-void AgingConfig::_help_step_2(const double simulation_clock)
-{
-
-    // Two break conditions
-    if (grid_pi2[pointer2] >= simulation_clock) {return;}
-    if (pointer2 > length - 1) {return;}
-
-    const std::string state = spin_system_ptr->get_previous_state_string_rep();
-    // std::cout << "state(2) " << state << std::endl;
-
-    while (grid_pi2[pointer2] < simulation_clock)
-    {
-        results2.push_back(state);
-        pointer2 += 1;
-        if (pointer2 > length - 1){break;}
-    }
-}
-
 
 AgingConfig::AgingConfig(const utils::SimulationParameters params, const SpinSystem& spin_system) : Aging(params, spin_system) {}
 
 
 void AgingConfig::step(const double simulation_clock)
 {
-    _help_step_1(simulation_clock);
-    _help_step_2(simulation_clock);
+    _help_step(simulation_clock, 0);
+    _help_step(simulation_clock, 1);
+
+    // If we've changed state, then the state_index should increment
+    const std::string state = spin_system_ptr->get_previous_state_string_rep();
+    if (state != spin_system_ptr->get_current_state_string_rep())
+    {
+        state_index += 1;
+    }
 }
 
 json AgingConfig::as_json() const
 {
-
     // Sanity checks to make sure that every vector was filled completely
-    assert(length == results1.size());
-    assert(length == results2.size());
+    assert(length == d1.results.size());
+    assert(length == d2.results.size());
 
     json j;
-    j["aging_config_pi1"] = results1;
-    j["aging_config_pi2"] = results2;
+    j["aging_config_pi1"] = d1.results;
+    j["aging_config_pi2"] = d2.results;
     return j;
 }
 
