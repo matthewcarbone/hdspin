@@ -3,8 +3,6 @@
  * the code, as well as general utils.
  */
 
-#include <fstream>      // std::ofstream
-
 #include "ArbitraryPrecision/ap/ap.hpp"
 #include "Json/json.hpp"
 using json = nlohmann::json;
@@ -44,6 +42,7 @@ using json = nlohmann::json;
 #define CONFIG_PATH "config.json"
 #define RESULTS_PATH "results.json"
 #define DIAGNOSTICS_PATH "diagnostics.json"
+#define AUTO_DYNAMICS_DIAGNOSTIC_PATH "auto_dynamics_diagnostics.json"
 
 namespace utils
 {

@@ -435,6 +435,17 @@ void postprocess()
 
     utils::json_to_file(j, RESULTS_PATH);
     printf("Results saved to %s\n", RESULTS_PATH);
+
+
+    // Quickly cleanup the auto-determine dynamics stuff
+    if (std::filesystem::exists(AUTO_DYNAMICS_DIAGNOSTIC_PATH))
+    {
+        json j = utils::read_json(DIAGNOSTICS_PATH);
+        json j2 = utils::read_json(AUTO_DYNAMICS_DIAGNOSTIC_PATH);
+        j["auto_determine_dynamics"] = j2;
+        std::remove(AUTO_DYNAMICS_DIAGNOSTIC_PATH);
+        utils::json_to_file(j, DIAGNOSTICS_PATH);
+    }
     utils::cleanup_directories();
     printf("Simulation completed successfully\n");
 }

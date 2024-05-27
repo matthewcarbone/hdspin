@@ -403,12 +403,10 @@ void auto_determine_dynamics_(utils::SimulationParameters* params)
         if (mpi_rank % 2 == 0)
         {
             times[mpi_rank] = get_sim_time(p, "standard");
-            // MPI_Recv(&gillespie_time, 1, MPI_DOUBLE, 1, 0, mpi_comm, MPI_STATUS_IGNORE);
         }
         else if (mpi_rank % 2 != 0)
         {
             times[mpi_rank] = get_sim_time(p, "gillespie");
-            // MPI_Send(&gillespie_time, 1, MPI_DOUBLE, 0, 0, mpi_comm);
         }
         MPI_Barrier(MPI_COMM_WORLD);
 
@@ -459,6 +457,14 @@ void auto_determine_dynamics_(utils::SimulationParameters* params)
             result_int = 0;
         }
         fflush(stdout);
+
+        // Save this auto run information
+        json j;
+        j["gillespie_mean"] = gillespie_time;
+        j["gillespie_std"] = gillespie_std;
+        j["standard_mean"] = standard_time;
+        j["standard_std"] = standard_std;
+        utils::json_to_file(j, AUTO_DYNAMICS_DIAGNOSTIC_PATH);
     }
 
     MPI_Bcast(&result_int, 1, MPI_INT, 0, MPI_COMM_WORLD);
@@ -510,17 +516,7 @@ std::vector<std::string> get_completed_json_filenames()
     std::sort(all_current_results.begin(), all_current_results.end());
 
     return all_current_results;
-    
-    // if (all_current_results.size() == 0){return 0;}
-    
-    // 
-
-    // // Get the last entry here, which will correspond to the start index,
-    // // since we don't want to risk that a json file was partially written
-    // const size_t N = all_current_results.size();
-    // return get_index(all_current_results[N - 1]) + 1;
 }
-
 
 void execute_process_pool(const utils::SimulationParameters params)
 {
@@ -531,7 +527,6 @@ void execute_process_pool(const utils::SimulationParameters params)
     // Execute the process pool
     if (mpi_rank == MASTER)
     {
-        // TODO add some logic for checkpoint-restart here
         const std::vector<std::string> completed_json_filenames = get_completed_json_filenames();
         size_t start_index = 0;
         const size_t total_jobs_completed = completed_json_filenames.size();

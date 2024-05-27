@@ -1,5 +1,6 @@
 #include <sstream>  // oss
 #include <algorithm>
+#include <fstream>      // std::ofstream
 
 #include "utils.h"
 #include "ArbitraryPrecision/ap/ap.hpp"
