@@ -34,6 +34,10 @@ void SpinSystem::_first_time_state_initialization_()
 
     if (params.dynamics == "standard"){_init_standard();}
     else if (params.dynamics == "gillespie"){_init_gillespie();}
+    else if (params.dynamics == "dynamic"){
+        _init_standard();
+        _init_gillespie();
+    }
     else
     {
         throw std::runtime_error("Uknown dynamics during setup");
@@ -255,6 +259,29 @@ double SpinSystem::step()
     {
         waiting_time = _step_gillespie();
     }
+    else if (params.dynamics == "dynamic")
+    {
+        const double current_energy = energy();
+        const double threshold_E = params.energetic_threshold;
+        const double threshold_A = params.entropic_attractor;
+        double threshold;
+        if (params.valid_entropic_attractor)
+        {
+            threshold = std::max(threshold_E, threshold_A);
+        }
+        else
+        {
+            threshold = threshold_E;
+        }
+        if (current_energy < threshold)
+        {
+            waiting_time = _step_gillespie();
+        }
+        else
+        {
+            waiting_time = _step_standard();
+        }
+    }
     else
     {
         throw std::runtime_error("Uknown dynamics during step");
@@ -270,6 +297,10 @@ SpinSystem::~SpinSystem()
 {
     if (params.dynamics == "standard"){_teardown_standard();}
     else if (params.dynamics == "gillespie"){_teardown_gillespie();}
+    else if (params.dynamics == "dynamic"){
+        _teardown_standard();
+        _teardown_gillespie();
+    }
 
     // Else both to be safe
     else{_teardown_standard(); _teardown_gillespie();}

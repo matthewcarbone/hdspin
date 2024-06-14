@@ -70,8 +70,11 @@ int main(int argc, char *argv[])
             "exit rates at once and flips a spin every iteration of the "
             "algorithm, but with a waiting time not necessarily equal to 1. The "
             "auto selection runs quick simulations of both types to see which "
-            "is faster, and selects that one."
-        )->check(CLI::IsMember({"standard", "gillespie", "auto"}));
+            "is faster, and selects that one. Finally, the dynamic option "
+            "switches between standard and gillespie dynamics on the fly depending "
+            "on the energy of the current tracer: when it is below the threshold "
+            "energy, we use gillespie; above, we use standard."
+        )->check(CLI::IsMember({"standard", "gillespie", "auto", "dynamic"}));
 
         app.add_option(
             "-n, --n_tracers", p.n_tracers,
