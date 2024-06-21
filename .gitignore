@@ -1,4 +1,5 @@
 build/
+notebooks/
 hdspin.sublime*
 .ipynb_checkpoints/
 *.ipynb
