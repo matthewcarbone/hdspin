@@ -44,7 +44,7 @@ void combine_json_(json* base_json_ptr, json* json_ptr)
 }
 
 
-json get_final_json(OnePointObservables& obs1, PsiConfig& psiConfig, PsiBasin& psiBasin, AgingConfig& agingConfig, AgingBasin& agingBasin, EMaxt2& emaxt2)
+json get_final_json(OnePointObservables& obs1, PsiConfig& psiConfig, PsiBasin& psiBasin, AgingConfig& agingConfig, AgingBasin& agingBasin, EMaxt2& emaxt2, const double elapsed)
 {
     json j;
 
@@ -65,6 +65,8 @@ json get_final_json(OnePointObservables& obs1, PsiConfig& psiConfig, PsiBasin& p
 
     json emaxt2_json = emaxt2.as_json();
     combine_json_(&j, &emaxt2_json);
+
+    j["elapsed"] = elapsed;
 
     return j;
 }
@@ -93,6 +95,10 @@ void execute(const int job_index, const utils::SimulationParameters const_params
     AgingConfig agingConfig(params, sys);
     AgingBasin agingBasin(params, sys);
     EMaxt2 emaxt2(params, sys);
+
+
+    // Time the entire simulation
+    auto t_start = std::chrono::high_resolution_clock::now();
 
     // Simulation clock is 0 before entering the while loop
     while (true)
@@ -124,14 +130,17 @@ void execute(const int job_index, const utils::SimulationParameters const_params
         if (simulation_clock > params.N_timesteps){break;}
     }
 
+    const double elapsed = utils::get_time_delta(t_start);
+
     // When the simulation is complete, write everything to disk
-    const json j_final = get_final_json(
+    json j_final = get_final_json(
         obs1,
         psiConfig,
         psiBasin,
         agingConfig,
         agingBasin,
-        emaxt2
+        emaxt2,
+        elapsed
     );
     utils::json_to_file_no_format(j_final, fnames.json_final);
 }

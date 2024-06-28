@@ -353,6 +353,17 @@ json get_aging_basin_statistics(const std::vector<json> results, const std::stri
 }    
 
 
+std::vector<double> process_elapsed_time(const std::vector<json> results)
+{
+    std::vector<double> v;
+    for (auto &result : results)
+    {
+        v.push_back(result["elapsed"]);
+    }
+    return v;
+}
+
+
 
 json load_grids()
 {
@@ -428,6 +439,9 @@ void postprocess()
     {
         j["aging_basin_S"] = get_aging_basin_statistics(results, "aging_basin_S");
     }
+
+    j["elapsed"] = process_elapsed_time(results);
+
 
     j["grids"] = load_grids();
     j["grids"]["psi"] = get_psi_grid(j["psi_config"]["mean"].size());
