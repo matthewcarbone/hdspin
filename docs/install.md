@@ -31,10 +31,11 @@ Once CMake and MPI are installed on your system, the rest should be straighforwa
 ```bash
 git clone git@github.com:matthewcarbone/hdspin.git
 cd hdspin
-cmake -S . -B build -DPRECISON=256 -DBUILD_TESTS=ON -DSMOKE=ON
+cmake -S . -B build -DPRECISON=256 -DCMAKE_INSTALL_PREFIX=/usr/local -DBUILD_TESTS=ON -DSMOKE=ON 
 cd build
-make -j8
+sudo make -j8 install
 ```
+Sudo permissions are required to install to the directory `/usr/local/bin`, where the first two parts of the path are set by `DCMAKE_INSTALL_PREFIX`. You can of course choose whichever directory you want, but we recommend putting it in your path so you have easy access to the executable.
 
 Note that at compile time, there are three options for the user to set:
 * `-DPRECISON=<INT>` is the maximum number of spins you can use during the simulation. Should be a power of 2 (as recommended by the Arbitrary Precision library). Default is `256`. Note that this is the _maximum_ value you can use for `N_spins` in the simulation.

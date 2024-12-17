@@ -100,3 +100,5 @@ add_executable(
 )
 
 target_link_libraries(hdspin-postprocess ${MPI_CXX_LIBRARIES})
+
+install(TARGETS hdspin hdspin-postprocess RUNTIME DESTINATION bin)
